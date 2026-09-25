@@ -166,7 +166,7 @@
   pwsh 沙箱失败、.NET 相对路径基准、令牌写入 .git/config 等 13 条）、安全红线——
   已并入 [docs/06-build-and-dev-environment.md](docs/06-build-and-dev-environment.md) 第 11 节。
   ~（以下为删除前的原始记录）~
-- ✅ **（已删除）新增 [docs/16-local-workspace-setup.md](docs/16-local-workspace-setup.md)**：
+- ✅ **（该文档已删除）原 docs/16-local-workspace-setup.md 曾包含**：
   换工作区/换会话的**唯一交接清单**。定义本地容器布局
   `ARDF-MeshTuneFox80/{ARDF-MeshTuneFox80-hardware, ARDF-MeshTuneFox80-firmware}`
   （两仓同处一个工作区，`workspace-write` 策略即可覆盖，不再依赖临时的
