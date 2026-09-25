@@ -147,15 +147,63 @@ foreach ($p in @($h,$f)) {
 
 ---
 
-## 3. DSH 工作区设置（关键）
+## 3. ✅ 工作区已经是容器目录（无需改动）
 
-**新会话的工作区设为容器目录：**
+**本会话的工作区路径从未改变**，始终是：
 
 ```
 C:\DeepseekProject\ARDF-MeshTuneFox80
 ```
 
-这样：
+变的只是**它的内容**——从「公开仓本身」变成了「容纳两个仓的容器」。
+
+### 3.1 这是最优解：一次操作同时达成三个目标
+
+| 目标 | 若"换工作区 + 开新会话" | **实际做法：保持路径不变，只重组内容** |
+|------|----------------------|-----------------------------------|
+| 两仓同处一个工作区 | ✅ | ✅ |
+| `workspace-write` 策略即可覆盖（不依赖 `danger-full-access`） | ✅ | ✅ |
+| **KV 前缀缓存 / 投影缓存不失效** | ❌ 首轮全量重写 | ✅ **`cwd` 字符串未变 → 缓存身份未失效** |
+| **会话上下文与全部对话保留** | ❌ 全新会话 | ✅ **同一会话，`session-0fd161c7-…`** |
+
+**关键洞察**：DSH 的缓存键绑定的是**工作区路径字符串**，不是"这个路径下装了什么"。
+所以 **"换工作区"与"重组工作区内的内容"是两回事**——
+后者可以在完全不触碰缓存键的前提下把目录结构调整到位。
+
+### 3.2 实测确认
+
+| 项 | 值 |
+|----|----|
+| 会话 id | `session-0fd161c7-e48a-4c7c-b837-c429c3c9e65b`（未变） |
+| 工作区路径 | `C:\DeepseekProject\ARDF-MeshTuneFox80`（未变） |
+| 投影缓存记录的 `cwd` | `C:\DeepseekProject\ARDF-MeshTuneFox80` → **与工作区一致，身份未失效** |
+| 相对路径基准 | **容器目录**（`docs/…` 不再直接可用，见 3.3） |
+
+### 3.3 ⚠️ 唯一的行为变化：相对路径基准
+
+工作区内容重组后，**相对路径的基准变成了容器目录**：
+
+| ❌ 现在会失败 | ✅ 正确写法 |
+|--------------|-----------|
+| `docs/02-repository-layout.md` | `ARDF-MeshTuneFox80-hardware/docs/02-repository-layout.md` |
+| `README.md` | `ARDF-MeshTuneFox80-hardware/README.md` |
+| `components/` | `ARDF-MeshTuneFox80-firmware/components/` |
+
+`git` 命令同样要指明仓库：
+
+```powershell
+git -C ARDF-MeshTuneFox80-hardware status
+git -C ARDF-MeshTuneFox80-firmware  status
+```
+
+### 3.4 仓库映射（已实测确认）
+
+| 本地目录 | GitHub 仓库 | 可见性 | HEAD |
+|---------|------------|--------|------|
+| `ARDF-MeshTuneFox80-hardware` | https://github.com/PatrickShih774/ARDF-MeshTuneFox80 | public | `1852261` |
+| `ARDF-MeshTuneFox80-firmware` | https://github.com/PatrickShih774/ARDF-MeshTuneFox80-firmware | private | `ef8fa54` |
+
+其余设置：
 
 | 项 | 结果 |
 |----|------|
@@ -166,7 +214,7 @@ C:\DeepseekProject\ARDF-MeshTuneFox80
 
 > ❌ **不要**把工作区设成某个仓库的子目录——那样另一个仓又在工作区外了，问题原样复现。
 
-### 3.1 会话开场白（建议直接用）
+### 3.5 会话开场白（建议直接用）
 
 > 读 `ARDF-MeshTuneFox80-hardware/README.md`、`docs/02-repository-layout.md`、
 > `docs/03-software-architecture.md`、`docs/15-dsh-esp-idf-integration.md`、
@@ -174,7 +222,13 @@ C:\DeepseekProject\ARDF-MeshTuneFox80
 
 ---
 
-## 4. 换会话的缓存代价（必读）
+## 4. 换会话的缓存代价（仅供参考——本次未发生）
+
+> ✅ **本次未更换工作区路径，因此本章描述的代价一条都没有发生。**
+> 工作区路径自始至终是 `C:\DeepseekProject\ARDF-MeshTuneFox80`，
+> 变的只是它的内容（公开仓 → 容器）。详见第 3.1 节的对比表。
+>
+> 本章保留，用于说明**万一将来必须更换工作区路径**时的代价。
 
 DSH 有**两层缓存，都与会话绑定，换工作区/换会话必然失效**：
 
@@ -289,7 +343,7 @@ Release 发布在**公开仓**（`ARDF-MeshTuneFox80-hardware` 对应的 GitHub 
 
 ---
 
-## 7. 当前状态快照（迁移前）
+## 7. 当前状态快照（迁移后）
 
 | 项 | 公开仓 | 私有仓 |
 |----|--------|--------|
