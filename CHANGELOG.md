@@ -156,7 +156,17 @@
   **已落地**：用户级技能 `~/.dsh/skills/esp-idf/SKILL.md`（与工作区无关、热重载即时生效）。
   另含第 7 节「缓存与会话续用」：DSH 两层缓存（LLM 前缀缓存 / `session_projcache`）
   均以 `cwd` 参与键，换工作区必然失效；保住缓存需 `dsh --resume <会话id>`。
-- ✅ **新增 [docs/16-local-workspace-setup.md](docs/16-local-workspace-setup.md)**：
+- ✅ **本地工作区改为容器布局**（2026-09-25）：
+  `C:\DeepseekProject\ARDF-MeshTuneFox80\{ARDF-MeshTuneFox80-hardware, ARDF-MeshTuneFox80-firmware}`，
+  两仓同处一个工作区，`workspace-write` 策略即可覆盖，不再依赖会话级的 `danger-full-access`。
+  **工作区路径字符串未变**，因此 DSH 的 KV 前缀缓存与投影缓存身份均未失效、会话上下文完整保留。
+- ✅ **原 docs/16-local-workspace-setup.md 已删除**：其「移交记录」使命完成
+  （工作区未更换，无需交接）。其中仍然有效的内容——本地目录布局、相对路径基准变化、
+  已知陷阱清单（含 `Move-Item` 部分完成导致回滚删数据、clone 后 git 身份丢失、
+  pwsh 沙箱失败、.NET 相对路径基准、令牌写入 .git/config 等 13 条）、安全红线——
+  已并入 [docs/06-build-and-dev-environment.md](docs/06-build-and-dev-environment.md) 第 11 节。
+  ~（以下为删除前的原始记录）~
+- ✅ **（已删除）新增 [docs/16-local-workspace-setup.md](docs/16-local-workspace-setup.md)**：
   换工作区/换会话的**唯一交接清单**。定义本地容器布局
   `ARDF-MeshTuneFox80/{ARDF-MeshTuneFox80-hardware, ARDF-MeshTuneFox80-firmware}`
   （两仓同处一个工作区，`workspace-write` 策略即可覆盖，不再依赖临时的

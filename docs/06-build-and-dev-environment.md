@@ -289,3 +289,67 @@ python tools/protocol_gen.py      # 生成到 software/protocol/generated/（规
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | 分支模型与提交流程 |
 | [software/README.md](../software/README.md) | 软件入口与规划要点（中控 PC 软件 / 共享协议 / 工具均规划中，待创建） |
 | [ESP-IDF 官方文档](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32c3/) | 上游参考 |
+
+---
+
+## 11. 本地工作区布局与已知陷阱
+
+- 本地工作区布局与已知陷阱：本文档第 11 节
+> 其中**仍然有效**的内容并入本节，临时性内容（迁移步骤、缓存分析）已删除。
+
+### 11.1 本地目录布局
+
+项目根是一个**容器目录**，两个仓库作为子目录——这样 DSH 工作区只设一处即可覆盖两仓，
+**`workspace-write` 策略就够用，不需要 `danger-full-access`**：
+
+```
+C:\DeepseekProject\ARDF-MeshTuneFox80\          ← 容器（无 .git，DSH 工作区设这里）
+├── ARDF-MeshTuneFox80-hardware\                ← 公开仓 → github.com/PatrickShih774/ARDF-MeshTuneFox80
+└── ARDF-MeshTuneFox80-firmware\                ← 私有仓 → github.com/PatrickShih774/ARDF-MeshTuneFox80-firmware
+```
+
+> ⚠️ **只影响本地路径，GitHub 仓库名不变。** 文档中的跨仓引用一律用 GitHub 绝对 URL，故不受影响。
+
+### 11.2 ⚠️ 相对路径基准是容器目录
+
+| ❌ 不再可用 | ✅ 正确写法 |
+|------------|-----------|
+| `docs/02-repository-layout.md` | `ARDF-MeshTuneFox80-hardware/docs/02-repository-layout.md` |
+| `README.md` | `ARDF-MeshTuneFox80-hardware/README.md` |
+| `components/` | `ARDF-MeshTuneFox80-firmware/components/` |
+
+`git` 命令必须指明仓库：
+
+```powershell
+git -C ARDF-MeshTuneFox80-hardware status
+git -C ARDF-MeshTuneFox80-firmware  status
+```
+
+### 11.3 已知陷阱（本项目实际踩过）
+
+| 陷阱 | 症状 | 规避 |
+|------|------|------|
+| **`Move-Item` 失败后回滚删除了数据** | 目录的 `Move-Item` **可能部分完成**；`Remove-Item -Recurse` 回滚会永久删除已搬移的文件（曾导致公开仓 `.git` 被清空） | 先**检查**目标而非删除；可靠退路是**搬移前先 push**，坏了就 `git clone` |
+| **重新 `git clone` 后无法提交** | `Author identity unknown` —— clone 不带本地 `user.name`/`user.email`/`core.quotepath`/`i18n.*` | clone 后立即 `git -C <仓> config --local …` 补齐 |
+| **`pwsh` 沙箱初始化失败** | `SetNamedSecurityInfoW failed (Win32 5)`，所有 shell 命令不可用 | 需用户提权或调整文件策略；**不要反复重试** |
+| **`.NET` API 的相对路径基准是进程 CWD** | `Set-Location` 后 `[System.IO.File]::ReadAllText('a.txt')` 仍读旧目录 | .NET 调用一律用**绝对路径**；PowerShell cmdlet 才受 `Set-Location` 影响 |
+| **`WriteAllLines` 写 CRLF** | 违反 `.editorconfig`（要求 LF） | 批量写文件用 `WriteAllText` + 显式 `` `n `` |
+| **`.git/config` 被写入令牌** | `git push -u <含令牌URL>` 会把令牌存进 `branch.<name>.remote` | 推送用 `git push <url> main`，**不加 `-u`**；事后查 `git remote -v` |
+| **`git ls-files --eol` 报 CRLF** | 工作区文件是 CRLF | 用 `WriteAllText` 转换；`LICENSES/CERN-OHL-S-2.0.txt` 的 CRLF 是**官方原样，不要转** |
+| **`git rev-list --count main` 报 ambiguous** | 仓库里有 `main/` 目录，与分支名冲突 | 用 `git rev-list --count HEAD` 或加 `--` |
+| **Kconfig 存在不存在的符号** | 首次构建出现 unknown config item 警告 | 权威清单是固件仓的 `sdkconfig.defaults`；已知错误名见 [`03`](03-software-architecture.md) §4.4 勘误表 |
+| **ESP-IDF 未安装** | `IDF_PATH` 为空、`idf.py` 不在 PATH | 见技能 `esp-idf` 第 1 节；**不要擅自下载安装** |
+| **Python 版本不匹配** | ESP-IDF v5.x 要求 Python 3.9–3.12；本机可能是 3.13 | 安装 ESP-IDF 前先确认 Python 版本 |
+| **`git push --force` 不能抹除旧提交** | 旧对象仍可通过直接 SHA 访问 | 要彻底清除必须**删除并重建仓库** |
+| **推送 `.github/workflows/**` 需要 `workflow` scope** | 令牌无该 scope 时推送被拒 | 故 `.github/workflows/` 暂不入库 |
+
+### 11.4 🔴 安全红线
+
+| 红线 | 原因 |
+|------|------|
+| **固件源码的任何片段不得进入公开仓** | 包括 Issue 与 PR 描述、贴出的日志里的源码行 |
+| 密钥（ESP-NOW / Mesh / 证书）不得入库 | 走 NVS 或本地文件 |
+| 不要把私有仓放进公开仓目录内 | 会在某次 `git add -A` 时被一起提交；当前容器布局已从物理上避免 |
+
+公开仓 `.gitignore` 已有防泄漏护栏（`software/firmware/`、`**/components/*/src/*.c`、
+`main/app_main.c`、`sdkconfig.defaults`、`partitions.csv` 等），但那只是**兜底**。
