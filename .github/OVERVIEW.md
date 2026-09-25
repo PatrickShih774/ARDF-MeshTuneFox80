@@ -46,10 +46,15 @@
 | 产物 | 内容 |
 | --- | --- |
 | 固件 bin | `ardf-node.bin`、分区表、OTA 包 + `SHA256SUMS`（由**私有仓**的 CI 构建后发布到本仓 Release） |
+| **许可与第三方声明** | 🔴 **必须随附**：[`NOTICE`](../NOTICE)（ESP-IDF 等第三方声明，Apache-2.0/MIT 要求）与 [`LICENSES/LicenseRef-ARDF-NC-1.0.txt`](../LICENSES/LicenseRef-ARDF-NC-1.0.txt)（固件许可全文） |
 | Gerber | Gerber + 钻孔文件（zip） |
 | BOM | BOM CSV/XLSX + 成本报表 |
 | 验证报告 | `validation/**/report-*.md` 汇总 + 关键截图 |
 | 发布说明 | 由 `CHANGELOG.md` 对应版本段落生成 |
+
+> ⚠️ **发布前检查**：Release 说明中必须包含或明确指向 `NOTICE` 与固件许可全文。
+> 省略第三方声明会违反 ESP-IDF（Apache-2.0）与 FreeRTOS/mbedTLS 的许可条款——
+> **闭源不等于可以省略声明**。详见 [docs/08](../docs/08-licensing-and-compliance.md) §4.2。
 
 ## 5. 当前状态
 

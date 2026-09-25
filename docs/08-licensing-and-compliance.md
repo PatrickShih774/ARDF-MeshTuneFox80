@@ -172,22 +172,34 @@
 | FreeRTOS | RTOS（随 ESP-IDF） | MIT | ✅ 保留版权声明与许可文本 |
 | mbedTLS | HMAC-SHA256（随 ESP-IDF） | Apache 2.0 | ✅ 同 ESP-IDF，须保留声明与 NOTICE |
 | Unity | 单元测试（随 ESP-IDF） | MIT | ✅ 仅测试用，不进固件镜像 |
-| N7DDC ATU-100 固件 | **算法思想参考** | ⚠️ 需核对（见 §4.1） | ⚠️ 见 §4.1 |
+| N7DDC ATU-100（Dfinitski 镜像仓） | **仅思想/方法参考** | 🔴 **无许可（保留所有权利）** | ❌ 不可复制任何内容；见 §4.1 |
 | Si5351 Arduino 库（Etherkit） | **不使用**，仅行为参考 | 以原始项目声明为准 | ✅ 本项目自行实现，未引入其代码 |
 
-### 4.1 🔴 ATU-100 参考的许可风险
+### 4.1 🔴 ATU-100 参考的许可风险（已核查，结论为"无许可"）
 
-`hardware/reference/atu-100/` 中的内容来自 [N7DDC-ATU-100-mini-and-extended-boards](https://github.com/Dfinitski/N7DDC-ATU-100-mini-and-extended-boards)。
+**2026-09 经 GitHub API 实测的核查结果：**
+
+| 项目 | `license` 字段 | 根目录许可文件 | 结论 |
+|------|--------------|--------------|------|
+| [`Dfinitski/N7DDC-ATU-100-mini-and-extended-boards`](https://github.com/Dfinitski/N7DDC-ATU-100-mini-and-extended-boards) | `null` | **无** | 🔴 **无许可 = 保留所有权利** |
+| ~~`n7ddc/ATU-100`~~（早先引用的"原版仓库"） | — | — | 🔴 **HTTP 404，作者账号已不存在，链接失效** |
+
+**无许可不等于可以自由使用。** 因此本项目的处理规则是：
 
 | 事项 | 要求 |
 |------|------|
-| 核对许可 | **投板与实现前必须**逐文件确认原始项目的许可条款；若无明确许可，则默认"保留所有权利" |
-| 借鉴 vs 复制 | 允许借鉴**算法思想**（粗调 Grundmatch + 细调 Feinabstimmung + 全遍历兜底）与**公开电路拓扑**；**禁止**逐行复制代码 |
-| 记录来源 | 在本项目代码注释中标注算法来源与参考链接（已在 [07-编码规范](07-coding-standards.md) §4.2 要求） |
-| 存档隔离 | 参考文件放 `hardware/reference/`，**不参与本仓库构建**，不进 Release 产物 |
-| 独立实现 | ATU 调谐算法必须是对算法的**独立重新实现**（面向 ESP-IDF/ESP32-C3，语言与平台均不同） |
+| 🔴 禁止 | **复制、翻译、改写、转录其任何内容**——源代码（`main.c`/`main.h`/`oled_control.c`/`pic_init.c`/`font5x8.h`）、原理图、PCB、BOM、手册正文、截图 |
+| ✅ 允许 | 参考其**思想、方法、公开电路拓扑**。版权保护的是**表达**，不是**思想/方法/拓扑** |
+| 🔴 独立实现 | `atu_tuner` 必须是**独立重新实现**：不得把上游代码放在旁边逐行对照翻译，不得沿用其标识符命名与注释结构 |
+| ✅ 引用可、摘录不可 | 文档中可事实性引用项目名称与链接；**不得大段摘录其正文** |
+| 🔴 存档隔离 | `hardware/reference/` **只放本工程自撰的借鉴说明**，**不放任何上游材料**（连截图、片段都不放） |
+| 记录来源 | 在固件源码注释中标注"参考了 ATU-100 的调谐搜索思路"，并给出链接（非摘录） |
 
-> ⚠️ **待办**：明确记录 ATU-100 原始项目的许可条款到 [`hardware/reference/README.md`](../hardware/reference/README.md)。若其原始许可与本项目「闭源固件 + 二进制非商业分发」的意图冲突，则**只保留算法思想参考**，不引入任何代码。
+> 已落实：核查结论写入 [`hardware/reference/README.md`](../hardware/reference/README.md) §2 与
+> [`hardware/reference/atu-100/README.md`](../hardware/reference/atu-100/README.md) §2，
+> 并在 [`.gitignore`](../.gitignore) 加了防泄漏护栏（第三方源码/图纸类型一律不入库）。
+>
+> ⚠️ 本结论为**工程侧的风险控制措施，不构成法律意见**。若将来要商业化，建议律师复核"思想借鉴"与"表达复制"的边界。
 
 ### 4.2 🔴 ESP-IDF 的声明义务（闭源固件同样适用）
 
@@ -200,7 +212,8 @@
   (c) 若上游提供 `NOTICE` 文件，须在分发中包含其内容。
 - ⚠️ **适用场景**：本项目通过 **GitHub Releases 分发固件二进制**，因此上述义务**随二进制一并生效**——必须在 Release 页面、随附文档或固件的「关于」信息中提供这些声明。
 
-> **闭源 ≠ 可以省略第三方声明。** `NOTICE` 文件待创建（见 §6 第 7 项）。
+> **闭源 ≠ 可以省略第三方声明。** 已创建仓库根 [`NOTICE`](../NOTICE) 登记全部第三方组件；
+> **发布 Release 时必须随附**（见 §6 第 7–8 项）。
 
 ---
 
@@ -235,15 +248,15 @@
 
 | # | 事项 | 责任 | 状态 |
 |---|------|------|------|
-| 1 | 下载并放入三份标准许可全文：`LICENSES/CERN-OHL-S-2.0.txt`、`LICENSES/Apache-2.0.txt`、`LICENSES/CC-BY-4.0.txt` | 项目负责人 | ⬜ |
-| 2 | 校验三份标准许可完整性，登记 SHA-256（方法见 [`LICENSES/README.md`](../LICENSES/README.md)） | 项目负责人 | ⬜ |
+| 1 | 下载并放入三份标准许可全文：`LICENSES/CERN-OHL-S-2.0.txt`、`LICENSES/Apache-2.0.txt`、`LICENSES/CC-BY-4.0.txt` | 项目负责人 | ✅ 已完成 |
+| 2 | 校验三份标准许可完整性，登记 SHA-256（方法见 [`LICENSES/README.md`](../LICENSES/README.md)） | 项目负责人 | ✅ 已完成 |
 | 3 | 自定义许可 `LICENSES/LicenseRef-ARDF-NC-1.0.txt` 已就位（本项目自撰，无需下载） | 项目负责人 | ✅ 已完成 |
 | 4 | 删除公开仓历史中的固件源码与遗留的 GPL 全文 | 项目负责人 | ✅ 已完成 |
-| 5 | 创建私有仓 `ARDF-MeshTuneFox80-firmware`，迁入全部固件源码 | 项目负责人 | ⬜ |
-| 6 | 核对 ATU-100 原始许可并记录到 [`hardware/reference/README.md`](../hardware/reference/README.md) | 项目负责人 | ⬜ |
-| 7 | 创建 `NOTICE`（ESP-IDF 等第三方声明），**随固件二进制分发** | 项目负责人 | ⬜ |
-| 8 | 固件 Release 页面附 `LicenseRef-ARDF-NC-1.0` 许可声明与第三方声明（含 `NOTICE`） | 项目负责人 | ⬜ |
-| 9 | 各源文件添加 SPDX 标识符（规范见 [07-编码规范](07-coding-standards.md) §2.2） | 开发者 | ⬜ |
+| 5 | 创建私有仓 `ARDF-MeshTuneFox80-firmware`，迁入全部固件源码 | 项目负责人 | ✅ 已完成 |
+| 6 | 核对 ATU-100 原始许可 → **结论：无许可（保留所有权利），且原版仓库链接已失效**；已记录并加护栏 | 项目负责人 | ✅ 已完成 |
+| 7 | 创建 [`NOTICE`](../NOTICE)（ESP-IDF 等第三方声明），**随固件二进制分发** | 项目负责人 | ✅ 已完成 |
+| 8 | 固件 Release 页面附 `LicenseRef-ARDF-NC-1.0` 许可声明与第三方声明（含 `NOTICE`） | 项目负责人 | ⬜ 首次发布时执行 |
+| 9 | 各源文件添加 SPDX 标识符（规范见 [07-编码规范](07-coding-standards.md) §2.2） | 开发者 | ⬜ 随实现推进 |
 | 10 | 产品页/说明书附带许可声明与源设计获取方式 | 商务 | ⬜ |
 | 11 | 销售话术明确"需持证 + 办理设台手续" | 商务 | ⬜ |
 | 12 | 成品整机决定是否申请 SRRC | 商务 | ⬜ |

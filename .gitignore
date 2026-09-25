@@ -1,26 +1,48 @@
 # =============================================================================
-# ARDF-MeshTuneFox80 / 狐网天调80  —  仓库忽略规则
-# 详细目录约定见 docs/02-仓库目录规范.md
+# ARDF-MeshTuneFox80  —  仓库忽略规则（公开仓）
+# 目录与文件归属约定见 docs/02-repository-layout.md
+# 固件源码位于私有仓 ARDF-MeshTuneFox80-firmware，本仓不含固件源码
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# 一、ESP-IDF 构建产物（software/firmware）
+# 〇、🔴 防泄漏护栏：固件源码严禁进入本公开仓
 # -----------------------------------------------------------------------------
-build/
+# 固件源码在私有仓 ARDF-MeshTuneFox80-firmware（见 LICENSING.md、ADR-0007）。
+# 以下规则是"最后一道保险"：万一误把固件内容复制到本仓目录，git 也不会收进来。
+# 注意：这只是兜底，真正的隔离靠"两个独立工作目录"（见 CONTRIBUTING.md 安全红线）。
+software/firmware/
+firmware/
+**/components/*/src/*.c
+**/components/*/include/*.h
+main/app_main.c
 sdkconfig
-sdkconfig.old
-sdkconfig.*.old
+sdkconfig.defaults
+partitions.csv
+
+# 第三方参考设计一律不入库 —— ATU-100 等上游**无许可**，见 hardware/reference/README.md §2.1
+hardware/reference/**/*.c
+hardware/reference/**/*.h
+hardware/reference/**/*.ino
+hardware/reference/**/*.asm
+hardware/reference/**/*.zip
+hardware/reference/**/*.pdf
+
+# -----------------------------------------------------------------------------
+# 一、通用构建产物
+# -----------------------------------------------------------------------------
+# 说明：固件构建在私有仓进行，本仓不应出现 ESP-IDF 产物；保留这些规则以防误建。
+build/
 managed_components/
 dependencies.lock
 compile_commands.json
 flasher_args.json
 flash_args
-*.bin
 *.elf
 *.map
+# 二进制不入 Git —— 固件二进制通过 GitHub Releases 分发，不提交到版本库
+*.bin
 *.hex
 !hardware/**/*.hex
-!software/firmware/**/factory/**/*.bin
 
 # -----------------------------------------------------------------------------
 # 二、操作系统与编辑器
@@ -39,7 +61,7 @@ desktop.ini
 !.vscode/tasks.json.example
 
 # -----------------------------------------------------------------------------
-# 三、Python（中控 PC 软件 software/master-console、脚本 scripts、工具）
+# 三、Python（中控 PC 软件、scripts、工具）
 # -----------------------------------------------------------------------------
 __pycache__/
 *.py[cod]

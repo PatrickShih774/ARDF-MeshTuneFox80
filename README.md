@@ -40,7 +40,8 @@ ARDF-MeshTuneFox80/
 │
 ├── README.md                     ← 你在这里：项目总览与导航
 ├── LICENSING.md                  ← ★ 目录级授权映射（唯一权威）
-├── LICENSES/                     ← 各许可全文（ARDF-NC-1.0 / CERN-OHL-S / Apache / CC-BY）
+├── LICENSES/                     ← 四份许可全文（ARDF-NC-1.0 / CERN-OHL-S / Apache / CC-BY）
+├── NOTICE                        ← 第三方组件声明（发布固件二进制时必须随附）
 ├── CHANGELOG.md                  ← 版本变更记录
 ├── CONTRIBUTING.md               ← 贡献指南
 ├── .editorconfig / .gitattributes / .gitignore

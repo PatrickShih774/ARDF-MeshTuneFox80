@@ -33,6 +33,16 @@
   Personal Access Token 具备 `workflow` scope，故等真正编写 CI YAML 时再一并创建
   （见 [.github/OVERVIEW.md](.github/OVERVIEW.md) §5）。
 - 建立**仓库级脚本区占位**：`scripts/`（构建辅助、发布打包、文档检查、BOM 成本核算）。
+- **放入四份许可全文**（REUSE 风格 `LICENSES/`）：`CERN-OHL-S-2.0.txt`（官方 ohwr 源，13708 B）、
+  `Apache-2.0.txt`（11358 B）、`CC-BY-4.0.txt`（18657 B）、`LicenseRef-ARDF-NC-1.0.txt`（本工程自撰，8084 B）。
+  SHA-256 已登记到 [LICENSES/README.md](LICENSES/README.md) §四，并加 `.gitattributes` 规则
+  `LICENSES/*.txt -text` 保证**许可全文逐字节不被行尾转换**。
+- 新增 **[`NOTICE`](NOTICE)**：第三方组件声明台账（ESP-IDF Apache-2.0、FreeRTOS MIT、
+  mbedTLS Apache-2.0、Unity MIT），并明确 **`NOTICE` 必须随固件二进制一并分发**——
+  闭源不等于可以省略第三方声明。
+- 新增 **[`.gitignore`](.gitignore) 防泄漏护栏**：`software/firmware/`、`**/components/*/src/*.c`、
+  `main/app_main.c`、`sdkconfig.defaults`、`partitions.csv` 及 `hardware/reference/**` 下的
+  第三方源码/图纸类型一律不入库，作为固件源码误入公开仓的最后一道保险。
 
 ### 变更
 
@@ -113,16 +123,24 @@
 
 ### 待办（本轮未完成）
 
-- 从官方来源放入 `LICENSES/` 下三份**标准许可**全文
-  （`CERN-OHL-S-2.0.txt`、`Apache-2.0.txt`、`CC-BY-4.0.txt`），
-  校验后把 SHA-256 登记到 [LICENSES/README.md](LICENSES/README.md) §四。
-- 创建 `NOTICE`：ESP-IDF（Apache-2.0）等第三方声明，**须随固件二进制一并分发**。
-- 首次固件构建并发布 Release：`ardf-node.bin` + 分区表 + `SHA256SUMS`，
-  并在 Release 页面附许可声明与第三方声明。
-- 核对 ATU-100 原始项目许可并记录到
-  [hardware/reference/README.md](hardware/reference/README.md)。
-- 自定义许可 `LicenseRef-ARDF-NC-1.0` 的「商业性使用」边界需律师复核。
+- **首次固件构建并发布 Release**（在私有仓执行）：`ardf-node.bin` + 分区表 + `SHA256SUMS`，
+  并在 Release 页面**附 [`NOTICE`](NOTICE) 与固件许可全文**（Apache-2.0/MIT 的硬性要求）。
+- 自定义许可 `LicenseRef-ARDF-NC-1.0` 的「商业性使用」边界需律师复核（**商业化前必须**）。
 - 按 [docs/README.md](docs/README.md) 的待补清单补齐 `09` ~ `14` 号文档。
+- 各源文件添加 SPDX 标识符（随实现推进）。
+
+### 已完成（本轮收尾）
+
+- ✅ 四份许可全文放入 `LICENSES/` 并登记 SHA-256。
+- ✅ 创建 [`NOTICE`](NOTICE) 第三方声明台账。
+- ✅ **核对 ATU-100 原始许可** → 结论：`Dfinitski/N7DDC-ATU-100-*` **无许可（保留所有权利）**，
+  原版仓库 `n7ddc/ATU-100` **链接已失效（HTTP 404）**。据此：
+  - 明确「**只借鉴思想/方法/电路拓扑，严禁复制任何内容**」的处理规则；
+  - `hardware/reference/` 改为**只放本工程自撰说明**，不放任何上游材料；
+  - 结论写入 [hardware/reference/README.md](hardware/reference/README.md) §2、
+    [docs/08](docs/08-licensing-and-compliance.md) §4.1、[LICENSING.md](LICENSING.md) §7.1。
+- ✅ `.gitignore` 加防泄漏护栏，并修正其中已过时的内容
+  （已撤回的中文名、`docs/02-仓库目录规范.md` 旧文件名、`software/firmware` 旧路径）。
 
 ---
 

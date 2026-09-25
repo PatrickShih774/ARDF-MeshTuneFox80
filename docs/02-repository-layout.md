@@ -27,6 +27,7 @@
 | `README.md` | GitHub 仓库首页强制渲染（查找顺序：根 → `.github/` → `docs/`） |
 | `LICENSING.md` | 多许可仓库的授权入口（见 [08-许可证与合规](08-licensing-and-compliance.md) §1） |
 | `LICENSES/` | 各许可全文（REUSE 风格；GitHub 明确"许可文件必须在仓库根目录才能随克隆/下载分发"） |
+| `NOTICE` | 第三方组件声明（ESP-IDF 等）。Apache-2.0/MIT 要求分发时保留声明，**发布固件二进制时必须随附** |
 | `CHANGELOG.md` | 发布工具（git-cliff / standard-version / release-drafter）默认读根目录 |
 | `CONTRIBUTING.md` | GitHub 在新建 Issue/PR 页面自动挂链接（查找顺序：`.github/` → 根 → `docs/`） |
 | `.editorconfig` / `.gitattributes` / `.gitignore` | Git 与编辑器全局配置，只能放根目录 |
@@ -63,17 +64,18 @@ ARDF-MeshTuneFox80/
 │
 ├── README.md                                  ✅ 📄 项目总览与导航
 ├── LICENSING.md                               ✅ 📄 ★ 目录级授权映射（唯一权威）
+├── NOTICE                                     ✅ 📄 第三方组件声明（随固件二进制分发）
 ├── CHANGELOG.md                               ✅ 📄 版本变更记录
 ├── CONTRIBUTING.md                            ✅ 📄 贡献指南
-├── LICENSES/                                  ✅    各许可全文（REUSE 风格）
-│   ├── README.md                              ✅ 📄 全文获取方式与校验
-│   ├── LicenseRef-ARDF-NC-1.0.txt             ⬜    固件二进制（仅业余无线电非商业用途）
-│   ├── CERN-OHL-S-2.0.txt                     ⬜    硬件
-│   ├── Apache-2.0.txt                         ⬜    中控 / 协议 / 工具 / 脚本
-│   └── CC-BY-4.0.txt                          ⬜    文档 / 验证报告
+├── LICENSES/                                  ✅    四份许可全文（REUSE 风格）
+│   ├── README.md                              ✅ 📄 全文获取、校验与 SHA-256 登记
+│   ├── LicenseRef-ARDF-NC-1.0.txt             ✅    固件二进制（仅业余无线电非商业用途）
+│   ├── CERN-OHL-S-2.0.txt                     ✅    硬件
+│   ├── Apache-2.0.txt                         ✅    中控 / 协议 / 工具 / 脚本
+│   └── CC-BY-4.0.txt                          ✅    文档 / 验证报告
 ├── .editorconfig                              ✅    编辑器统一配置
 ├── .gitattributes                             ✅    Git 属性（LF / 二进制标记）
-├── .gitignore                                 ✅    忽略规则
+└── .gitignore                                 ✅    忽略规则（含固件防泄漏护栏）
 │
 ├── docs/                                      【跨专业文档】文件名英文，标题与内容中文
 │   ├── README.md                              ✅ 📄 文档索引与仲裁规则
@@ -320,7 +322,7 @@ ARDF-MeshTuneFox80/
 
 | ❌ 禁止 | 原因 |
 |--------|------|
-| 在仓库根目录随手放文件 | 根目录只允许 README / LICENSING / LICENSES/ / CHANGELOG / CONTRIBUTING / 点文件（见 §1 表格） |
+| 在仓库根目录随手放文件 | 根目录只允许 README / LICENSING / LICENSES/ / NOTICE / CHANGELOG / CONTRIBUTING / 点文件（见 §1 表格） |
 | 在 `docs/` 放模块专属说明 | 模块说明归模块目录 |
 | 手改 `software/protocol/generated/`（规划中，待创建） | 该目录由脚本生成，改动会被覆盖 |
 | 提交 `hardware/datasheets/*.pdf` | 体积大；用 `INDEX.md` 登记外部归档位置与哈希 |

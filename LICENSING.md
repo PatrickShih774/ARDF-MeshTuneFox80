@@ -134,14 +134,20 @@
 
 ### 7.1 外部参考设计（不适用本项目许可）
 
-`hardware/reference/` 下的内容来自外部项目，**版权归各自原作者**：
+`hardware/reference/` 下的内容来自外部项目，**版权归各自原作者**。**2026-09 经 GitHub API 实测的许可状态：**
 
-| 来源 | 链接 | 状态 |
-|------|------|------|
-| N7DDC-ATU-100-mini-and-extended-boards (Dfinitski) | https://github.com/Dfinitski/N7DDC-ATU-100-mini-and-extended-boards | ⚠️ **许可待核对** |
-| ATU-100 by N7DDC | https://github.com/n7ddc/ATU-100 | ⚠️ 待核对 |
+| 来源 | 链接 | 许可状态 |
+|------|------|---------|
+| N7DDC-ATU-100-mini-and-extended-boards (Dfinitski) | https://github.com/Dfinitski/N7DDC-ATU-100-mini-and-extended-boards | 🔴 **无许可**（`license: null`，根目录无 `LICENSE`/`COPYING`）= 保留所有权利 |
+| ~~ATU-100 by N7DDC~~ | ~~https://github.com/n7ddc/ATU-100~~ | 🔴 **HTTP 404**，作者账号已不存在，链接失效 |
+| SignalSlinger (OpenARDF) | https://github.com/openardf/signalslinger | ✅ `MIT`，可自由参考与再分发 |
 
-> ⚠️ **待办**：投板与实现前必须逐文件确认原始许可条款；若无明确许可，默认"保留所有权利"。本项目**只借鉴算法思想与公开电路拓扑**，禁止逐行复制代码或设计文件。详见 [docs/08](docs/08-licensing-and-compliance.md) §4.1。
+> 🔴 **无许可 ≠ 可自由使用。** 因此对 ATU-100 系列：
+> **只借鉴思想、方法与公开电路拓扑**（版权保护表达，不保护思想），
+> **严禁复制、翻译、改写其任何代码、图纸或文档正文**；
+> `hardware/reference/` 下**只放本工程自撰的说明文字**，不放任何上游材料。
+> 详见 [`hardware/reference/README.md`](hardware/reference/README.md) §2.1 与
+> [docs/08](docs/08-licensing-and-compliance.md) §4.1。
 
 ### 7.2 第三方依赖
 
@@ -152,7 +158,7 @@
 | mbedTLS（随 ESP-IDF） | Apache-2.0 | — |
 | Unity（随 ESP-IDF） | MIT | 仅测试用，不进固件镜像 |
 
-> ⚠️ **注意**：ESP-IDF 为 `Apache-2.0`，其**版权声明与 NOTICE 必须随固件二进制一并提供**。本项目采用闭源固件时，仍需在 Release 页面或固件的「关于」信息中保留这些声明。`NOTICE` 文件待创建。
+> ⚠️ **注意**：ESP-IDF 为 `Apache-2.0`，其**版权声明与 NOTICE 必须随固件二进制一并提供**。本项目采用闭源固件时，仍需在 Release 页面或固件的「关于」信息中保留这些声明。完整台账见仓库根 [`NOTICE`](NOTICE)。
 
 ---
 

@@ -1,0 +1,95 @@
+ARDF-MeshTuneFox80 — 第三方组件声明（NOTICE）
+================================================================================
+
+本文件列出本项目分发时涉及的第三方组件及其许可与版权声明。
+
+🔴 **重要**：本固件为闭源专有软件，依 `LicenseRef-ARDF-NC-1.0`
+（ARDF 业余无线电非商业许可 1.0，全文见 LICENSES/LicenseRef-ARDF-NC-1.0.txt）
+发布，**仅限业余无线电非商业用途**，且**不授予源代码**。
+
+但**闭源不等于可以省略第三方声明**。以下组件的许可（Apache-2.0 / MIT）
+虽然不是要求公开源码的强互惠许可，但**都要求保留版权声明与许可文本**。
+本文件必须**随固件二进制一并分发**（在 Release 页面、固件「关于」信息或随附文档中提供）。
+
+--------------------------------------------------------------------------------
+一、本项目自身的授权
+--------------------------------------------------------------------------------
+
+| 区域 | 许可（SPDX） | 说明 |
+|------|-------------|------|
+| `hardware/` | `CERN-OHL-S-2.0` | 硬件设计，强互惠 |
+| `docs/`、`validation/` | `CC-BY-4.0` | 文档与验证报告 |
+| `software/master-console/`、`software/protocol/`、`software/tools/`、`scripts/` | `Apache-2.0` | 工具链与上位机 |
+| **固件源码** | `LicenseRef-ARDF-NC-1.0` | **私有仓，不对外授权** |
+| **固件二进制** | `LicenseRef-ARDF-NC-1.0` | 仅限业余无线电非商业用途 |
+
+映射的唯一权威是 [LICENSING.md](LICENSING.md)。
+
+--------------------------------------------------------------------------------
+二、随固件二进制分发的第三方组件
+--------------------------------------------------------------------------------
+
+### 1. ESP-IDF
+
+- 名称：Espressif IoT Development Framework (ESP-IDF)
+- 版本：v5.x（目标芯片 ESP32-C3）
+- 许可：Apache License 2.0
+- 版权：Copyright (c) 2010-2024 Espressif Systems (Shanghai) CO LTD
+- 许可全文：https://www.apache.org/licenses/LICENSE-2.0
+- 上游：https://github.com/espressif/esp-idf
+- 义务：Apache-2.0 第 4 条 —— 分发目标代码时须随附本许可副本、
+  保留版权/专利/商标/归属声明，并在存在 NOTICE 文件时一并提供。
+
+### 2. FreeRTOS（随 ESP-IDF 分发）
+
+- 许可：MIT License
+- 版权：Copyright (C) 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+- 上游：https://www.freertos.org/
+- 义务：保留版权声明与许可文本。
+
+### 3. mbedTLS（随 ESP-IDF 分发）
+
+- 用途：HMAC-SHA256、AES-CCMP 等密码学原语
+- 许可：Apache License 2.0
+- 版权：Copyright The Mbed TLS Contributors
+- 上游：https://github.com/Mbed-TLS/mbedtls
+- 义务：同 ESP-IDF。
+
+### 4. Unity（**仅测试用，不进入固件镜像**）
+
+- 许可：MIT License
+- 版权：Copyright (c) 2007-2024 Mike Karlesky, Mark VanderVoord, Greg Williams
+- 上游：https://github.com/ThrowTheSwitch/Unity
+- 说明：仅用于单元测试工程 `test/`，**不会被链接进发布的固件二进制**，
+  故不属于随二进制分发的组件；此处列出以保持台账完整。
+
+--------------------------------------------------------------------------------
+三、仅作参考、**未被本项目采用**的第三方项目
+--------------------------------------------------------------------------------
+
+以下项目的**任何内容都未被复制进本项目**，仅作为**思想/方法层面的参考**，
+因此其许可条款不构成本项目的分发义务。
+
+| 项目 | 链接 | 许可状态 | 本项目的使用方式 |
+|------|------|---------|----------------|
+| N7DDC-ATU-100-mini-and-extended-boards (Dfinitski) | https://github.com/Dfinitski/N7DDC-ATU-100-mini-and-extended-boards | 🔴 **无许可**（保留所有权利） | **仅参考调谐搜索思路与继电器低边驱动拓扑**；未复制任何代码、图纸或文档 |
+| ~~ATU-100 by N7DDC~~ | ~~https://github.com/n7ddc/ATU-100~~ | 🔴 **链接已失效（404）** | 同上 |
+| SignalSlinger (OpenARDF) | https://github.com/openardf/signalslinger | ✅ MIT | 仅作为同类开源项目的设计参考，未引入代码 |
+| ARDF_80M_3.5MHZ | https://oshwhub.com/patrickshih/ardf_80m_fox | 见平台标注 | 本项目的工程基座（原始硬件方案） |
+| THE TANDEM MATCH — An Accurate Directional Wattmeter (KI6WX, QST 1987-01) | https://www.qsl.net/kl7jef/Directional%20Wattmeter.pdf | 公开文献 | Tandem Match 定向耦合器的**理论来源**，引用其原理与公式 |
+
+> 关于 ATU-100 边界的完整说明见 [hardware/reference/README.md](hardware/reference/README.md) §2.1。
+
+--------------------------------------------------------------------------------
+四、维护说明
+--------------------------------------------------------------------------------
+
+1. **新增依赖时**必须：核对许可 → 判断是否与 `LicenseRef-ARDF-NC-1.0` 兼容 →
+   登记到本文件与 [docs/08-licensing-and-compliance.md](docs/08-licensing-and-compliance.md) §4。
+2. **发布 Release 时**必须：在 Release 说明中附上本文件（或明确指向本文件），
+   否则违反 Apache-2.0 / MIT 的声明保留义务。
+3. 本文件不构成法律意见。
+
+--------------------------------------------------------------------------------
+                               NOTICE 结束
+--------------------------------------------------------------------------------
