@@ -21,12 +21,23 @@
 
 [CmdletBinding()]
 param(
-    # 默认按「容器布局」推断：本脚本位于 <容器>/ARDF-MeshTuneFox80-hardware/scripts/
-    [string]$PublicRepo  = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path,
-    [string]$PrivateRepo = (Join-Path (Split-Path (Resolve-Path (Join-Path $PSScriptRoot '..')).Path -Parent) 'ARDF-MeshTuneFox80-firmware')
+    # 留空则按「容器布局」自动推断：本脚本位于
+    #   <容器>/ARDF-MeshTuneFox80-hardware/scripts/
+    # 对应私有仓为 <容器>/ARDF-MeshTuneFox80-firmware
+    [string]$PublicRepo  = '',
+    [string]$PrivateRepo = ''
 )
 
 $ErrorActionPreference = 'Stop'
+
+# ⚠️ $PSScriptRoot 在 param() 默认值求值时**尚不可用**（PowerShell 的经典陷阱），
+#    因此路径必须在此处解析，不能写在 param 默认值里。
+if ([string]::IsNullOrEmpty($PublicRepo)) {
+    $PublicRepo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+}
+if ([string]::IsNullOrEmpty($PrivateRepo)) {
+    $PrivateRepo = Join-Path (Split-Path $PublicRepo -Parent) 'ARDF-MeshTuneFox80-firmware'
+}
 $violations = New-Object System.Collections.Generic.List[string]
 
 function Get-TrackedFiles {
