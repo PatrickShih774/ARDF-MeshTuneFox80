@@ -29,13 +29,21 @@
 ## 4. 接口
 
 - 对 `core-board`：2.54mm 排针排母
-- I²C：Si5351 配置（频率、输出驱动）
-- SPI/并口：12864 LCD 显示
-- GPIO 输入：EC11 A/B 相与按键、双按键
-- GPIO 输出：蜂鸣器、功放键控（A1A 方波）、升压模块 PWM（功率档位）、6 路 ATU 继电器驱动、LCD 复位/背光
-- ADC：SWR 前向/反射检波电压
-- 供电：3.3V 数字轨（独立 π 型 RC 滤波）
-- 引脚分配以 `docs/05-hw-sw-interface-contract.md` 为唯一权威来源
+- **I²C（GPIO4/5）**：Si5351（频率与输出驱动配置，`0x60`）· TCA9535（I/O 扩展器，`0x20`）
+- **SPI2（GPIO6/7 + DC GPIO10）**：**ST7567 液晶**（128×64，**仅 SPI**）
+  - `CS` 接 GND（总线唯一从机）· `RST` 与板载复位共用 · `DC` 直连 GPIO10
+- **ADC**：SWR 前向/反射检波（GPIO0/GPIO1）· 电池电压分压（GPIO3，`22k/9.1k`）
+- **GPIO 输入**：EC11 A/B 相（GPIO2/GPIO8，**strapping**，须 10 kΩ 上拉）· EC11 按键（GPIO13，中断驱动）· 板载 BOOT 按键（GPIO9）
+- **GPIO 输出**：升压模块 PWM → 功放功率档位（GPIO12，LEDC）
+- **经 TCA9535 扩展（7/16 位）**：
+  - **输出**：ATU 6 路继电器（经 **ULN2003A** 达林顿驱动，COM 接 +12 V）· LCD 背光开关
+  - **预留 9 位**：蜂鸣器、状态灯、散热风扇、天线泄放继电器等
+- **CW 键控**：由 **Si5351 使能命令**（I²C 写 `CLKx_DIS`）实现，**不占用 GPIO**
+- **功放驱动**：SN74ACT244PWR（5 V 供电，TTL 输入阈值，3.3 V 直驱）
+- **已拆除**：板载 LED D4（GPIO12）/ D5（GPIO13）——理由见 [ADR-0008](../../docs/adr/ADR-0008-st7567-spi-and-pa-keying.md) §8.3
+- **供电**：3.3V 数字轨（独立 π 型 RC 滤波）
+- 🔴 **引脚分配以 [`docs/05-hw-sw-interface-contract.md`](../../docs/05-hw-sw-interface-contract.md) §2 为唯一权威来源**；
+  固件侧唯一来源是私有固件仓的 `components/bsp_board/include/board_pins.h`
 
 ## 5. 目录内容
 
