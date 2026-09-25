@@ -51,7 +51,7 @@ ESP32-C3 标称 22 个 GPIO，但实际可用受限：
 
 见 [ADR-0004](adr/ADR-0004-lcd12864-on-shared-i2c.md)：
 
-- **LCD 走 I2C**（ST7567 支持 I2C 模式），与 Si5351、TCA9535 共享总线 → 释放 4 个 GPIO。
+- **LCD 走 SPI2 独占**（ST7567 仅支持 SPI）：`CS` 接 GND（总线唯一从机）、`RST` 与板复位共用 → 省 2 个 GPIO；I²C 总线只留 Si5351 与 TCA9535。
 - **全部慢速 IO 挂 TCA9535**（16 位 I2C 扩展器）→ 释放 11 个 GPIO。
 - **稀缺 GPIO 留给**：ADC（GPIO0–4）、CW 键控（GPIO7）、功放功率 PWM（GPIO8）。
 
@@ -73,7 +73,7 @@ Si5351（I²C）· SN74ACT244PWR（功放驱动）· TCA9535（I/O 扩展）· U
 | GPIO9 | ❌ | BOOT 按键，上电前不可下拉（启动后可作 `KEY_USER`） |
 | GPIO10 | ✅ | |
 | GPIO11 | ❌ | VDD_SPI；**已决定不解锁 eFuse** |
-| GPIO12、GPIO13 | ✅ | DIO 模式下未接 flash；⚠️ 板载 LED D4/D5 |
+| GPIO12、GPIO13 | ✅ | DIO 模式下未接 flash；板载 LED D4/D5 **已拆除** |
 | GPIO18、GPIO19 | ❌ | **原生 USB**（新款） |
 | GPIO20、GPIO21 | ❌ | UART0 |
 
@@ -421,7 +421,7 @@ VBAT ──[R1 22k]──┬──[R2 9.1k]── GND
 |---|------|---------|--------|
 | 1 | GPIO 分配表最终确认 | ✅ **已冻结（2026-09-25）**：板卡 = 合宙 LuatOS ESP32C3-CORE 新款（原生 USB）；GPIO11 不解锁 eFuse；分配见 §2.1–§2.6 | 硬件 |
 | 2 | TCA9535 I2C 地址 | 需确认 A2/A1/A0 实际接法 | 硬件 |
-| 3 | LCD 走 I2C 还是 SPI | 需实测 I2C 刷新率是否满足 UI 需求 | 硬件 + 软件 |
+| 3 | ~~LCD 走 I2C 还是 SPI~~ | ✅ **已定：SPI 独占**（ST7567 仅 SPI），见 [ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md) | 硬件 + 软件 |
 | 4 | Tandem Match `R_sense` 最终值 | 需 NanoVNA 微调（初值 1 kΩ） | 硬件 |
 | 5 | 检波器件选型（1N5711 / HSMS-2850 / 并行） | 需 [stage-3](../validation/stage-3-coupler-detector/README.md) 实测对照 | 硬件 |
 | 6 | 是否需要 LM358 运放级 | 需 [stage-4](../validation/stage-4-opamp/README.md) 对照验证 | 硬件 |

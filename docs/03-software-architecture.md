@@ -302,12 +302,12 @@ components/<组件名>/
 
 ### 4.6 显示刷新预算
 
-LCD 走 I2C 共享总线（[ADR-0004](adr/ADR-0004-lcd12864-on-shared-i2c.md)）：400 kHz 下全屏 1024 字节约 25 ms。
+LCD 走 SPI2 独占（[ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)）：`CS` 接 GND、`RST` 与板复位共用；全屏 1024 字节本体传输约 8 ms（1 MHz），无 I²C 开销。
 因此：
 
 - UI 必须采用**局部刷新**（只重绘变化区域）。
 - I2C 总线需**互斥**（`xSemaphoreTake`），并给 LCD 传输设置低于继电器写入的优先级或直接串行化在同一任务。
-- 若实测刷新不足，备选方案为 SPI 模式 LCD（预留 GPIO9/10），届时重写 `drv_lcd12864` 的传输层即可。
+- **现行方案已是 SPI 独占**（ST7567，见 [ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)）；`drv_lcd12864` 的传输层直接实现 SPI2。
 
 ---
 

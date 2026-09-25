@@ -359,7 +359,7 @@ V<主>.<次>
 | 6 | 功放地与信号地耦合 | Si5351 相噪恶化、ADC 误判 | 单点接地；四层板地平面 | `docs/13-emc-and-spurious-suppression.md`（待补） |
 | 7 | T106-6 磁环温升 | 磁芯参数漂移、失谐 | 0.5 mm 线径；表面温度 <70 °C 判据 | [stage-2](../validation/stage-2-matching-network/README.md) |
 | 8 | 模块连接器引入插损 | 输出功率下降 | 连接器规格筛选；[stage-2](../validation/stage-2-matching-network/README.md) 插入损耗判据 | — |
-| 9 | GPIO 数量紧张 | 功能无法全部实现 | TCA9535 + LCD 走 I2C（[ADR-0004](adr/ADR-0004-lcd12864-on-shared-i2c.md)） | [05-接口契约](05-hw-sw-interface-contract.md) |
+| 9 | GPIO 数量紧张 | 功能无法全部实现 | TCA9535 扩展器 + LCD `CS` 接地/`RST` 共用 + **CW 键控走 Si5351 使能**（[ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)） | [05-接口契约](05-hw-sw-interface-contract.md) |
 | 10 | 天线部署环境差异大 | 匹配失败 | 部署后必须重新调谐；64 组合覆盖实测负载 | [stage-0](../validation/stage-0-rf-frontend/README.md) |
 
 ---
