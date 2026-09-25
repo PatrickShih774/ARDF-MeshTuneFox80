@@ -1,0 +1,39 @@
+# 默认：文本文件统一使用 LF
+* text=auto eol=lf
+
+# ---- 许可全文：禁止任何行尾转换 ----
+# 许可全文是法律文本，必须与官方来源**逐字节一致**。
+# `-text` 关闭 EOL 归一化与文本检测，保证原始字节（含 CRLF）原样入库。
+# 注意：CERN-OHL-S-2.0 官方版本身就是 CRLF，其余三份是 LF——
+# 各自的原始行尾都必须保留，SHA-256 才与官方版本可比对。
+LICENSES/*.txt -text
+
+# ---- 二进制文件标记 ----
+*.pdf   binary
+*.zip   binary
+*.png   binary
+*.jpg   binary
+*.stl   binary
+*.step  binary
+*.kicad_pcb binary
+*.kicad_sch binary
+*.lay6  binary
+
+# ---- Gerber 与钻孔输出：二进制且不参与 diff ----
+# Gerber 目录整体标记（目录内的全部文件）
+hardware/**/gerber/** binary -diff
+hardware/**/Gerber/** binary -diff
+*.gbr   binary -diff
+*.gbl   binary -diff
+*.gtl   binary -diff
+*.gbs   binary -diff
+*.gts   binary -diff
+*.gbo   binary -diff
+*.gto   binary -diff
+*.drl   binary -diff
+*.nc    binary -diff
+
+# ---- 文档 ----
+*.md diff=markdown
+
+# 说明：中文文档统计不设置特殊项。
