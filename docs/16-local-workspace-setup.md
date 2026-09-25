@@ -39,7 +39,51 @@ C:\DeepseekProject\ARDF-MeshTuneFox80\          ← 容器（无 .git）
 
 ---
 
-## 2. 从旧布局迁移（一次性）
+## 2. ✅ 迁移已完成（2026-09-25）
+
+**迁移结果**：
+
+| 仓 | 本地路径 | HEAD | 文件数 | 状态 |
+|----|---------|------|--------|------|
+| 公开 | `C:\DeepseekProject\ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-hardware` | `83cc2f6` | 101 | clean |
+| 私有 | `C:\DeepseekProject\ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-firmware` | `ef8fa54` | 138 | clean |
+
+本节保留迁移步骤作为**历史记录**，并记录一个**必须避免的严重陷阱**。
+
+---
+
+### 2.1 🔴 陷阱：`Move-Item` 失败后**不要**用 `Remove-Item` 回滚
+
+**实际踩到的坑**：第一次迁移时 `Move-Item` 报"没有足够的访问权限"而失败，
+当时的回滚逻辑执行了 `Remove-Item -Recurse -Force <临时容器>`。
+
+**后果**：`Move-Item` 在目录上是**递归搬一部分再失败**的——它已经把 `.git/` 的全部内容和
+仓库根目录的 8 个文件搬进了临时容器，失败后我的回滚**把那些文件永久删除了**。
+结果公开仓的 `.git` 变成空目录，仓库根文件全部消失。
+
+**正确做法**：
+
+| ❌ 错误 | ✅ 正确 |
+|---------|--------|
+| 失败后 `Remove-Item -Recurse -Force <临时容器>` | **先检查临时容器里有什么**；非空说明发生了部分搬移，应把内容**搬回原位**而不是删除 |
+| 假设 `Move-Item` 是原子的 | 目录的 `Move-Item` **可能部分完成**；要么用 `robocopy /MOVE`（可重入），要么每一步都先核验目标 |
+| 只靠文件系统操作做大范围搬移 | **先确保远端是最新的**（`git push` + 工作区 clean），这样任何损坏都能 `git clone` 恢复 |
+
+**本次恢复方式**（已验证有效）：
+
+```powershell
+# 前提：删除前刚 push 过，GitHub 上有完整副本
+Remove-Item -Recurse -Force 'C:\DeepseekProject\ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-hardware'
+cd 'C:\DeepseekProject\ARDF-MeshTuneFox80'
+git clone https://github.com/PatrickShih774/ARDF-MeshTuneFox80.git ARDF-MeshTuneFox80-hardware
+# 校验：git ls-files 计数 == 文件系统计数，git status 为 clean
+```
+
+> **教训**：做大范围文件搬移前，**先 push**。"远端是最新的"是唯一的可靠退路。
+
+---
+
+### 2.2 迁移步骤（历史记录，已执行完毕）
 
 旧布局：
 
@@ -49,30 +93,38 @@ C:\DeepseekProject\
 └── ARDF-MeshTuneFox80-firmware\   ← 私有仓（兄弟目录）
 ```
 
-**迁移前必须满足**：没有任何进程把旧路径当作工作目录。
-实际操作建议：**退出 DSH（或至少不要在旧会话里执行）**，用普通 PowerShell 窗口执行。
+**实际可用的步骤**（比原方案更安全——**只用重命名，不做跨目录搬移**）：
 
 ```powershell
 cd C:\DeepseekProject
 
-# ① 建临时容器，先把两个仓搬进去
-New-Item -ItemType Directory -Force -Path 'ARDF-MeshTuneFox80-new' | Out-Null
-Move-Item 'ARDF-MeshTuneFox80'          'ARDF-MeshTuneFox80-new\ARDF-MeshTuneFox80-hardware'
-Move-Item 'ARDF-MeshTuneFox80-firmware' 'ARDF-MeshTuneFox80-new\ARDF-MeshTuneFox80-firmware'
+# ① 公开仓先纯改名（Rename-Item 比 Move-Item 可靠，实测可行）
+Rename-Item 'ARDF-MeshTuneFox80' 'ARDF-MeshTuneFox80-hardware'
 
-# ② 临时容器改名为正式容器名
-Rename-Item 'ARDF-MeshTuneFox80-new' 'ARDF-MeshTuneFox80'
+# ② 建容器
+New-Item -ItemType Directory -Force -Path 'ARDF-MeshTuneFox80' | Out-Null
 
-# ③ 验证
-Get-ChildItem C:\DeepseekProject\ARDF-MeshTuneFox80
-Test-Path C:\DeepseekProject\ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-hardware\.git
-Test-Path C:\DeepseekProject\ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-firmware\.git
+# ③ 把两个仓移进容器（若失败，把已移入的移回，不要删除）
+Move-Item 'ARDF-MeshTuneFox80-hardware' 'ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-hardware'
+Move-Item 'ARDF-MeshTuneFox80-firmware' 'ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-firmware'
 ```
 
-**若 `Move-Item` 报"文件正被另一进程使用"**：说明仍有进程以旧路径为工作目录（最常见是 DSH 自身或某个终端窗口）。
-关闭它们后重试即可——**这个操作是可重入的**：只有两个 `Move-Item` 都成功后才继续第 ② 步。
+**每一步之后都要核验**：
 
-### 迁移后自检
+```powershell
+Get-ChildItem C:\DeepseekProject\ARDF-MeshTuneFox80
+foreach ($p in @('ARDF-MeshTuneFox80-hardware','ARDF-MeshTuneFox80-firmware')) {
+  $full = "C:\DeepseekProject\ARDF-MeshTuneFox80\$p"
+  Write-Output "$p : git=$(git -C $full rev-parse --short HEAD 2>&1) files=$(@(git -C $full ls-files).Count)"
+}
+```
+
+**判据**：两个仓都能 `git rev-parse` 成功，且 `git ls-files` 计数等于文件系统计数。
+
+**若 `Move-Item` 报权限/占用错误**：说明仍有进程以旧路径为工作目录（最常见是 DSH 自身或终端窗口）。
+关闭后重试——**注意此时可能已发生部分搬移，务必先检查而不是删除**（见 2.1）。
+
+### 2.3 迁移后自检（已执行通过）
 
 ```powershell
 $h = 'C:\DeepseekProject\ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-hardware'
@@ -80,15 +132,18 @@ $f = 'C:\DeepseekProject\ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-firmware'
 
 foreach ($p in @($h,$f)) {
   Write-Output "--- $p ---"
-  git -C $p log --oneline -1
-  git -C $p remote -v
-  git -C $p status --short
+  Write-Output ("  HEAD   : " + (git -C $p log --oneline -1))
+  Write-Output ("  提交数 : " + (git -C $p rev-list --count HEAD))
+  Write-Output ("  remote : " + (git -C $p remote get-url origin))
+  Write-Output ("  工作区 : " + $(if (git -C $p status --porcelain) { 'dirty' } else { 'clean' }))
+  Write-Output ("  ls-files / 文件系统: " + @(git -C $p ls-files).Count + " / " +
+                (Get-ChildItem -Recurse -Force -File $p | Where-Object { $_.FullName -notmatch '\\\.git\\' }).Count)
 }
-git -C $h rev-parse HEAD     # 应为 545f858 或其后继
-git -C $f rev-parse HEAD     # 应为 ef8fa54 或其后继
 ```
 
-**两个仓都不应显示任何未提交改动。**
+**判据**：两个仓 `git` 可用、工作区 clean、且 **`git ls-files` 计数 == 文件系统计数**。
+
+**本次实测结果**：`-hardware` = 101/101（`83cc2f6`，6 提交）；`-firmware` = 138/138（`ef8fa54`，2 提交）。
 
 ---
 
@@ -236,11 +291,12 @@ Release 发布在**公开仓**（`ARDF-MeshTuneFox80-hardware` 对应的 GitHub 
 
 | 项 | 公开仓 | 私有仓 |
 |----|--------|--------|
+| 本地路径 | `…\ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-hardware` | `…\ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-firmware` |
 | GitHub | `PatrickShih774/ARDF-MeshTuneFox80`（public） | `PatrickShih774/ARDF-MeshTuneFox80-firmware`（private） |
-| HEAD | `545f858` | `ef8fa54` |
-| 文件数 | 100 | 138 |
+| HEAD | `83cc2f6` | `ef8fa54` |
+| 提交数 | 6 | 2 |
+| 文件数（ls-files / 文件系统） | 101 / 101 | 138 / 138 |
 | 工作区 | clean | clean |
-| 历史 | 4 提交，单一干净谱系 | 2 提交 |
 
 **固件仓状态**：ESP-IDF 工程骨架已建成（构建文件 + 28 个组件 `CMakeLists.txt` + 独立 `test/`），
 但 **28 个组件均无实现**、`app_main()` 只打日志；**尚未实机验证过 `idf.py build`**（建立环境未装 ESP-IDF）。
