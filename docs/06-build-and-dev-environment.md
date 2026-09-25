@@ -8,7 +8,7 @@
 
 | 用途 | 工具 | 版本要求 |
 |------|------|---------|
-| 固件构建 | **ESP-IDF** | **v5.1 及以上（推荐 v5.3 / v5.5）** |
+| 固件构建 | **ESP-IDF** | **`v5.3.6`（本项目选用，见 §12.7）**；v5.1+ 均可 |
 | 目标芯片 | ESP32-C3（RISC-V） | — |
 | 工具链 | `riscv32-esp-elf-gcc` | 随 ESP-IDF 安装（14.2.0 系列） |
 | 构建系统 | CMake | ≥3.16 |
@@ -30,7 +30,7 @@
 
 ```powershell
 # 1) 获取安装器
-git clone -b v5.3 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
+git clone -b v5.3.6 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
 cd C:\esp\esp-idf
 
 # 2) 安装工具链（仅 esp32c3，节省时间与磁盘）
@@ -43,7 +43,7 @@ cd C:\esp\esp-idf
 ### 2.2 Linux / macOS
 
 ```bash
-git clone -b v5.3 --recursive https://github.com/espressif/esp-idf.git ~/esp/esp-idf
+git clone -b v5.3.6 --recursive https://github.com/espressif/esp-idf.git ~/esp/esp-idf
 cd ~/esp/esp-idf
 ./install.sh esp32c3
 . ./export.sh
@@ -379,7 +379,7 @@ winget install Python.Python.3.12
 py -3.12 --version
 
 # ② 克隆 ESP-IDF（推荐 v5.3；分支可换 v5.5）
-git clone -b v5.3 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
+git clone -b v5.3.6 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
 
 # ③ 只装 esp32c3 工具链（省时间与磁盘）
 cd C:\esp\esp-idf
@@ -430,3 +430,41 @@ idf.py build
 ESP32-C3 用**内置 USB-JTAG**（GPIO18/19），无需额外调试器。
 Core Dump 需先在 `sdkconfig.defaults` 开启 `CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y` 等项。
 完整操作见**用户级技能 `esp-idf`**（`~/.dsh/skills/esp-idf/SKILL.md`）。
+
+### 12.7 版本选择（2026-09-25 经 GitHub API 实测）
+
+| ESP-IDF 版本 | 状态 | 对 ESP32-C3 |
+|-------------|------|------------|
+| `v4.4` | 已停止维护（LTS 到期） | 曾支持 |
+| `v5.1.7` | 维护中（2026-01-27） | ✅ 支持 |
+| **`v5.3.6`** | **维护中（2026-09-15）← 本项目选用** | ✅ 支持 |
+| `v5.4.4` | 维护中（2026-04-17） | ✅ 支持 |
+| `v5.5.5` | 维护中（2026-07-17） | ✅ 支持 |
+| `v6.0.3` | 已发布（2026-09-02） | ✅ 支持 |
+| `v6.1` | 最新稳定（2026-08-27） | ✅ 支持（`components/soc/esp32c3` 存在） |
+
+**为什么选 `v5.3.6`**：
+
+1. 本工程的 `sdkconfig.defaults` 是**逐项对照 `v5.1.4` 的 Kconfig 源码**核对过的，
+   `v5.3` 与基线同属 v5 早期分支，**符号名漂移风险最小**；
+2. 是 `v5.3` 分支的**最新补丁**，仍在维护；
+3. **暂不选 `v6.x`**：v5 → v6 存在破坏性变更，而本工程的骨架是按 v5.x 写的，
+   且从未实机验证过构建——先在最稳的版本上跑通，再评估升级。
+
+**不要选**：`v4.x`（已停止维护，且本项目用 v5.x API）、`master`（开发分支，不稳定）、
+`v6.x-rc*` / `*-beta*`（预览版）。
+
+### 12.8 ⚠️ 引用名（ref）的坑
+
+ESP-IDF 的版本引用有两种形态，**别混淆**：
+
+| 形态 | 例子 | HTTP 实测 | `git clone -b` 是否可用 |
+|------|------|----------|----------------------|
+| **标签（tag）** | `v5.3`、`v5.3.6`、`v5.5.5` | ✅ 存在 | ✅ 可（**固定在某次发布，不会动**） |
+| **分支（branch）** | `release/v5.3`、`release/v5.5` | ✅ 存在 | ✅ 可（**会移动，始终是最新补丁**） |
+| 裸 `v5.3` 当分支查 | `branches/v5.3` | ❌ 404 | — |
+
+**建议用标签**（如 `v5.3.6`）以保证**可复现**；若想始终拿最新补丁，用分支 `release/v5.3`。
+
+> 实测命令：
+> `git clone -b v5.3.6 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf`
