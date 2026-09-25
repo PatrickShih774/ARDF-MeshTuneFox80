@@ -48,7 +48,7 @@
 | `core-board` | 130 × 95 mm 四层板 | — | 母板/背板：模块插座、电源分配、SMA 互联、地平面 | ⬜ 待设计 |
 | `pa-module` | 待定 | 3× BS170、2N3904、NTC、BZX84-C10 | E 类功放 1–2.5 W（峰值 3.5 W） | ⬜ 待设计 |
 | `lpf-module` | 待定 | 磁环 + 电容 | 三阶椭圆低通，2f₀ 衰减 ≥55 dB | ⬜ 待设计 |
-| `atu-module` | **55 × 65 mm** | 6× HK4100F-DC-12V、6× 2N7002、T37-6、2× T106-6 | L 型自动天调，64 组合 | ⬜ 待设计 |
+| `atu-module` | **55 × 65 mm** | 6× HK4100F-DC-12V、**ULN2003A 达林顿驱动**、T37-6、2× T106-6 | L 型自动天调，64 组合 | ⬜ 待设计 |
 | `mcu-ui-module` | 待定 | ESP32-C3 SuperMini、12864 LCD（ST7567）、EC11、双按键、蜂鸣器、TCA9535 | 主控与交互 | ⬜ 待设计 |
 | `power-module` | 待定 | MP2315、MD7673、升压模块 | 四轨供电 | ⬜ 待设计 |
 | `antenna` | — | 5 m 导线 + 5 m 地线 | 垂直极化辐射 | ⬜ 待设计 |
@@ -198,7 +198,12 @@ BS170 标称 R_θJA = 150 °C/W。每管功耗约 0.5 W → ΔT = 75 °C；45 °
 | 电气寿命 | 10 万次（额定负载） |
 | 机械寿命 | 1000 万次 |
 
-驱动电路 **2N7002 + 1 µF 陶瓷电容**：
+> ⚠️ **已被取代（2026-09-26）**：继电器驱动已由 `2N7002` 分立方案改为
+> **TCA9535 → ULN2003A** 达林顿链（内置续流二极管与输入电阻）。
+> 以下 2N7002 推演**保留作为决策链记录**，不再是当前设计方案。
+> 当前方案见 [ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md) 与 [docs/05](05-hw-sw-interface-contract.md) §2.4。
+>
+> 原（已废）驱动电路 **2N7002 + 1 µF 陶瓷电容**：
 
 ```
 ESP32-C3 / TCA9535 ──100Ω──► 2N7002 栅极(G)
@@ -238,8 +243,8 @@ ESP32-C3 / TCA9535 ──100Ω──► 2N7002 栅极(G)
 
 | 器件 | 型号 / 规格 | 说明 |
 |------|------------|------|
-| 主控 | ESP32-C3 SuperMini | 15 个可用 GPIO |
-| 显示 | 12864 LCD（ST7567，国产替代） | **走 I2C 共享总线**，见 [ADR-0004](adr/ADR-0004-lcd12864-on-shared-i2c.md) |
+| 主控 | 合宙 LuatOS ESP32C3-CORE（新款，原生 USB） | **12 个可用 GPIO**（GPIO0–8/10/12/13）；TCA9535 扩展 16 位。见 [GPIO 审计](17-gpio-allocation-audit.md) |
+| 显示 | 12864 LCD（**ST7567**，国产替代） | **走 SPI2 独占总线**（`CS` 接地，总线唯一从机），见 [ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)。~~ADR-0004 的 I²C 方案已被取代~~ |
 | 输入 | EC11 旋转编码器 | A/B/按键 |
 | 输入 | 双轻触按键 | |
 | 提示 | 有源蜂鸣器 | |
@@ -371,7 +376,7 @@ V<主>.<次>
 | [hardware/README.md](../hardware/README.md) | 硬件区总览与文件归属 |
 | [05-软硬件接口契约](05-hw-sw-interface-contract.md) | GPIO / 连接器 / 协议定义 |
 | [ADR-0003 ATU 采用 6 继电器 L 型匹配网络](adr/ADR-0003-atu-6-relay-l-network.md) | ATU 拓扑决策 |
-| [ADR-0004 12864 液晶走 I2C 共享总线](adr/ADR-0004-lcd12864-on-shared-i2c.md) | GPIO 分配决策 |
+| [ADR-0004 12864 液晶走 I2C 共享总线](adr/ADR-0004-lcd12864-on-shared-i2c.md) | ⚠️ **已被取代** —— 液晶改走 SPI，见 [ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md) |
 | [hardware/reference/atu-100/README.md](../hardware/reference/atu-100/README.md) | ATU-100 参考来源 |
 | [validation/README.md](../validation/README.md) | 十阶段验证方案 |
 | [00-项目升级计划书](00-project-upgrade-plan.md) | 技术指标基线 |

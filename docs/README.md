@@ -20,6 +20,7 @@
 | 07 | [编码规范](07-coding-standards.md) | 代码怎么写、命名怎么做、注释怎么加 | ★ 唯一权威 |
 | 08 | [许可证与合规](08-licensing-and-compliance.md) | 各区域适用什么协议、商用合规路径 | ★ 唯一权威 |
 | **15** | [**用 DSH 插件机制集成 ESP-IDF 开发与调试**](15-dsh-esp-idf-integration.md) | DSH 插件架构实测、技能/MCP 路径、ESP-IDF 工具集设计 | 开发工具 |
+| **17** | [**GPIO 使用全面审计**](17-gpio-allocation-audit.md) | 引脚分配是否已满足"ADC/PWM 用真引脚"、有没有可扩展却占真脚的功能、能否避开 GPIO12/13 | **审计（非权威）**：证据与方案评估，引脚权威仍是 05 与根 README §四 |
 
 ### 优先级仲裁规则
 
@@ -71,6 +72,8 @@ ADR 索引与模板见 [adr/README.md](adr/README.md)。
 | `12-power-and-endurance-budget.md` | 各工作模式电流分解与续航核算（对接 00-project-upgrade-plan.md 3.4 节） | 电源模块设计时 |
 | `13-emc-and-spurious-suppression.md` | 2f₀ 衰减、PCB 布局接地策略、屏蔽 | PCB 布线前 |
 | `14-production-and-factory-test.md` | 产测固件、测试工装、校准流程 | 小批量试产前 |
+
+> 编号 `16` 未被占用（历史跳跃）；新增文档取**当前最大编号 +1**，避免与上表重号。
 
 新增文档时请同步更新本索引，并在 `docs/02-repository-layout.md` 的文件归属决策表中登记（如涉及新类别）。
 

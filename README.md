@@ -200,12 +200,16 @@ ESP32-C3 标称 22 个 GPIO，本板实际**可用 12 个**：
 | # | 约束 | 不做的后果 |
 |---|------|-----------|
 | 1 | 🔴 **Flash 必须配 DIO 模式**（`CONFIG_ESPTOOLPY_FLASHMODE_DIO=y`） | 本板 GPIO12/13 未接 flash，QIO 模式下**上电无法启动**（已实测 `FLASHMODE="dio"` 生效） |
-| 2 | 🔴 **GPIO2 / GPIO8 上电必须为高**（由 EC11 的 10 kΩ 上拉保证） | strapping 判为低 → **启动模式异常**；因此**上电/复位时请勿转动旋钮** |
+| 2 | 🔴 **GPIO2 / GPIO8 / GPIO9 上电必须为高或悬空接上拉**（GPIO2/GPIO8 由 EC11 的 10 kΩ 上拉保证；GPIO9 是 BOOT 键，**上电前不可下拉**） | strapping 判为低 → **启动模式异常**；因此**上电/复位时请勿转动旋钮、勿按住 BOOT** |
 | 3 | 🔴 **244 输入侧加 10 kΩ 下拉**：Si5351 停振时 CMOS 输入会悬空 | 244 振荡 → **功放自激发射** |
 
 > **为什么 `ADC_VBAT` 在 GPIO3 而不是 GPIO2**：GPIO2 是 strapping 引脚，而分压输出随电池电压变化
 > —— 欠电时 6.0 V × 0.29 = **1.74 V**，低于判决阈值（≈0.75×VDD = 2.48 V）→ **电池电量偏低时无法启动**。
-> GPIO3 是 ADC1_CH3 且非 strapping，无此约束。
+> GPIO3 是 ADC1_CH3 且非 strapping，无此约束。**strapping 脚共 3 个：GPIO2、GPIO8、GPIO9（BOOT）。**
+
+> 📋 **本节的审计复核**：GPIO 分配的可扩展性、strapping 与 MSPI 保留脚风险的逐项核对，
+> 以及"能否彻底避开 GPIO12/13"的三方案评估，见 [docs/17 GPIO 使用全面审计](docs/17-gpio-allocation-audit.md)。
+> 该审计**未改变任何引脚分配**，只修正了事实错误。
 ## 五、快速导航
 
 **我是……**
