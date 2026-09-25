@@ -154,6 +154,14 @@
   技能发现根目录与热重载），给出四条扩展路径的成本对比，并设计 ESP-IDF 工具集
   （`esp_env_status`、`esp_build`、`esp_size`、`esp_monitor_capture`、`esp_coredump` 等）。
   **已落地**：用户级技能 `~/.dsh/skills/esp-idf/SKILL.md`（与工作区无关、热重载即时生效）。
+  另含第 7 节「缓存与会话续用」：DSH 两层缓存（LLM 前缀缓存 / `session_projcache`）
+  均以 `cwd` 参与键，换工作区必然失效；保住缓存需 `dsh --resume <会话id>`。
+- ✅ **新增 [docs/16-local-workspace-setup.md](docs/16-local-workspace-setup.md)**：
+  换工作区/换会话的**唯一交接清单**。定义本地容器布局
+  `ARDF-MeshTuneFox80/{ARDF-MeshTuneFox80-hardware, ARDF-MeshTuneFox80-firmware}`
+  （两仓同处一个工作区，`workspace-write` 策略即可覆盖，不再依赖临时的
+  `danger-full-access`），给出从旧布局迁移的命令与自检、DSH 工作区设置、
+  日常操作、红线与 9 条已知陷阱、当前状态快照与待办。
 
 ---
 
