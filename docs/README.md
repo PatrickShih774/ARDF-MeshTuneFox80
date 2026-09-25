@@ -19,6 +19,7 @@
 | 06 | [构建与开发环境](06-build-and-dev-environment.md) | 怎么装工具链、怎么编译、怎么烧录、怎么调试 | 操作性 |
 | 07 | [编码规范](07-coding-standards.md) | 代码怎么写、命名怎么做、注释怎么加 | ★ 唯一权威 |
 | 08 | [许可证与合规](08-licensing-and-compliance.md) | 各区域适用什么协议、商用合规路径 | ★ 唯一权威 |
+| **15** | [**用 DSH 插件机制集成 ESP-IDF 开发与调试**](15-dsh-esp-idf-integration.md) | DSH 插件架构实测、技能/MCP 路径、ESP-IDF 工具集设计 | 开发工具 |
 
 ### 优先级仲裁规则
 

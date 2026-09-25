@@ -149,6 +149,11 @@
   `..._11B_LONG_PREAMBLE`、`..._ADC_CAL_CURVE_FITTING`）与若干**裸名不生效的 choice 项**。
   已改为正确名称并附勘误表，避免后续被抄错。同时更新 `docs/06` §3 的构建前置状态说明
   （骨架已建成，但**尚未实机验证构建**——建立环境未装 ESP-IDF）。
+- ✅ **新增 [docs/15-dsh-esp-idf-integration.md](docs/15-dsh-esp-idf-integration.md)**：
+  实测 DSH 插件架构（cordis 4.0.4 / 284 个 `dsh-*` 插件包 / profile 补丁层 / 工具即插件 /
+  技能发现根目录与热重载），给出四条扩展路径的成本对比，并设计 ESP-IDF 工具集
+  （`esp_env_status`、`esp_build`、`esp_size`、`esp_monitor_capture`、`esp_coredump` 等）。
+  **已落地**：用户级技能 `~/.dsh/skills/esp-idf/SKILL.md`（与工作区无关、热重载即时生效）。
 
 ---
 
