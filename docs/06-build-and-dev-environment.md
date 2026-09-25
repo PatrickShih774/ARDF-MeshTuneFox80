@@ -339,7 +339,7 @@ git -C ARDF-MeshTuneFox80-firmware  status
 | **`git rev-list --count main` 报 ambiguous** | 仓库里有 `main/` 目录，与分支名冲突 | 用 `git rev-list --count HEAD` 或加 `--` |
 | **Kconfig 存在不存在的符号** | 首次构建出现 unknown config item 警告 | 权威清单是固件仓的 `sdkconfig.defaults`；已知错误名见 [`03`](03-software-architecture.md) §4.4 勘误表 |
 | **ESP-IDF 未安装** | `IDF_PATH` 为空、`idf.py` 不在 PATH | 见技能 `esp-idf` 第 1 节；**不要擅自下载安装** |
-| **Python 版本不匹配** | ESP-IDF v5.x 要求 Python 3.9–3.12；本机可能是 3.13 | 安装 ESP-IDF 前先确认 Python 版本 |
+| **Python 版本** | ESP-IDF **只设下限无上限**（v5.3≥3.8 / v5.5≥3.9 / v6.1≥3.10）；真正的风险是依赖包缺 wheel | 见 §12.1 |
 | **`git push --force` 不能抹除旧提交** | 旧对象仍可通过直接 SHA 访问 | 要彻底清除必须**删除并重建仓库** |
 | **推送 `.github/workflows/**` 需要 `workflow` scope** | 令牌无该 scope 时推送被拒 | 故 `.github/workflows/` 暂不入库 |
 
@@ -361,15 +361,45 @@ git -C ARDF-MeshTuneFox80-firmware  status
 > 2026-09-25 实测：本机 **`IDF_PATH` 为空、`idf.py` 不在 PATH、无 `esp\esp-idf` 目录**，即**尚未安装 ESP-IDF**。
 > 固件工程骨架已就绪，但**从未实机验证过构建**。
 
-### 12.1 🔴 先解决 Python 版本
+### 12.1 Python 版本要求（2026-09-25 经源码实测）
 
+权威来源：ESP-IDF 的 **`tools/python_version_checker.py`**，其中只有一个常量：
+
+```python
+OLDEST_PYTHON_SUPPORTED = (3, 10)   # v6.1
+
+def is_supported() -> bool:
+    return sys.version_info[:2] >= OLDEST_PYTHON_SUPPORTED[:2]
 ```
-本机 Python : 3.13.12
-ESP-IDF v5.x 要求 : Python 3.9 – 3.12
+
+> 🔴 **ESP-IDF 只设下限，没有上限。** 整个检查就是一次 `>=` 比较，
+> **不存在"版本太高被拒绝"的逻辑**。
+
+| ESP-IDF 版本 | `OLDEST_PYTHON_SUPPORTED` | 即要求 |
+|-------------|--------------------------|--------|
+| `v6.1`（最新稳定） | `(3, 10)` | **Python ≥ 3.10** |
+| `v5.5.x` | `(3, 9)` | Python ≥ 3.9 |
+| **`v5.3.x`（本项目选用）** | **`(3, 8)`** | **Python ≥ 3.8** |
+| `v5.1.x` | `(3, 7)` | Python ≥ 3.7 |
+
+**结论**：本机 **Python 3.13.12 满足 v5.3.6 与 v6.1 的要求**，可以直接使用。
+
+**真正的风险不在版本检查，而在依赖包**：`install.ps1` 会通过 pip 安装
+`tools/requirements/requirements.core.txt` 中的包（`esp-idf-kconfig`、`esp-coredump`、
+`esp-idf-monitor`、`cryptography`、`pyyaml` 等）。若其中某个包没有对应 Python 版本的
+wheel、需要本地编译而缺少构建工具，**那才是会失败的地方**。
+
+**建议**：**先用 3.13 直接试**（`.\install.ps1 esp32c3`）。只有出现 pip 报"找不到 wheel"
+或编译失败时，才退回安装 Python 3.12：
+
+```powershell
+winget install Python.Python.3.12
+py -3.12 --version
+# 然后让 install.ps1 使用 3.12（确保 PATH 中 py -3.12 优先，或用 ESP-IDF 的 --python 参数）
 ```
 
-**`install.ps1` 很可能直接拒绝 3.13。** 先装一个受支持的 Python（推荐 3.12），或让 ESP-IDF 使用指定解释器。**这一步不解决，后面都会失败。**
-
+> ⚠️ 本文件早期版本曾写"ESP-IDF v5.x 要求 Python 3.9–3.12，3.13 很可能被拒绝"——
+> **该说法是错的**（既无上限，下限也是 3.8 而非 3.9）。已按源码实测更正。
 ### 12.2 安装步骤
 
 ```powershell
