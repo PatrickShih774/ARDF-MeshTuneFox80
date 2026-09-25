@@ -275,6 +275,8 @@ Release 发布在**公开仓**（`ARDF-MeshTuneFox80-hardware` 对应的 GitHub 
 | **`.git/config` 被写入令牌** | `git push -u <含令牌URL>` 会把令牌存进 `branch.<name>.remote` | 推送用 `git push <url> main`，**不要加 `-u`**；事后检查 `git remote -v` |
 | **`git ls-files --eol` 报 CRLF** | 工作区文件是 CRLF | 用 `WriteAllText` 转换；`LICENSES/CERN-OHL-S-2.0.txt` 的 CRLF 是**官方原样，不要转** |
 | **`git rev-list --count main` 报 ambiguous** | 仓库里有 `main/` 目录，与分支名冲突 | 用 `git rev-list --count HEAD` 或加 `--` |
+| **重新 `git clone` 后无法提交** | `Author identity unknown` —— clone 不会带上本地 `user.name`/`user.email`/`core.quotepath`/`i18n.*` | clone 后立即补：`git -C <仓> config --local user.name/user.email/…` |
+| **`Move-Item` 失败后回滚删除了数据** | 目录的 `Move-Item` 可能**部分完成**；`Remove-Item -Recurse` 回滚会永久删除已搬移的文件 | 先**检查**目标而非删除；可靠退路是**搬移前先 push**，坏了就 `git clone` |
 | **Kconfig 存在不存在的符号** | 首次构建出现 unknown config item 警告 | 权威清单是固件仓的 `sdkconfig.defaults`；已知错误名见 [`03`](03-software-architecture.md) §4.4 勘误表 |
 | **ESP-IDF 未安装** | `IDF_PATH` 为空 | 见技能 `esp-idf` 第 1 节；**不要擅自下载安装** |
 
