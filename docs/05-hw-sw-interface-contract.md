@@ -65,6 +65,38 @@ ATU 模块（**6 个继电器**）、Si5351（**I2C**）。
 > ⚠️ **相对上一版的重大变化**：液晶由 **I2C 改为 SPI**（见 [ADR-0004](adr/ADR-0004-lcd12864-on-shared-i2c.md)
 > 已被本版取代的思路），因此 §2.1 的引脚分配全部重排。
 
+### 2.0 🔴 开发板约束（合宙 LuatOS ESP32C3-CORE）
+
+**选定开发板**：合宙 LuatOS **ESP32C3-CORE**（AirM2M CORE ESP32C3）
+来源：https://wiki-zh.luatos.org/chips/esp32c3/board.html
+
+本节的 GPIO 分配**以该板实物引脚表为准**。以下约束直接决定方案可行性：
+
+| # | 约束 | 影响 | 处置 |
+|---|------|------|------|
+| 1 | 🔴 **GPIO12/13 未接 flash，板子用 2 线 DIO 模式** | 若按默认 QIO 配置，**上电无法启动** | **必须** `CONFIG_ESPTOOLPY_FLASHMODE_DIO=y`（已写入固件仓 `sdkconfig.defaults`） |
+| 2 | **GPIO12/13 板载 LED D4/D5**（高电平有效） | 作他用时 LED 会随之亮灭 | 可用作**状态指示**（反而有用）；作信号线需接受 LED 负载 |
+| 3 | **GPIO11 = VDD_SPI**，默认给 flash 供电 | 本板 flash VDD 已接 3.3V，故 GPIO11 可用 | **需烧 eFuse `VDD_SPI_AS_GPIO 1`，一次性不可逆** → 本方案**暂不使用** |
+| 4 | **GPIO9 = BOOT 按键** | 上电前**不可下拉**，否则进下载模式 | **保留不用** |
+| 5 | **GPIO8 下载时须为高** | 外部下拉会导致串口下载失败 | 用作输入时**不得加下拉**；作输出须保证复位/下载期间为高 |
+| 6 | **GPIO18/19 = 原生 USB**（新款直连版） | 占用即放弃板载 Type-C 烧录/日志 | 保留原生 USB；**若要释放 18/19，须外接 USB-TTL 到 UART0** |
+| 7 | 经典款带 **CH343 USB-TTL** | 该版本 18/19 **本就空闲** | 若用的是经典款，18/19 可用 |
+| 8 | ADC1 = **GPIO0–GPIO4**（5 路，WiFi 期间可用） | — | 模拟量必须落在这 5 脚 |
+| 9 | GPIO5 的 ADC 属 **ADC2** | **与 WiFi 冲突** | 本项目不用 GPIO5 作 ADC |
+| 10 | **LEDC 同时最多 4 路 PWM** | 限制可同时输出的 PWM 数 | CW 键控 + 功放 PWM 共 2 路，余量 2 |
+| 11 | 板载 4MB 外置 SPI Flash | 分区表按 4MB 设计 | 已一致 |
+
+**该板实际引出的可用 GPIO**：
+
+```
+GPIO0  GPIO1  GPIO2  GPIO3  GPIO4  GPIO5  GPIO6  GPIO7
+GPIO8  GPIO9*  GPIO10  GPIO11#  GPIO12  GPIO13
+GPIO18 GPIO19  GPIO20  GPIO21
+```
+`*` = BOOT 按键，本方案不用；`#` = 需烧 eFuse 解锁，本方案不用。
+
+> ⚠️ **本表取代**上一版仅按"ESP32-C3 标称 22 个 GPIO"的估算——实际可用数比估算更多
+> （GPIO12/13 可用、GPIO5 可用作数字 IO），但新增了 DIO/eFuse/LED 三项约束。
 ### 2.1 引脚预算（关键约束）
 
 | GPIO 区间 | 数量 | 状态 |
