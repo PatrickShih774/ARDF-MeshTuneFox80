@@ -8,7 +8,7 @@
 
 | 用途 | 工具 | 版本要求 |
 |------|------|---------|
-| 固件构建 | **ESP-IDF** | **`v5.3.6`（本项目选用，见 §12.7）**；v5.1+ 均可 |
+| 固件构建 | **ESP-IDF** | **`v6.1`（本项目选用，见 §12.7）**；符号兼容性已实测 |
 | 目标芯片 | ESP32-C3（RISC-V） | — |
 | 工具链 | `riscv32-esp-elf-gcc` | 随 ESP-IDF 安装（14.2.0 系列） |
 | 构建系统 | CMake | ≥3.16 |
@@ -30,7 +30,7 @@
 
 ```powershell
 # 1) 获取安装器
-git clone -b v5.3.6 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
+git clone -b v6.1 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
 cd C:\esp\esp-idf
 
 # 2) 安装工具链（仅 esp32c3，节省时间与磁盘）
@@ -43,7 +43,7 @@ cd C:\esp\esp-idf
 ### 2.2 Linux / macOS
 
 ```bash
-git clone -b v5.3.6 --recursive https://github.com/espressif/esp-idf.git ~/esp/esp-idf
+git clone -b v6.1 --recursive https://github.com/espressif/esp-idf.git ~/esp/esp-idf
 cd ~/esp/esp-idf
 ./install.sh esp32c3
 . ./export.sh
@@ -53,7 +53,7 @@ cd ~/esp/esp-idf
 
 ```bash
 idf.py --version
-# 期望输出类似：ESP-IDF v5.3.x
+# 期望输出类似：ESP-IDF v6.1
 ```
 
 ### 2.4 已有离线安装包
@@ -377,12 +377,12 @@ def is_supported() -> bool:
 
 | ESP-IDF 版本 | `OLDEST_PYTHON_SUPPORTED` | 即要求 |
 |-------------|--------------------------|--------|
-| `v6.1`（最新稳定） | `(3, 10)` | **Python ≥ 3.10** |
+| **`v6.1`（本项目选用）** | **`(3, 10)`** | **Python ≥ 3.10** |
 | `v5.5.x` | `(3, 9)` | Python ≥ 3.9 |
-| **`v5.3.x`（本项目选用）** | **`(3, 8)`** | **Python ≥ 3.8** |
+| `v5.3.x` | `(3, 8)` | Python ≥ 3.8 |
 | `v5.1.x` | `(3, 7)` | Python ≥ 3.7 |
 
-**结论**：本机 **Python 3.13.12 满足 v5.3.6 与 v6.1 的要求**，可以直接使用。
+**结论**：本机 **Python 3.13.12 满足 v6.1 的要求（≥3.10）**，可以直接使用。
 
 **真正的风险不在版本检查，而在依赖包**：`install.ps1` 会通过 pip 安装
 `tools/requirements/requirements.core.txt` 中的包（`esp-idf-kconfig`、`esp-coredump`、
@@ -409,7 +409,7 @@ winget install Python.Python.3.12
 py -3.12 --version
 
 # ② 克隆 ESP-IDF（推荐 v5.3；分支可换 v5.5）
-git clone -b v5.3.6 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
+git clone -b v6.1 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
 
 # ③ 只装 esp32c3 工具链（省时间与磁盘）
 cd C:\esp\esp-idf
@@ -461,30 +461,55 @@ ESP32-C3 用**内置 USB-JTAG**（GPIO18/19），无需额外调试器。
 Core Dump 需先在 `sdkconfig.defaults` 开启 `CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y` 等项。
 完整操作见**用户级技能 `esp-idf`**（`~/.dsh/skills/esp-idf/SKILL.md`）。
 
-### 12.7 版本选择（2026-09-25 经 GitHub API 实测）
+### 12.7 版本选择：**v6.1**（2026-09-25 经源码实测修正）
 
-| ESP-IDF 版本 | 状态 | 对 ESP32-C3 |
-|-------------|------|------------|
-| `v4.4` | 已停止维护（LTS 到期） | 曾支持 |
-| `v5.1.7` | 维护中（2026-01-27） | ✅ 支持 |
-| **`v5.3.6`** | **维护中（2026-09-15）← 本项目选用** | ✅ 支持 |
-| `v5.4.4` | 维护中（2026-04-17） | ✅ 支持 |
-| `v5.5.5` | 维护中（2026-07-17） | ✅ 支持 |
-| `v6.0.3` | 已发布（2026-09-02） | ✅ 支持 |
-| `v6.1` | 最新稳定（2026-08-27） | ✅ 支持（`components/soc/esp32c3` 存在） |
+> ⚠️ 本节早期版本推荐 `v5.3.6`，理由是"v5→v6 有破坏性变更，符号可能漂移"。
+> **该理由经实测不成立**——实测方法：把本工程 `sdkconfig.defaults` 里的全部
+> **27 个** `CONFIG_*` 符号，逐一到 v6.1 与 v5.3.6 的 Kconfig 源码中比对存在性。
 
-**为什么选 `v5.3.6`**：
+**实测结果：27 个符号在 v6.1 中全部存在，无一个被删除。**
 
-1. 本工程的 `sdkconfig.defaults` 是**逐项对照 `v5.1.4` 的 Kconfig 源码**核对过的，
-   `v5.3` 与基线同属 v5 早期分支，**符号名漂移风险最小**；
-2. 是 `v5.3` 分支的**最新补丁**，仍在维护；
-3. **暂不选 `v6.x`**：v5 → v6 存在破坏性变更，而本工程的骨架是按 v5.x 写的，
-   且从未实机验证过构建——先在最稳的版本上跑通，再评估升级。
+初次比对时曾有 5 个"未找到"，逐一追查后确认**都是假警报——符号只是换了定义文件**：
 
-**不要选**：`v4.x`（已停止维护，且本项目用 v5.x API）、`master`（开发分支，不稳定）、
-`v6.x-rc*` / `*-beta*`（预览版）。
+| 符号 | v5.3.6 定义位置 | v6.1 定义位置 |
+|------|----------------|--------------|
+| `ESP_CONSOLE_UART_DEFAULT` | `components/esp_system/Kconfig` | **`components/esp_stdio/Kconfig`**（v6 新组件） |
+| `ESP_CONSOLE_UART_BAUDRATE` | 同上 | 同上 |
+| `LOG_DEFAULT_LEVEL_INFO` | `components/log/Kconfig` | **`components/log/Kconfig.level`**（拆分为独立文件） |
+| `LOG_MAXIMUM_LEVEL_INFO` | 同上 | 同上 |
+| `ESP_DEFAULT_CPU_FREQ_MHZ_160` | `esp_system/port/soc/esp32c3/Kconfig.cpu` | **同一文件**（未抓取而误判） |
 
-### 12.8 ⚠️ 引用名（ref）的坑
+> **符号名未变，只是所在文件变了——`sdkconfig.defaults` 只关心符号名，因此无需任何改动。**
+
+| ESP-IDF 版本 | 状态 | ESP32-C3 | Python 下限 |
+|-------------|------|----------|------------|
+| `v5.1.7` | 维护中 | ✅ | 3.7 |
+| `v5.3.6` | 维护中 | ✅ | 3.8 |
+| `v5.5.5` | 维护中 | ✅ | 3.9 |
+| `v6.0.3` | 已发布 | ✅ | 3.10 |
+| **`v6.1`** | **最新稳定（2026-08-27）← 本项目选用** | ✅ | **3.10** |
+
+**为什么选 v6.1**：
+
+1. **符号兼容性已实测通过**（27/27），无需改动配置；
+2. **ESP32-C3 完整支持**（`components/soc/esp32c3` 存在）；
+3. **Python 3.13.12 满足要求**（≥3.10）；
+4. **最新稳定版，支持周期最长**，避免"刚起步就落后一个大版本"；
+5. 🔑 **现在迁移成本最低**——本工程**尚无任何组件实现代码**，只有骨架；
+   若等 28 个组件写完再跨大版本迁移，代价高得多。
+
+**保留回退方案**：若 v6.1 首次构建暴露了骨架层面的问题（如组件注册行为变化），
+可随时切回 `v5.3.6`——因为 `sdkconfig.defaults` 在两版间**通用**。
+
+```powershell
+# 选定：v6.1（标签，可复现）
+git clone -b v6.1 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
+
+# 回退用（如需）
+git clone -b v6.1 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
+```
+
+**不要选**：`v4.x`（已停止维护，且本项目用 v5+ API）、`master`（开发分支）、`v6.x-rc*` / `*-beta*`（预览版）。### 12.8 ⚠️ 引用名（ref）的坑
 
 ESP-IDF 的版本引用有两种形态，**别混淆**：
 
@@ -497,4 +522,4 @@ ESP-IDF 的版本引用有两种形态，**别混淆**：
 **建议用标签**（如 `v5.3.6`）以保证**可复现**；若想始终拿最新补丁，用分支 `release/v5.3`。
 
 > 实测命令：
-> `git clone -b v5.3.6 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf`
+> `git clone -b v6.1 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf`
