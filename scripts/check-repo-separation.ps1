@@ -80,10 +80,14 @@ $pubAllowList = @(
     'software/README.md'        # 双仓结构说明（方案 B 占位）
     'NOTICE'                    # 第三方声明
 )
-$violations = New-Object System.Collections.Generic.List[string]($violations | Where-Object {
+# 过滤白名单。注意：不能用 New-Object List[string](<管道>)——单个字符串会被
+# 当成 capacity 参数并抛异常，必须显式 Add。
+$kept = @($violations | Where-Object {
     $v = $_
     -not ($pubAllowList | Where-Object { $v -match [regex]::Escape($_) })
 })
+$violations = New-Object System.Collections.Generic.List[string]
+foreach ($v in $kept) { [void]$violations.Add($v) }
 
 # -----------------------------------------------------------------------------
 # 二、私有仓【禁止】出现硬件设计文件
