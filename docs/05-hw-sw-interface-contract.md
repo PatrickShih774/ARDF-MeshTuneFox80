@@ -57,72 +57,110 @@ ESP32-C3 标称 22 个 GPIO，但实际可用受限：
 
 ---
 
-## 2. GPIO 分配表（建议方案）
+## 2. GPIO 分配表（2026-09-25 重排）
 
-> 状态：**建议（Proposed）**。硬件投板并实测通过后，状态改为**冻结（Frozen）**。
-> 修改本表需双方评审，并同步 `bsp_board`。
+**本版依据的外设清单**：ST7567 液晶（**SPI**）、EC11 旋转编码器 ×1、
+ATU 模块（**6 个继电器**）、Si5351（**I2C**）。
 
-### 2.1 直接接 ESP32-C3 的引脚
+> ⚠️ **相对上一版的重大变化**：液晶由 **I2C 改为 SPI**（见 [ADR-0004](adr/ADR-0004-lcd12864-on-shared-i2c.md)
+> 已被本版取代的思路），因此 §2.1 的引脚分配全部重排。
+
+### 2.1 引脚预算（关键约束）
+
+| GPIO 区间 | 数量 | 状态 |
+|-----------|------|------|
+| GPIO0 – GPIO7 | 8 | ✅ 可用（GPIO0–4 = ADC1_CH0–CH4） |
+| **GPIO8** | 1 | ⚠️ strapping；**部分 SuperMini 板挂 WS2812** |
+| **GPIO9** | 1 | ⚠️ strapping（BOOT 按键，留作下载模式） |
+| GPIO10 | 1 | ✅ 可用 |
+| GPIO11 – GPIO17 | 7 | ❌ 内部接 SPI Flash，不可用 |
+| GPIO18 – GPIO19 | 2 | 原生 USB D−/D+（占用即放弃原生 USB） |
+| GPIO20 – GPIO21 | 2 | UART0 TX/RX（控制台 / 烧录） |
+
+**可用合计**：避开 GPIO9 后共 **12 个**（GPIO0–8、GPIO10、GPIO18、GPIO19）。
+
+### 2.2 直接接 ESP32-C3 的引脚（本版方案）
 
 | GPIO | 功能名（`bsp_board` 宏） | 方向 | 复用/外设 | 备注 |
 |------|------------------------|------|----------|------|
-| **GPIO0** | `BOARD_ADC_FWD` | AI | ADC1_CH0 | 前向检波（Tandem Match T1 侧）；strapping：需保证上电电平不影响启动 |
-| **GPIO1** | `BOARD_ADC_REV` | AI | ADC1_CH1 | 反向检波（T2 侧） |
-| **GPIO2** | `BOARD_ADC_VBAT` | AI | ADC1_CH2 | 电池电压分压；**strapping 引脚**，需外部上拉/下拉匹配启动要求 |
-| **GPIO3** | `BOARD_ADC_NTC` | AI | ADC1_CH3 | 功放 NTC 温度（10 kΩ B=3950 分压） |
-| **GPIO4** | `BOARD_ADC_ISENSE` | AI | ADC1_CH4 | 电源电流检测（**预留**，可省） |
-| **GPIO5** | `BOARD_I2C_SDA` | IO | I2C0 SDA | 共享总线：Si5351 + TCA9535 + LCD；**需 4.7 kΩ 上拉至 3.3 V** |
-| **GPIO6** | `BOARD_I2C_SCL` | IO | I2C0 SCL | 同上 |
-| **GPIO7** | `BOARD_CW_KEY` | O | GPIO / LEDC | **CW 键控输出**：驱动功放键控级；优先用 LEDC 做软起软降（2–5 ms） |
-| **GPIO8** | `BOARD_PA_PWR_PWM` | O | LEDC | **功放功率控制**：PWM → 升压模块 FB 网络（400 Hz–20 kHz，经 RC 滤波） |
-| **GPIO9** | `BOARD_LCD_SPI_ALT_SCK` | O | SPI2 | **备选**：若 LCD 改用 SPI 模式则启用；否则预留（strapping 引脚，需注意上电电平） |
-| **GPIO10** | `BOARD_LCD_SPI_ALT_MOSI` | O | SPI2 | **备选**：同上 |
-| **GPIO18** | `BOARD_USB_DM` | IO | USB Serial/JTAG | 原生 USB-CDC：日志 / 中控串口 / 固件下载 |
+| **GPIO0** | `BOARD_ADC_FWD` | AI | ADC1_CH0 | 前向检波（Tandem Match T1 侧）**必需** |
+| **GPIO1** | `BOARD_ADC_REV` | AI | ADC1_CH1 | 反向检波（T2 侧）**必需** |
+| **GPIO2** | `BOARD_ADC_VBAT` | AI | ADC1_CH2 | 电池电压分压；**strapping**，需外部上拉匹配启动要求 |
+| **GPIO3** | `BOARD_ADC_NTC` | AI | ADC1_CH3 | 功放 NTC（10 kΩ B=3950 分压） |
+| **GPIO4** | `BOARD_I2C_SDA` | IO | I2C0 SDA | **共享总线**：Si5351 + TCA9535；需 4.7 kΩ 上拉至 3.3 V |
+| **GPIO5** | `BOARD_I2C_SCL` | IO | I2C0 SCL | 同上 |
+| **GPIO6** | `BOARD_LCD_SCK` | O | SPI2 SCK | ST7567 时钟 |
+| **GPIO7** | `BOARD_LCD_MOSI` | O | SPI2 MOSI | ST7567 数据 |
+| **GPIO8** | `BOARD_PA_PWR_PWM` | O | LEDC | 功放功率 PWM → 升压模块 FB（400 Hz–20 kHz，RC 滤波）。**⚠️ 见 §2.5** |
+| **GPIO10** | `BOARD_LCD_DC` | O | GPIO | ST7567 的 A0：命令/数据选择（每字节翻转，**必须直连**，不可挂扩展器） |
+| **GPIO18** | `BOARD_USB_DM` | IO | USB Serial/JTAG | **保留原生 USB**：日志 / 中控串口 / 固件下载 |
 | **GPIO19** | `BOARD_USB_DP` | IO | USB Serial/JTAG | 同上 |
-| **GPIO20** | `BOARD_UART_TX` | O | UART0 TX | 备用串口：日志 / 中控 |
+| **GPIO20** | `BOARD_UART_TX` | O | UART0 TX | 备用串口（板载 USB-UART 桥） |
 | **GPIO21** | `BOARD_UART_RX` | I | UART0 RX | 同上 |
+| **GPIO9** | ⚠️ **保留不用** | — | — | BOOT 按键，留作下载模式；且为 strapping |
 
-**占用统计**：ADC 5（其中 1 预留）+ I2C 2 + 快速数字 2 + USB 2 + UART 2 + LCD 备选 2 = **15**
+**液晶省脚的两点设计**：
 
-### 2.2 TCA9535 I2C 扩展器分配
+1. **CS 接 GND** —— ST7567 是该 SPI 总线上**唯一从机**，片选常有效，省 1 脚。
+2. **RST 挂扩展器**（P1.7）—— 复位是低频操作，经 I2C 完全可接受，省 1 脚。
 
-**器件**：TCA9535（16 位 I2C GPIO 扩展器），I2C 地址 `0x20`（A2/A1/A0 全接地；`bsp_board` 中需明确定义）
+> 若不愿让 RST 走 I2C，可用 **RC 复位电路**（上电复位）替代，同样不占 GPIO。
 
-| 端口 | 功能名（`bsp_board` 宏） | 方向 | 连接对象 | 备注 |
-|------|------------------------|------|---------|------|
-| P0.0 | `IOEXP_RELAY_K1` | O | L1 = 12 µH | 经 2N7002 驱动 HK4100F |
-| P0.1 | `IOEXP_RELAY_K2` | O | L2 = 33 µH | 同上 |
-| P0.2 | `IOEXP_RELAY_K3` | O | L3 = 47 µH | 同上 |
-| P0.3 | `IOEXP_RELAY_K4` | O | C3 = 22 pF | 同上 |
-| P0.4 | `IOEXP_RELAY_K5` | O | C4 = 120 pF | 同上 |
-| P0.5 | `IOEXP_RELAY_K6` | O | C5 = 330 pF | 同上 |
-| P0.6 | `IOEXP_PA_EN` | O | 功放使能 | 关断功放供电/偏置 |
-| P0.7 | `IOEXP_BUZZER` | O | 有源蜂鸣器 | 提示音 / 告警 |
-| P1.0 | `IOEXP_EC11_A` | I | EC11 A 相 | 轮询（建议 100–200 Hz）或用 P1.0 中断 |
-| P1.1 | `IOEXP_EC11_B` | I | EC11 B 相 | 同上 |
-| P1.2 | `IOEXP_EC11_SW` | I | EC11 按键 | — |
-| P1.3 | `IOEXP_KEY1` | I | 轻触按键 1 | — |
-| P1.4 | `IOEXP_KEY2` | I | 轻触按键 2 | — |
-| P1.5 | `IOEXP_LCD_RST` | O | LCD 复位 | — |
-| P1.6 | `IOEXP_LCD_BL` | O | LCD 背光使能 | 若需调光则改接 LEDC 引脚 |
-| P1.7 | `IOEXP_SPARE` | O | **预留** | 可扩展：天线静电泄放继电器、散热风扇、状态 LED |
+### 2.3 TCA9535 I2C 扩展器分配（16 位）
 
-**占用统计**：**16/16 全部使用**（含 1 路预留）
+**器件**：TCA9535，I2C 地址 `0x20`（A2/A1/A0 全接地）。
 
-### 2.3 引脚冲突与注意事项
+| 位 | 功能名 | 方向 | 说明 |
+|----|--------|------|------|
+| P0.0 – P0.5 | `IOEXP_RELAY_K1` … `K6` | O | **ATU 6 个继电器**（L/C 组合切换） |
+| P1.0 | `IOEXP_EC11_A` | I | EC11 A 相 |
+| P1.1 | `IOEXP_EC11_B` | I | EC11 B 相 |
+| P1.2 | `IOEXP_EC11_SW` | I | EC11 按键 |
+| P1.3 | `IOEXP_CW_KEY` | O | CW 键控（备选；见 §2.5） |
+| P1.7 | `IOEXP_LCD_RST` | O | ST7567 复位 |
+| 其余 5 位 | `IOEXP_SPARE` | — | 预留：天线泄放继电器、散热风扇、状态 LED |
 
-| 项 | 说明 |
-|----|------|
-| Strapping 引脚 | GPIO2 / GPIO8 / GPIO9 在复位时有特殊功能，外部电路不得在复位期间强制错误电平 |
-| GPIO8 板载 LED | 部分 ESP32-C3 SuperMini 板在 GPIO8 挂 WS2812。**投板前必须确认所用模组版本**；若冲突，把 `BOARD_PA_PWR_PWM` 移到 GPIO10，并启用 LCD 的 I2C 方案（GPIO9 保持未用） |
-| ADC 线性度 | ESP32-C3 ADC 非线性明显，`drv_analog` 必须做**多点校准**（至少 3 点）并存储校准系数到 NVS |
-| I2C 总线速率 | 建议 400 kHz（快速模式）。LCD 全屏刷新 1024 字节约 25 ms，需局部刷新 |
-| I2C 总线互斥 | Si5351 / TCA9535 / LCD 共享总线，**必须加互斥量**；LCD 长传输不得阻塞 CW 键控 |
-| CW 键控实时性 | 若使用 TCA9535 经 I2C 键控，延迟约 100 µs 量级，对 12 WPM（点长 100 ms）可接受；但**推荐直接使用 GPIO7 + LEDC** 以获得确定性 |
-| 功放 PWM 滤波 | `BOARD_PA_PWR_PWM` 需经 RC 低通（建议截止频率 ≪ PWM 频率）后接入升压模块 FB；滤波时间常数会成为功率切换的响应时间，需在 `drv_pa` 中补偿 |
+**为什么继电器与 EC11 挂扩展器**：二者都是**慢速** IO。ATU 调谐以秒计，
+EC11 人手旋转在几十毫秒量级，I2C 的 ~100 µs 延迟完全无感。
+把 6 个继电器放直连会立刻吃光全部稀缺 GPIO。
 
----
+**为什么 CW 键控默认放扩展器**：12 WPM 的点长为 100 ms，I2C 延迟 ~100 µs
+仅占 0.1%，可接受。**但**若实测发现键控波形边沿要求更严，
+把 `CW_KEY` 移回 GPIO9（同时放弃 BOOT 按键）即可获得确定性时序。
 
+### 2.4 引脚占用总览
+
+| 用途 | 占用直接 GPIO |
+|------|-------------|
+| ADC（前向/反向/电池/NTC） | 0, 1, 2, 3 |
+| I2C（Si5351 + TCA9535） | 4, 5 |
+| ST7567 SPI + DC | 6, 7, 10 |
+| 功放功率 PWM | 8 |
+| 原生 USB | 18, 19 |
+| UART0 | 20, 21 |
+| **合计** | **12 / 12 可用** |
+
+**扩展器承担**：6 继电器 + EC11(3) + CW 键控 + LCD 复位 = 11 / 16 位。
+
+### 2.5 ⚠️ 两个必须确认的风险点（待冻结）
+
+| # | 风险 | 影响 | 处置 |
+|---|------|------|------|
+| 1 | **GPIO8 是否已挂 WS2812** | 若挂了，`PA_PWR_PWM` 的 PWM 会让灯珠闪烁并增加容性负载 | 投板前确认模组版本。**若冲突**：把 `PA_PWR_PWM` 移到 GPIO9（放弃 BOOT 按键），GPIO8 留空 |
+| 2 | **GPIO8 为 strapping 引脚** | 复位期间被外部 FB 网络拉低会影响启动 | 串 1 kΩ + 外部 10 kΩ 上拉至 3.3 V，确保复位期间为高 |
+| 3 | I2C 总线互斥 | Si5351 / TCA9535 共享总线，长传输可能阻塞 | **必须加互斥量**；LCD 整屏刷新（约 1 KB）需分块，不得阻塞 CW 键控 |
+
+### 2.6 与上一版的差异
+
+| 项 | 上一版 | **本版** |
+|----|--------|---------|
+| 液晶接口 | I2C（共享总线） | **SPI（独立 3 线 + DC）** |
+| 液晶片选 | N/A | **CS 接 GND** |
+| 液晶复位 | 直连 GPIO | **挂扩展器 P1.7** |
+| 扩展器负载 | 11 位 | **11 位**（继电器 6 + EC11 3 + CW + LCD_RST） |
+| CW 键控 | 直连 GPIO7 + LEDC | **挂扩展器 P1.3**（可移回 GPIO9） |
+| 功放 PWM | GPIO8 | GPIO8（不变） |
+| strapping 使用 | GPIO2 | GPIO2（不变） |
 ## 3. 电气参数契约
 
 ### 3.1 逻辑电平
@@ -273,7 +311,7 @@ ESP32-C3 标称 22 个 GPIO，但实际可用受限：
 
 | # | 事项 | 阻塞原因 | 责任方 |
 |---|------|---------|--------|
-| 1 | GPIO 分配表最终确认 | 需确认 SuperMini 模组 GPIO8 是否挂 WS2812 | 硬件 |
+| 1 | GPIO 分配表最终确认 | ✅ 已按 ST7567(SPI)/EC11/ATU 6 继电器/Si5351 重排（2026-09-25）；**仍需确认 SuperMini 的 GPIO8 是否挂 WS2812** | 硬件 |
 | 2 | TCA9535 I2C 地址 | 需确认 A2/A1/A0 实际接法 | 硬件 |
 | 3 | LCD 走 I2C 还是 SPI | 需实测 I2C 刷新率是否满足 UI 需求 | 硬件 + 软件 |
 | 4 | Tandem Match `R_sense` 最终值 | 需 NanoVNA 微调（初值 1 kΩ） | 硬件 |
@@ -289,7 +327,7 @@ ESP32-C3 标称 22 个 GPIO，但实际可用受限：
 
 | 文档 | 用途 |
 |------|------|
-| [ADR-0004 12864 液晶走 I2C 共享总线](adr/ADR-0004-lcd12864-on-shared-i2c.md) | GPIO 分配决策依据 |
+| [ADR-0004 12864 液晶走 I2C 共享总线](adr/ADR-0004-lcd12864-on-shared-i2c.md) | ⚠️ **已被 §2 取代**：液晶改用 SPI（ST7567），I2C 总线只留 Si5351 + TCA9535 |
 | [03-软件架构](03-software-architecture.md) | 固件组件与 `bsp_board` |
 | [04-硬件架构](04-hardware-architecture.md) | 硬件模块与互联 |
 | [hardware/interconnect/README.md](../hardware/interconnect/README.md) | 连接器针脚定义 |
