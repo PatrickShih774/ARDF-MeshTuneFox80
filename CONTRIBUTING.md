@@ -178,7 +178,31 @@
 - 引入第三方代码/库前，必须先在 PR 中说明其许可证，并登记到
   [docs/08-licensing-and-compliance.md](docs/08-licensing-and-compliance.md) 的许可证台账。
 - **禁止**把私有固件源码的任何片段提交到本公开仓——包括源码、头文件、构建文件与注释。
-- **固件源码严禁出现在本公开仓的任何文件、Issue 或 PR 中**；确需讨论固件行为时，
+- **
+
+### 🔴 双仓分离纪律（机器校验）
+
+| 内容 | 归属仓库 |
+|------|---------|
+| 硬件设计、文档、验证报告、许可 | **公开仓** `ARDF-MeshTuneFox80` |
+| **固件源码、构建文件、工具** | **私有仓** `ARDF-MeshTuneFox80-firmware` |
+
+**提交前请运行：**
+
+```powershell
+pwsh -File scripts/check-repo-separation.ps1
+```
+
+脚本用 `git ls-files` 扫描两个仓库的**已入库文件**，发现越界即退出码 1：
+
+- 公开仓禁止出现：`.c/.h/.cpp` 源码、`CMakeLists.txt`、`sdkconfig*`、
+  `partitions.csv`、`Kconfig*`、`version.txt`、`*.bin/.elf/.map/.hex`
+- 私有仓禁止出现：KiCad/EDA 源文件、Gerber、`step/stl/dxf`、PDF、BOM 表
+- 公开仓 `software/` 只允许 `README.md`（双仓结构说明）
+
+> ⚠️ **一旦越界并已推送，仅 `git rm` 不够**——历史里仍有该文件，
+> 必须**删除并重建公开仓**（本项目已因此重建过一次，见
+> [docs/08](docs/08-licensing-and-compliance.md) §6）。固件源码严禁出现在本公开仓的任何文件、Issue 或 PR 中**；确需讨论固件行为时，
   只描述**接口与可观测行为**，附协议或日志层面的证据，不贴源码。
 - **禁止**把 `hardware/reference/` 下的第三方内容复制进本项目的 `hardware/` 或 `software/`。
 - 闭源算法的实现细节不得出现在本仓库的任何公开文件中（包括 Issue 与 PR 描述）。
