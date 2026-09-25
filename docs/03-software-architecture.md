@@ -255,16 +255,31 @@ components/<组件名>/
 |--------|----|----|
 | `CONFIG_IDF_TARGET` | `esp32c3` | — |
 | `CONFIG_FREERTOS_HZ` | `1000` | 1 ms 时基，满足时序精度 |
-| `CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ` | `160` | 性能优先 |
-| `CONFIG_COMPILER_OPTIMIZATION` | `-Os` | Flash 与体积平衡 |
-| `CONFIG_ESP_WIFI_ENABLE_WPA3_SAFE` 等 | 按 ESP-NOW 需求裁剪 | 减少协议栈开销 |
-| `CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM` | 调小 | ESP-NOW 占空比低，省 RAM |
-| `CONFIG_LWIP_DHCP_DISABLE` 等 | 关闭未用协议 | 省 RAM |
-| `CONFIG_BT_ENABLED` | `n` | 不使用蓝牙 |
+| `CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_160` | `y` | 性能优先（choice 形式，非裸 `_MHZ`） |
+| `CONFIG_COMPILER_OPTIMIZATION_SIZE` | `y` | `-Os`，Flash 与体积平衡（choice 形式） |
+| `CONFIG_BT_ENABLED` | `n` | 不使用蓝牙；配置入口走 USB-CDC |
+| `CONFIG_ESP_WIFI_ENABLED` | `y` | **ESP-NOW 依赖 WiFi 协议栈，必须使能**（设 `n` 会导致链路层无法初始化） |
+| `CONFIG_ESP_WIFI_SOFTAP_SUPPORT` | `n` | 只用 ESP-NOW，不需要 AP |
+| `CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM` 等 | 调小 | ESP-NOW 占空比低，省 RAM |
+| `CONFIG_ESP_WIFI_ENABLE_WPA3_SAE`、`..._SAE_PK`、`..._ENTERPRISE_SUPPORT` | `n` | 不使用 WPA3 / 企业级（注意符号名，见下） |
+| `CONFIG_LWIP_DHCPS` | `n` | 不做 DHCP 服务器 |
 | `CONFIG_ESP_MAIN_TASK_STACK_SIZE` | `4096` | — |
 | `CONFIG_PARTITION_TABLE_CUSTOM_FILENAME` | `partitions.csv` | 自定义分区 |
-| `CONFIG_ESPTOOLPY_FLASHSIZE` | `4MB` | — |
+| `CONFIG_ESPTOOLPY_FLASHSIZE_4MB` | `y` | 4 MB Flash（choice 形式） |
 | `CONFIG_ESP_TASK_WDT_TIMEOUT_S` | `10` | 任务看门狗 |
+
+> 🔴 **本表只是设计意图；权威清单是私有固件仓的 `sdkconfig.defaults`。**
+> 配置项名称**必须以实际 ESP-IDF 的 Kconfig 为准**——本表早期草稿中曾出现若干**不存在的符号名**，
+> 已于 2026-09 逐项对照 ESP-IDF v5.1.4 源码勘误，记录如下以免再被抄错：
+>
+> | 曾写（错误） | 实际情况 |
+> |-------------|---------|
+> | `CONFIG_ESP_WIFI_ENABLE_WPA3_SAFE` | ❌ 不存在。正确名为 `CONFIG_ESP_WIFI_ENABLE_WPA3_SAE` |
+> | `CONFIG_ESP_WIFI_DPP_ENABLED` | ❌ 不存在。正确名为 `CONFIG_ESP_WIFI_DPP_SUPPORT`（默认已为 `n`） |
+> | `CONFIG_ESP_WIFI_11B_LONG_PREAMBLE` | ❌ v5.x 无此符号。长距离模式由**运行期 API** 设置：`esp_wifi_set_protocol(WIFI_PROTOCOL_LR)` + `esp_wifi_config_11b_rate()` |
+> | `CONFIG_ESP_ADC_CAL_CURVE_FITTING` | ❌ `esp_adc` 没有选择校准方案的 Kconfig 开关。ESP32-C3 的曲线拟合由**运行期 API** 决定：`adc_cali_create_scheme_curve_fitting()` |
+> | `CONFIG_LWIP_IPV4=n` / `CONFIG_LWIP_IPV6=n` | ⚠️ **刻意不采用**。激进裁剪 IP 栈会牵连 `esp_netif` / `esp_wifi` 及后续 `comm_console` 的依赖，收益小、风险大；RAM 节省主要来自 WiFi 收发缓冲调小 |
+> | `CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ`、`CONFIG_COMPILER_OPTIMIZATION`、`CONFIG_ESPTOOLPY_FLASHSIZE` | ⚠️ 裸名不生效，实际是 choice：`_160` / `_SIZE` / `_4MB` |
 
 ### 4.5 FreeRTOS 任务规划
 

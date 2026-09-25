@@ -87,7 +87,15 @@ idf.py --version
 
 > ⚠️ **前置条件**：固件源码在**私有仓**（`ARDF-MeshTuneFox80-firmware`），需先取得访问权并克隆到本地；**本公开仓不含固件源码**。
 >
-> ⚠️ **当前状态**：私有固件仓中的构建文件（`CMakeLists.txt`、`sdkconfig.defaults`、`partitions.csv`）**尚未创建**，因此现在还无法构建。以下命令是**规划中的标准流程**。
+> ⚠️ **当前状态**：私有固件仓的 **ESP-IDF 工程骨架已于 2026-09 建成**（`CMakeLists.txt`、
+> `sdkconfig.defaults`、`partitions.csv`、`main/`、28 个组件的 `CMakeLists.txt`、`test/`），
+> 具备首次构建条件。但：
+>
+> 1. **尚未实机验证构建** —— 建立骨架的环境**未安装 ESP-IDF**（`IDF_PATH` 为空），
+>    配置项名称是对照 ESP-IDF v5.1.4 的 Kconfig 源码逐项核对的，未跑过 `idf.py build`。
+>    首次构建时请留意是否有 Kconfig 未知项警告，并核对 `factory` 分区余量。
+> 2. **各组件尚无实现** —— 28 个组件目前都注册为"接口组件"（只有 `INCLUDE_DIRS`，无 `SRCS`），
+>    `app_main()` 只打印启动日志、不调用任何组件函数。构建产物是一个空壳固件。
 
 ### 3.1 标准流程
 

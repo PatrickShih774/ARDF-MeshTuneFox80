@@ -141,6 +141,14 @@
     [docs/08](docs/08-licensing-and-compliance.md) §4.1、[LICENSING.md](LICENSING.md) §7.1。
 - ✅ `.gitignore` 加防泄漏护栏，并修正其中已过时的内容
   （已撤回的中文名、`docs/02-仓库目录规范.md` 旧文件名、`software/firmware` 旧路径）。
+- ✅ **私有固件仓建成 ESP-IDF 工程骨架**：`CMakeLists.txt`、`sdkconfig.defaults`、`partitions.csv`、
+  `version.txt`、`main/`（`app_main.c` + `Kconfig.projbuild`）、28 个组件的 `CMakeLists.txt`、
+  独立 `test/` 测试工程，另加 `NOTICE` 与 `CHANGELOG.md`。组件依赖 81 条全部校验合法。
+- ✅ **勘误 `docs/03` §4.4 的 Kconfig 符号名**：骨架建立时逐项对照 ESP-IDF v5.1.4 源码，
+  发现本表原稿有若干**不存在的符号**（`..._WPA3_SAFE`、`..._DPP_ENABLED`、
+  `..._11B_LONG_PREAMBLE`、`..._ADC_CAL_CURVE_FITTING`）与若干**裸名不生效的 choice 项**。
+  已改为正确名称并附勘误表，避免后续被抄错。同时更新 `docs/06` §3 的构建前置状态说明
+  （骨架已建成，但**尚未实机验证构建**——建立环境未装 ESP-IDF）。
 
 ---
 
