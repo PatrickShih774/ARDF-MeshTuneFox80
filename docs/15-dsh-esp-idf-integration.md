@@ -351,3 +351,80 @@ DSH 有 **52 个 `dsh-client-ui-*`** 包（GUI 是可插拔的），但**本机�
 > DSH 自带文档可从 `<安装目录>/resources/app.asar` 中提取：asar 头为
 > `[u32=4][u32][u32=jsonLen][u32][JSON 索引]`，文件数据紧随其后；按索引里的 `offset`/`size`
 > 加上 `16 + jsonLen` 即可取出任意文件。各插件包均带 `README.zh.md`。
+
+---
+
+## 10. MCP 接入实录：三个把集成卡住的坑（2026-09-26 已解决）
+
+`tools/mcp-esp-idf/` 的工具**已成功接入 DSH**（`mcp__espidf__*` 共 8 个）。
+过程中踩到三个坑，全部记录如下以免重犯。
+
+### 10.1 🔴 新增插件行**必须**包在 `- insert:` 里
+
+**症状**：`cordis.patch.yml` 里按文档写了一条 `- id: mcp-espidf / name: ... / config: ...`，
+harness 重启后**工具完全不出现，且没有任何报错**（连 `failOnStartupError: true` 都不触发）。
+
+**根因**：`cordis.patch.yml` 的顶层「行形状」条目（`- id` / `name` / `config`）语义是
+**按 id 覆盖已有行**。`dsh-base` 的插件树（91 行，见
+`<安装目录>/resources/app.asar` → `dsh/node_modules/@deepseek-ai/dsh-base/cordis.patch.yml`）
+里**没有 mcp-client 这一行**，所以裸写会被当作"找不到目标的覆盖"而**静默丢弃**。
+失败发生在**补丁应用阶段**，根本到不了连接阶段，因此 `failOnStartupError` 无从触发。
+
+**正确写法**（与 `dsh-base/cordis.patch.yml` 的样板一致）：
+
+```yaml
+- insert:                       # ← 新增行必须在 insert 列表里
+    - id: mcp-espidf
+      name: '@deepseek-ai/dsh-mcp-client'
+      config: { ... }
+```
+
+**判别方法**：若你的条目在 dsh-base 的行 id 列表里 → 顶层覆盖写法正确；
+若是**新 id** → 必须用 `insert`。
+
+### 10.2 🔴 MCP 进程**不继承**你 export 过的 shell
+
+**症状**：工具出现了，但 `esp_env_status` 返回 `environment="missing"`、
+`missing: ["IDF_PATH","idf.py"]`。
+
+**根因**：DSH 拉起的 MCP 服务器是**独立进程**，环境是"清洗过的"，
+不会继承你手动执行 `export.ps1` 的那个 shell。
+
+**处置**：用**包装脚本**启动 —— 先在本进程内激活 ESP-IDF，再把同一进程交给 `server.py`：
+私有仓 `tools/mcp-esp-idf/launch-with-idf.ps1`。
+
+```yaml
+command: 'powershell.exe'
+args: ['-NoProfile','-ExecutionPolicy','Bypass','-File','<...>/launch-with-idf.ps1']
+```
+
+**包装脚本的两个必须点**：
+
+| 点 | 原因 |
+|---|------|
+| **`export.ps1` 的输出全部丢弃**（`*> $null`） | MCP 的 stdio 传输把 **stdout 当 JSON-RPC 通道**，任何多余输出都会破坏握手 |
+| **`$ErrorActionPreference` 不能是 `Stop`** | `export.ps1` 内部调用 python，其 stderr 被包成 ErrorRecord；在 `Stop` 下会变成**终止性错误**，激活中断、`IDF_PATH` 根本没设上 |
+
+### 10.3 ⚠️ Windows 下 PowerShell 脚本必须存为 **UTF-8 带 BOM**
+
+含中文注释的 `.ps1` 若存为**无 BOM 的 UTF-8**，Windows PowerShell 5.1 会按 ANSI 解码，
+中文变乱码并**导致语法错误**（实测：字符串被吃掉 → `Missing '=' operator in hash literal`）。
+
+本项目受影响的脚本：`scripts/check-repo-separation.ps1`、
+`tools/mcp-esp-idf/launch-with-idf.ps1`。
+
+### 10.4 排查方法论
+
+这次没有靠猜，每一步排除一个假设：
+
+| 假设 | 验证方式 | 结论 |
+|------|---------|------|
+| 配置语法错 | 比对官方文档示例 | ❌ 逐字段一致 |
+| 服务器有问题 | 手工拉起，看 `initialize` 响应 | ❌ 8 工具正常 |
+| 环境被清洗 | 用最小环境变量集复现 | ❌ 也正常 |
+| 包未安装 | GUI「添加插件」 | ❌ 提示**已安装** |
+| 进程未创建 | 查进程列表 | ✅ 排除连接阶段 |
+| **补丁语义错** | **读 dsh-base 样板 + 比对 id 列表** | ✅ **根因** |
+
+**教训**：当"照文档做却不生效且毫无报错"时，去读**发行版内部的实际样板文件**
+（`app.asar` 里的 `cordis.patch.yml`），比反复猜文档措辞有效得多。
