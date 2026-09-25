@@ -353,3 +353,80 @@ git -C ARDF-MeshTuneFox80-firmware  status
 
 公开仓 `.gitignore` 已有防泄漏护栏（`software/firmware/`、`**/components/*/src/*.c`、
 `main/app_main.c`、`sdkconfig.defaults`、`partitions.csv` 等），但那只是**兜底**。
+
+---
+
+## 12. ESP-IDF 安装清单（⬜ 待执行）
+
+> 2026-09-25 实测：本机 **`IDF_PATH` 为空、`idf.py` 不在 PATH、无 `esp\esp-idf` 目录**，即**尚未安装 ESP-IDF**。
+> 固件工程骨架已就绪，但**从未实机验证过构建**。
+
+### 12.1 🔴 先解决 Python 版本
+
+```
+本机 Python : 3.13.12
+ESP-IDF v5.x 要求 : Python 3.9 – 3.12
+```
+
+**`install.ps1` 很可能直接拒绝 3.13。** 先装一个受支持的 Python（推荐 3.12），或让 ESP-IDF 使用指定解释器。**这一步不解决，后面都会失败。**
+
+### 12.2 安装步骤
+
+```powershell
+# ① 准备 Python 3.12（择一）
+winget install Python.Python.3.12
+#   或从 python.org 下载 3.12 安装包；装完确认：
+py -3.12 --version
+
+# ② 克隆 ESP-IDF（推荐 v5.3；分支可换 v5.5）
+git clone -b v5.3 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
+
+# ③ 只装 esp32c3 工具链（省时间与磁盘）
+cd C:\esp\esp-idf
+.\install.ps1 esp32c3
+
+# ④ 每次新 shell 都要激活
+. C:\esp\esp-idf\export.ps1
+```
+
+### 12.3 验证清单（逐项打勾）
+
+```powershell
+idf.py --version                      # 应输出 ESP-IDF v5.3.x
+riscv32-esp-elf-gcc --version         # RISC-V 工具链（在 IDF 环境内）
+python --version                      # 3.9–3.12
+esptool.py version                    # 烧录工具
+[System.IO.Ports.SerialPort]::GetPortNames()   # 串口列表
+```
+
+### 12.4 首次构建（在固件仓内）
+
+```powershell
+cd C:\DeepseekProject\ARDF-MeshTuneFox80\ARDF-MeshTuneFox80-firmware
+idf.py set-target esp32c3
+idf.py build
+```
+
+**重点检查**：
+
+| 检查项 | 说明 |
+|--------|------|
+| **Kconfig 未知项警告** | `sdkconfig.defaults` 是对照 v5.1.4 源码核对的；换小版本可能有差异，看到 `unknown config item` 要报告 |
+| **`factory` 分区余量** | `idf.py size` 确认 app 未超 1536K |
+| **组件注册** | 28 个组件均为"接口组件"（只有 `INCLUDE_DIRS`、无 `SRCS`），这是**合法**的，不是错误 |
+| **产物** | 当前是**空壳固件**——组件均无实现，`app_main()` 只打日志 |
+
+### 12.5 离线包线索
+
+`Downloads` 中见过：`riscv32-esp-elf-14.2.0_*.zip`、`esptool-v5.1.0-*.zip`、
+`openocd-esp32-win64-*.zip`、`riscv32-esp-elf-gdb-*.zip`。
+可手动放入 `~/.espressif/tools/`，但**推荐仍用 `install.ps1`**（会校验版本与哈希）。
+
+> ⚠️ 同目录下的 `esp32-arduino-libs-idf-release_v5.5-*.zip` 是 **Arduino 用的 IDF 库**，
+> 本项目**不用**（[ADR-0001](adr/ADR-0001-adopt-esp-idf-over-arduino.md)）。
+
+### 12.6 调试相关
+
+ESP32-C3 用**内置 USB-JTAG**（GPIO18/19），无需额外调试器。
+Core Dump 需先在 `sdkconfig.defaults` 开启 `CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y` 等项。
+完整操作见**用户级技能 `esp-idf`**（`~/.dsh/skills/esp-idf/SKILL.md`）。
