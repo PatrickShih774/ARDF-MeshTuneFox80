@@ -124,7 +124,7 @@
 | 组件 | 职责 | 依赖 |
 |------|------|------|
 | `drv_si5351` | Si5351 本振驱动（I2C）：3.5–3.6 MHz、100 Hz 步进、频率校准与微调 | `bsp_board`、`utils_common` |
-| `drv_lcd12864` | 12864 液晶（ST7588i，**I2C 为主 / SPI 为备选**）：字库、绘图、局部刷新 | `bsp_board`、`bsp_io_expander` |
+| `drv_lcd12864` | 12864 液晶（ST7567，**I2C 为主 / SPI 为备选**）：字库、绘图、局部刷新 | `bsp_board`、`bsp_io_expander` |
 | `drv_ec11` | EC11 旋转编码器：方向识别、加速度、按键（经 TCA9535 或中断） | `bsp_io_expander` |
 | `drv_keys` | 双按键消抖与长按识别、有源蜂鸣器提示音 | `bsp_io_expander` |
 | `drv_relay` | 6 路继电器组抽象（K1–K6）：组合写入、最小切换间隔、机械寿命计数 | `bsp_io_expander` |
@@ -409,7 +409,7 @@ LCD 走 I2C 共享总线（[ADR-0004](adr/ADR-0004-lcd12864-on-shared-i2c.md)）
 | 原 Arduino 依赖 | 用途 | ESP-IDF 方案 |
 |----------------|------|-------------|
 | `Etherkit Si5351` (Arduino 库) | Si5351 本振 | **自行实现** `drv_si5351`（I2C 寄存器直写，参考 Si5351A 数据手册） |
-| `U8g2` | 12864 显示 | **自行实现** `drv_lcd12864`（ST7588i 指令集） |
+| `U8g2` | 12864 显示 | **自行实现** `drv_lcd12864`（ST7567 指令集） |
 | `Encoder` / 中断轮询 | EC11 | **自行实现** `drv_ec11`（TCA9535 轮询 + 加速度算法） |
 | `WiFi.h` / `esp_now.h` (Arduino 封装) | 联网 | ESP-IDF 原生 `esp_wifi` + `esp_now` |
 | `Preferences.h` | 参数存储 | `bsp_storage`（nvs_flash API） |

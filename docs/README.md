@@ -51,7 +51,8 @@
 | [ADR-0001](adr/ADR-0001-adopt-esp-idf-over-arduino.md) | 采用 ESP-IDF 而非 Arduino | 已接受 |
 | [ADR-0002](adr/ADR-0002-hardware-software-split-monorepo.md) | 软硬件分区的单仓结构 | 已接受 |
 | [ADR-0003](adr/ADR-0003-atu-6-relay-l-network.md) | ATU 采用 6 继电器 L 型匹配网络 | 已接受 |
-| [ADR-0004](adr/ADR-0004-lcd12864-on-shared-i2c.md) | 12864 液晶走 I2C 共享总线 | 已接受 |
+| [ADR-0004](adr/ADR-0004-lcd12864-on-shared-i2c.md) | 12864 液晶走 I2C 共享总线 | ⚠️ 已被取代 |
+| [**ADR-0008**](adr/ADR-0008-st7567-spi-and-pa-keying.md) | **液晶改 ST7567(SPI)、功放驱动与键控、继电器驱动链** | **已接受** |
 | [ADR-0005](adr/ADR-0005-console-tech-stack-tbd.md) | 中控 PC 软件技术栈待定 | **提议** |
 | [ADR-0006](adr/ADR-0006-layered-licensing-gpl-isolation.md) | 原分层授权方案（**已被取代**，见 ADR-0007） | **已被取代** |
 | [ADR-0007](adr/ADR-0007-firmware-closed-source-two-repo.md) | **固件闭源与双仓结构** | 已接受 |
