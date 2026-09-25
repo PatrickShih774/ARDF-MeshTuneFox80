@@ -63,7 +63,7 @@ ARDF-MeshTuneFox80/
 │   ├── pa-module/                3× BS170 并联 E 类功放 1–2.5 W
 │   ├── lpf-module/               三阶椭圆低通，2f₀ 衰减 ≥55 dB
 │   ├── atu-module/               6 继电器 L 型自动天调 55×65 mm
-│   ├── mcu-ui-module/            ESP32-C3 + 12864 LCD + EC11 + 双按键
+│   ├── mcu-ui-module/            ESP32-C3 + 12864 LCD（ST7567/SPI）+ EC11（A/B/SW）
 │   ├── power-module/             MP2315 + MD7673 + 可调升压
 │   ├── antenna/                  5 m 垂直导线 + 5 m 地线
 │   ├── enclosure/                外壳 / 3D 打印件
@@ -99,7 +99,7 @@ ARDF-MeshTuneFox80/
 | 滤波 | 三阶椭圆低通 | 同（3.55 MHz 中心，2f₀ 衰减 ≥55 dB） |
 | 天调 | **无** | **6 继电器 L 型 ATU**：L=12/33/47 µH，C=22/120/330 pF，64 组合 |
 | 电源 | 2S 锂电 + 7805 LDO（效率 ≈68%） | **MP2315 同步降压 + MD7673 LDO + 可调升压** |
-| 交互 | 12864 LCD + EC11 + 双按键 | 同（LCD 走 I2C 共享总线） |
+| 交互 | 12864 LCD（ST7567，**SPI**）+ EC11（A/B/SW）+ BOOT 按键 | 同（**LCD 走 SPI 独占，CS 接地**） |
 | 组网 | 无 | **ESP-NOW Mesh**，HMAC-SHA256 认证 |
 
 ### 3.2 软件基线
