@@ -191,7 +191,7 @@
 
 | # | 缺口 | 影响 | 依据 |
 |---|---|---|---|
-| B-01 | **L 型匹配网络的继电器触点接法未定** | 6 只继电器如何串并出 8 电感组合与 8 电容组合，文档只有组合值表，**没有逐脚接法** | `hardware/atu-module/README.md` §2 |
+| B-01 | ~~**L 型匹配网络的继电器触点接法未定**~~ → ✅ **已解决（2026-09-26）** | 逐脚接法、真值表与掩码契约见 [`hardware/atu-module/relay-wiring.md`](../atu-module/relay-wiring.md)；同时**新增 6 只 10 kΩ 输入下拉**到本 BOM（`R_RLY1-R_RLY6`） | `hardware/atu-module/relay-wiring.md` §2.4/§4.2 |
 | B-02 | **LPF 磁环型号与圈数未给** | `lpf-module` BOM 只能写"待定" | `hardware/lpf-module/README.md` §3 |
 | B-03 | **TCA9535 / ULN2003A / MD7673 封装未定** | 影响 PCB 封装与 BOM | 各模块 README 未给封装 |
 | B-04 | **12 V 升压模块型号与 FB 网络参数未定** | 影响 +12V 轨、PA 功率与控制 | `docs/05` §7 #7 |
@@ -203,6 +203,8 @@
 | B-10 | **检波器件选型（1N5711 / HSMS-2850 / 并行）** | 决定检波 BOM 与 LM358 是否需要 | `docs/05` §7 #5、§7 #6 |
 | B-11 | **天线阻抗与 R_sense 最终值** | 需 NanoVNA 实测 | `docs/05` §7 #4 |
 | B-12 | **外壳/面板/线束图纸为空** | 结构件无法下单 | `enclosure/3d-print/`、`enclosure/panel/`、`interconnect/connector|harness/` 均为空 |
+| B-13 | **HK4100F 触点脚的物理命名未核实**（2026-09-26 新发现） | 封装级原理图画不出来；脚位接反即不工作 | [`hardware/atu-module/relay-wiring.md`](../atu-module/relay-wiring.md) §2.5；`datasheets/INDEX.md` 未建立 |
+| B-14 | **电容支路开路触点耐压余量未核实**（2026-09-26 新发现） | 谐振高压 816 Vrms vs 250 VAC 额定切换 | [`hardware/atu-module/relay-wiring.md`](../atu-module/relay-wiring.md) §5 R-03 |
 
 > ⚠️ 另：`hardware/README.md` §3 的模块清单**仍写"atu-module 驱动为 6× 2N7002"**，
 > 与 `docs/05` §2.4 与 ADR-0008 的现行方案（TCA9535 + ULN2003A）**冲突**。

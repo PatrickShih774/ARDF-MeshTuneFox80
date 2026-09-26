@@ -88,6 +88,12 @@ ESP32 GPIO4/5 (I²C 3.3V)
 - SWR 检测：Tandem Match 定向耦合器（T1/T2 为 FT37-43，初级 1 匝穿芯 + 次级 10 匝，耦合度 20dB，R_sense 初始 1kΩ），检波 1N5711 与 HSMS-2850 并行对照，可选 LM358 放大。
 - 天线静电泄放：输入端 1kV 高压电阻 100kΩ 到地，或射频专用 GDT。
 
+### 3.1 继电器逐脚接法与组合映射（🔴 画图前必读）
+
+6 只继电器的 **COM/NO/NC 逐脚接法**、拓扑的唯一性验算、8+8 组合表的真值表与 64 组合索引、
+TCA9535 → ULN2003A 的极性与**上电默认态**、以及软件 `relay_mask` 的位序/极性契约，
+全部写在 [`relay-wiring.md`](relay-wiring.md)。本节不再重复内容。
+
 ## 4. 接口
 
 - 射频输入：来自 `lpf-module`（SMA）
@@ -123,6 +129,7 @@ ESP32 GPIO4/5 (I²C 3.3V)
 
 ## 7. 关联文档
 
+- [**`relay-wiring.md` — 继电器逐脚接法规格（§3.1）**](relay-wiring.md) 🔴 画原理图/PCB 前必读
 - [项目升级计划书](../../docs/00-project-upgrade-plan.md) 3.2 ATU 天线调谐方案
 - [ADR-0008 ST7567 与功放/键控/继电器驱动链](../../docs/adr/ADR-0008-st7567-spi-and-pa-keying.md)（继电器驱动 = TCA9535 + ULN2003A 的决策依据）
 - [`hardware/README.md`](../README.md)

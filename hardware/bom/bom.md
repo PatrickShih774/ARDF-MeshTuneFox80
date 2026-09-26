@@ -16,7 +16,7 @@
 
 | 模块 | 器件行数 | 分模块 CSV |
 |---|---|---|
-| `atu-module` | 15 | [bom-atu-module.csv](bom-atu-module.csv) |
+| `atu-module` | 16 | [bom-atu-module.csv](bom-atu-module.csv) |
 | `pa-module` | 7 | [bom-pa-module.csv](bom-pa-module.csv) |
 | `lpf-module` | 3 | [bom-lpf-module.csv](bom-lpf-module.csv) |
 | `mcu-ui-module` | 24 | [bom-mcu-ui-module.csv](bom-mcu-ui-module.csv) |
@@ -25,11 +25,11 @@
 | `interconnect` | 7 | [bom-interconnect.csv](bom-interconnect.csv) |
 | `enclosure` | 5 | [bom-enclosure.csv](bom-enclosure.csv) |
 | `antenna` | 6 | [bom-antenna.csv](bom-antenna.csv) |
-| **合计** | **82** | [bom-summary.csv](bom-summary.csv) |
+| **合计** | **83** | [bom-summary.csv](bom-summary.csv) |
 
 ## 2. 逐模块明细
 
-### 2.1 atu-module（15 行）
+### 2.1 atu-module（16 行）
 
 | 位号 | 参数 | 封装 | 数量 | 建议型号 | LCSC 编号 | 关键规格 | 模块 | 备注 |
 |---|---|---|---|---|---|---|---|---|
@@ -48,6 +48,7 @@
 | D3,D4 | 零偏置肖特基检波二极管 | SOT-23(双管)/SOD-323 | 2 | HSMS-2850 | 待查 | 零偏置检波; 与 1N5711 并行对照 | atu-module | 选型待 stage-3 实测对照 |
 | U3 | 检波放大器(可选) | SOIC-8/DIP-8 | 0-1 | LM358 | 待查 | 是否需要运放级待 stage-4 实测决定(docs/05 §7 #6); 本行数量标 0-1 表示未定 | atu-module | DO NOT populate until stage-4 verdict |
 | R_esd | 100 kohm 高压电阻 | 轴向高压电阻 | 1 | 1kV 高压电阻 100kohm | 待查 | 天线静电泄放到地; 耐压 1kV; 可用射频专用 GDT 替代 | atu-module | 二选一: 高压电阻 或 GDT |
+| R_RLY1-R_RLY6 | 10 kohm | 0805 | 6 | 电阻 10kohm 1% | 待查 | 🔴 ULN2003A IN1-IN6 各一只下拉到 GND; 100uA x 10kohm = 1.0V << V_I(on) 2.4V | atu-module | 🔴 强制要求(2026-09-26 新增): TCA9535 上电为输入且带约100uA弱上拉, 无下拉则 ULN 输入可能被抬到导通阈值附近 -> 6 只继电器上电误吸合; 布局尽量靠近 U2 的 IN 脚 |
 
 ### 2.2 pa-module（7 行）
 

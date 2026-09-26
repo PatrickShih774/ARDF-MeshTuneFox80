@@ -95,6 +95,10 @@ def build_rows():
         row(m, "R_esd", "100 kohm 高压电阻", "轴向高压电阻", "1", "1kV 高压电阻 100kohm", TODO,
             "天线静电泄放到地; 耐压 1kV; 可用射频专用 GDT 替代",
             "二选一: 高压电阻 或 GDT", "1", "docs/04 §3.4; hardware/atu-module/README.md §3"),
+        row(m, "R_RLY1-R_RLY6", "10 kohm", "0805", "6", "电阻 10kohm 1%", TODO,
+            "🔴 ULN2003A IN1-IN6 各一只下拉到 GND; 100uA x 10kohm = 1.0V << V_I(on) 2.4V",
+            "🔴 强制要求(2026-09-26 新增): TCA9535 上电为输入且带约100uA弱上拉, 无下拉则 ULN 输入可能被抬到导通阈值附近 -> 6 只继电器上电误吸合; 布局尽量靠近 U2 的 IN 脚",
+            "6", "hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h"),
     ]
 
     # ===================== pa-module =====================

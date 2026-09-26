@@ -11,6 +11,12 @@ Every row carries a source citation (docs section / README section). Rows whose
 wiring is only partially derivable from the docs are flagged in the "说明" column
 so they are not mistaken for frozen connectivity.
 
+The ATU relay/L-C network section (step 12) implements
+hardware/atu-module/relay-wiring.md, which closed pre-fab-checklist item C-06 on
+2026-09-26.  The former single abstract row "RELAY_CONTACTS ... unfrozen" is gone;
+the former "RF_THRU: J_ATU_IN -> J_ANT" abstract row became the L-chain entry node
+ATU_L_IN, and the output node ATU_L3_LO -> J_ANT carries the matching network.
+
 Run:  python scripts/build-lceda-import-pack.py  (this file is imported by it)
 Stdout is ASCII-only (Windows console is GBK).
 """
@@ -143,7 +149,12 @@ def build():
 
     # ---------------- 7. Tandem Match coupler + detectors ----------------
     S7 = D05 + " §3.2; hardware/atu-module/README.md §3"
-    A(N("RF_THRU", "RF_THRU", "J_ATU_IN", "中心", "J_ANT", "中心", "ATU 输出侧 Tandem Match 主线(50ohm)", D05 + " §4.1; " + D04 + " §3.4"))
+    # 注：RF_THRU 原写作 J_ATU_IN -> J_ANT 直连（"主线"的抽象写法），会让整个 L 型匹配网络
+    #     被短路。2026-09-26 按 hardware/atu-module/relay-wiring.md §2.1 细化为 L 链入口节点，
+    #     出口节点由第 12 节的 ATU_L3_LO -> J_ANT.中心 给出。
+    A(N("ATU_L_IN", "ATU_L_IN", "J_ATU_IN", "中心", "L1", "1",
+      "ATU 主线入口节点 N0：输入 SMA →(Tandem Match 耦合器主线)→ L 链第一只电感；本行取代原 'RF_THRU: J_ATU_IN→J_ANT 直连' 的抽象写法",
+      D05 + " §4.1; " + D04 + " §3.4; hardware/atu-module/relay-wiring.md §2.1"))
     A(N("XFWD_SEC", "XFWD_SEC", "T1", "次级+", "R_sense_F", "1", "T1 次级(初级1匝穿芯 + 次级10匝; 耦合度 20+/-3dB)", S7))
     A(N("GND", "GND", "R_sense_F", "2", "GND", "-", "前向 R_sense 1kohm 初值, 需 NanoVNA 微调", D05 + " §3.2, §7 #4"))
     A(N("DET_FWD", "DET_FWD", "R_sense_F", "1", "D1", "A", "1N5711 检波(前向)", S7))
@@ -193,10 +204,60 @@ def build():
     A(N("GND", "GND", "GND_DIG", "-", "GND_RF", "-", "🔴 射频地与数字地在底板单点汇接(star ground), 避免功放回流污染 Si5351 与 ADC 参考地", D04 + " §3.1; hardware/core-board/README.md §6"))
     A(N("GND", "GND", "GND_PWR", "-", "GND_DIG", "-", "大电流功放地/电源回路单独回流, 与射频地单点汇集于底板一点", D04 + " §3.1"))
 
-    # ---------------- 12. Unfrozen / to-be-designed ----------------
-    A(N("RELAY_CONTACTS", "RELAY_CONTACTS", "K1..K6", "触点", "L1..L3/C3..C5", "L 型网络",
-      "🟠 未冻结: 6 只继电器触点如何串并出 8 电感组合(0/12/33/45/47/59/80/92uH)与 8 电容组合(0/22/120/142/330/352/450/472pF)在文档中未给出逐脚接法, 只有组合值表",
-      "hardware/atu-module/README.md §2; docs/05 §7 #1 已冻结分配但网络未出图"))
+    # ---------------- 12. ATU L 型匹配网络：继电器触点与 L/C 逐脚接法 ----------------
+    # 依据：hardware/atu-module/relay-wiring.md（2026-09-26 关闭 pre-fab-checklist C-06）。
+    # 拓扑（唯一解，验算见 scripts/verify-atu-lc-combos.py）：
+    #   电感三只全部串联，每只被一只继电器「并联旁路」；旁路触点用 COM–NC ⇒ 释放=旁路、吸合=接入
+    #   电容三只全部并联，每只经一只继电器「串联接入」；用 COM–NO   ⇒ 释放=断开、吸合=接入
+    # 节点：N0=ATU_L_IN  N1=ATU_L1_LO  N2=ATU_L2_LO  N3=ATU_L3_LO(=天线节点/并联C节点)
+    SRW = "hardware/atu-module/relay-wiring.md"
+    SLC = SRW + " §2.1/§2.4; hardware/atu-module/README.md §2"
+    A(N("ATU_L_IN", "ATU_L_IN", "L1", "1", "K1", "COM",
+      "K1 旁路触点公共端接 L1 高端（同一节点 N0）", SLC))
+    A(N("ATU_L1_LO", "ATU_L1_LO", "L1", "2", "L2", "1", "N1：L1 低端 = L2 高端", SLC))
+    A(N("ATU_L1_LO", "ATU_L1_LO", "L1", "2", "K1", "NC",
+      "🔴 K1 释放时 COM–NC 闭合 → L1 被旁路(0µH 档的一部分)；吸合 → 12µH 接入。极性契约见 relay-wiring.md §4.3", SLC + "; " + SRW + " §1.5"))
+    A(N("ATU_L1_LO", "ATU_L1_LO", "L1", "2", "K2", "COM",
+      "K2 旁路触点公共端接 L2 高端（同一节点 N1）", SLC))
+    A(N("ATU_L2_LO", "ATU_L2_LO", "L2", "2", "L3", "1", "N2：L2 低端 = L3 高端", SLC))
+    A(N("ATU_L2_LO", "ATU_L2_LO", "L2", "2", "K2", "NC",
+      "K2 释放时旁路 L2；吸合 → 33µH 接入", SLC))
+    A(N("ATU_L2_LO", "ATU_L2_LO", "L2", "2", "K3", "COM",
+      "K3 旁路触点公共端接 L3 高端（同一节点 N2）", SLC))
+    A(N("ATU_L3_LO", "ATU_L3_LO", "L3", "2", "J_ANT", "中心",
+      "🔴 N3 = ATU 输出节点 = 天线座 + 并联电容支路（拓扑 SHUNT_C_AT_LOAD，见 §2.3）。本行取代原 'RF_THRU: J_ATU_IN→J_ANT 直连'",
+      SLC + "; §2.3; " + D05 + " §4.1"))
+    A(N("ATU_L3_LO", "ATU_L3_LO", "L3", "2", "K3", "NC",
+      "K3 释放时旁路 L3；吸合 → 47µH 接入", SLC))
+    for _k in ["K4", "K5", "K6"]:
+        A(N("ATU_L3_LO", "ATU_L3_LO", "L3", "2", _k, "COM",
+          "%s 电容支路触点公共端接 N3（天线节点）；该支路仅在吸合时接入" % _k, SLC))
+    A(N("ATU_C3", "ATU_C3", "K4", "NO", "C3", "1",
+      "K4 吸合 → 22pF 接入（C3 为硬件位号；固件注释里称 C1）", SLC + "; atu_match.h 组合↔位模式"))
+    A(N("GND", "GND", "C3", "2", "GND", "-", "C3 冷端接地", SLC))
+    A(N("ATU_C4", "ATU_C4", "K5", "NO", "C4", "1",
+      "K5 吸合 → 120pF 接入（固件注释里称 C2）", SLC))
+    A(N("GND", "GND", "C4", "2", "GND", "-", "C4 冷端接地", SLC))
+    A(N("ATU_C5", "ATU_C5", "K6", "NO", "C5", "1",
+      "K6 吸合 → 330pF 接入（固件注释里称 C3）", SLC))
+    A(N("GND", "GND", "C5", "2", "GND", "-", "C5 冷端接地", SLC))
+    for _k, _o in [("K1", "ATU_L1_LO"), ("K2", "ATU_L2_LO"), ("K3", "ATU_L3_LO")]:
+        A(N("ATU_%s_NO_NC" % _k, "ATU_%s_NO_NC" % _k, _k, "NO", "-", "NC",
+          "🟠 方案A 未使用触点(%s.NO)悬空：不得接任何网络。仅当改用方案B（吸合=旁路、须同步改固件 atu_match 的电感位语义）时才接 %s" % (_k, _o),
+          SRW + " §2.4/§2.6"))
+    for _k in ["K4", "K5", "K6"]:
+        A(N("ATU_%s_NC_NC" % _k, "ATU_%s_NC_NC" % _k, _k, "NC", "-", "NC",
+          "%s 未使用触点(NC)悬空：不得接任何网络" % _k, SRW + " §2.4"))
+    # ULN2003A 输入下拉（2026-09-26 新增；见 relay-wiring.md §4.2/§4.4）
+    SRLY = SRW + " §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h"
+    for i, _k in enumerate(["K1", "K2", "K3", "K4", "K5", "K6"]):
+        A(N("IOEXP_RELAY_%s" % _k, "IOEXP_RELAY_%s" % _k, "R_RLY%d" % (i + 1), "1", "U2", "IN%d" % (i + 1),
+          "🔴 ULN2003A 输入端 10kohm 下拉：TCA9535 上电为输入且带约 100uA 弱上拉电流源，无下拉时 IN 可能被抬到导通阈值附近 → 继电器误吸合",
+          SRLY))
+        A(N("GND", "GND", "R_RLY%d" % (i + 1), "2", "GND", "-",
+          "R_RLY%d 下拉另一端接地（100uA x 10kohm = 1.0V << V_I(on) 2.4V）" % (i + 1), SRLY))
+
+    # ---------------- 13. Unfrozen / to-be-designed ----------------
     A(N("BUZZER_DRV", "BUZZER_DRV", "U1", "IOEXP_SPARE", "LS1", "+", "🟠 蜂鸣器未分配: 挂 TCA9535 空闲位(9 位中选一), 具体位号待定", D05 + " §2.3; hardware/mcu-ui-module/README.md §4"))
     A(N("FB_PULLDOWN", "GPIO12_FB_PD", "R12", "1", "PA_PWR_PWM", "-", "📌 建议未采纳判定: GPIO12 -> 升压 FB 的 10kohm 下拉(docs/05 §7 #7a)", D05 + " §2.10.3, §7 #7a; " + D17 + " §12.6.5"))
     A(N("GND", "GND", "R12", "2", "GND", "-", "同上(采纳后接 GND)", D05 + " §2.10.3"))
@@ -277,6 +338,7 @@ def main():
         ("地平面/星形地", "射频地与数字地单点汇接于底板一点；四层板地平面完整", D04 + " §3.1; hardware/core-board/README.md §6"),
         ("Tandem Match 耦合器与检波", "T1/T2 FT37-43 · R_sense 1kohm · 1N5711 与 HSMS-2850 并行对照", D05 + " §3.2; hardware/atu-module/README.md §3"),
         ("EC11 与按键", "GPIO2/8 直连(10kohm 上拉) · GPIO13 SW 直连(10kohm 上拉) · GPIO9 BOOT/KEY_USER", D05 + " §2.2/§2.6; ADR-0008 §8.3"),
+        ("ATU L 型匹配网络（继电器触点与 L/C 逐脚）", "N0=ATU_L_IN · N1=ATU_L1_LO · N2=ATU_L2_LO · N3=ATU_L3_LO(=天线节点) · K1-K3 用 COM-NC 旁路 L1/L2/L3 · K4-K6 用 COM-NO 接入 C3/C4/C5 · 未使用触点悬空 · ULN 输入 6x10kohm 下拉", "hardware/atu-module/relay-wiring.md §2.1/§2.4/§4.2"),
     ]
     md.append("| 子系统 | 覆盖内容 | 依据 |")
     md.append("|---|---|---|")

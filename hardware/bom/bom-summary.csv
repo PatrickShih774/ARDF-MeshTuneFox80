@@ -14,6 +14,7 @@ R_sense,1 kohm,0805/1206,2,金属膜电阻 1kohm,待查,"初值 1kohm, 需 NanoV
 "D3,D4",零偏置肖特基检波二极管,SOT-23(双管)/SOD-323,2,HSMS-2850,待查,零偏置检波; 与 1N5711 并行对照,atu-module,选型待 stage-3 实测对照,2,"docs/05 §3.2, §7 #5"
 U3,检波放大器(可选),SOIC-8/DIP-8,0-1,LM358,待查,是否需要运放级待 stage-4 实测决定(docs/05 §7 #6); 本行数量标 0-1 表示未定,atu-module,DO NOT populate until stage-4 verdict,0-1,docs/05 §7 #6; hardware/atu-module/README.md §3
 R_esd,100 kohm 高压电阻,轴向高压电阻,1,1kV 高压电阻 100kohm,待查,天线静电泄放到地; 耐压 1kV; 可用射频专用 GDT 替代,atu-module,二选一: 高压电阻 或 GDT,1,docs/04 §3.4; hardware/atu-module/README.md §3
+R_RLY1-R_RLY6,10 kohm,0805,6,电阻 10kohm 1%,待查,🔴 ULN2003A IN1-IN6 各一只下拉到 GND; 100uA x 10kohm = 1.0V << V_I(on) 2.4V,atu-module,"🔴 强制要求(2026-09-26 新增): TCA9535 上电为输入且带约100uA弱上拉, 无下拉则 ULN 输入可能被抬到导通阈值附近 -> 6 只继电器上电误吸合; 布局尽量靠近 U2 的 IN 脚",6,hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h
 "Q1,Q2,Q3",N 沟道 MOSFET,TO-92,3,BS170,待查,"3管并联 E类开关功放; 总耗散能力约1.05-2.5W; 壳温<85C(2.5W连续30分钟, 热电偶实测)",pa-module,需 TO-92 散热片/底板铺铜; 无温度传感(无过温保护),3,hardware/pa-module/README.md §3; docs/04 §3
 Q4 (备选),N 沟道功率 MOSFET,TO-220,0-1,IRF510,待查,Pd=20W; 需5W输出时的备选; 预留兼容焊盘,pa-module,DNP: 仅在壳温实测超限时启用,0-1,hardware/pa-module/README.md §3; docs/04 §3
 D5 (或 ZD1),10V 稳压二极管,SOT-23,3,BZX84-C10,待查,"10V 双向稳压, 栅极保护; 每管1只",pa-module,注意寄生电容不得显著劣化方波边沿,3,hardware/pa-module/README.md §3; docs/04 §3

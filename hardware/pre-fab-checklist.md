@@ -81,7 +81,7 @@
 | [ ] C-03 | ⛔ **无任何 Gerber** | `hardware/*/gerber/` **只有 `.gitkeep`** | 各模块 `gerber/` 目录 | HW |
 | [ ] C-04 | **BOM 已建立（本次新增）** | `hardware/bom/` 分模块 + 汇总 CSV（LCSC 编号待回填） | [`hardware/bom/README.md`](bom/README.md) | HW |
 | [ ] C-05 | ⛔ **ATU 模块 BOM 目录与原设计目录并存** | `hardware/atu-module/bom/` 仍为空 `.gitkeep`；新 BOM 在 `hardware/bom/`。**需决定是否合并口径** | 两处 `bom/` | HW/OWNER |
-| [ ] C-06 | ⛔ **L 型匹配网络触点接法未定** | 文档只有 8 电感/8 电容组合值表，**没有逐脚接法** | `hardware/atu-module/README.md` §2 | HW |
+| [ ] C-06 | ~~⛔ **L 型匹配网络触点接法未定**~~ → ✅ **已解决（2026-09-26）** | 逐脚接法、8+8 真值表、64 组合索引、掩码极性全部写入 [`hardware/atu-module/relay-wiring.md`](atu-module/relay-wiring.md)；新增阻塞项转为 **C-15**（HK4100F 脚位命名）与 **D-20/D-21** | [`hardware/atu-module/relay-wiring.md`](atu-module/relay-wiring.md)（§2.4 逐脚表、§3 映射、§4 驱动对齐） | HW | 无需动作，但**画图时必须逐只按 §2.4 接**；方案 A（K1–K3 用 COM–NC 旁路）不得改成方案 B |
 | [ ] C-07 | ⛔ **LPF 磁环型号与圈数未定** | `lpf-module/README.md` §3 写"具体见 `schematic/` 与 `bom/`"，**而两者都为空** | `hardware/lpf-module/README.md` §3 | HW |
 | [ ] C-08 | **核心底板四层板叠层未定义** | 层序/厚度/阻抗未给；下单前需补 | `hardware/core-board/README.md` §2 | HW |
 | [ ] C-09 | **interconnect 针脚定义为空** | `interconnect/connector/`、`harness/` **只有 `.gitkeep`** | 两目录 | HW |
@@ -90,6 +90,8 @@
 | [ ] C-12 | **结构尺寸图未出** | `core-board/mechanical/` 只有 `.gitkeep`（安装孔位/板框/模块间距） | `hardware/core-board/README.md` §5 | HW |
 | [ ] C-13 | **线束图未出** | 走向/长度/线径/颜色约定/压接/屏蔽处理均未定义 | `hardware/interconnect/README.md` §5 | HW |
 | [ ] C-14 | ⚠️ **`docs/13-emc-and-spurious-suppression.md` 尚不存在（待补）** | 接地与杂散抑制的权威文档缺失；`docs/04` §3.1 与 §5 风险表都指向它 | `docs/04` §3.1、§5（风险 #6） | HW |
+| [ ] C-15 | ⛔ **HK4100F 触点脚的物理命名（COM/NO/NC = 第几号脚）未核实**（2026-09-26 新发现） | 本仓**无 HK4100F 数据手册本体**（PDF 走外部归档，而 `hardware/datasheets/INDEX.md` **尚未建立**），`datasheets/` 下只有 `.gitkeep` + `README.md` → **封装级原理图画不出来**，脚位接反即整机不工作 | [`hardware/atu-module/relay-wiring.md`](atu-module/relay-wiring.md) §2.5（含万用表五步核实法）；`hardware/datasheets/README.md` §2/§4 | HW | 🔴 来料后用万用表法核实（先找 720 Ω 线圈脚，再判 COM/NC，再加电判 NO）并把脚号回填 §2.5；同时建立 `datasheets/INDEX.md` |
+| [ ] C-16 | 🟠 **电容支路开路触点的耐压余量**（2026-09-26 新发现） | 谐振高压可达 **816 Vrms**，而 HK4100F 额定切换能力仅 250 VAC；电容支路继电器**断开**时开路触点承受该节点全电压 | [`hardware/atu-module/relay-wiring.md`](atu-module/relay-wiring.md) §5 **R-03**；`hardware/atu-module/README.md` §3 | HW | 查数据手册的「触点间介质耐压」与「额定切换电压」的区别；按 `validation/stage-2` §4.8 做谐振高压实测 |
 
 ---
 
@@ -116,6 +118,8 @@
 | [ ] D-17 | **Si5351 供电与数字电源分轨 + π 型滤波** | 低噪声，保本振相噪 | `docs/04` §3.6 | HW |
 | [ ] D-18 | **I²C SDA/SCL 4.7 kΩ 上拉** | 共享总线（Si5351 + TCA9535） | `docs/05` §2.2 | HW |
 | [ ] D-19 | **MOS 管散热：TO-92 散热片 / 底板铺铜** | 本板**无温度传感、无过温保护**，散热设计是唯一热保障 | `hardware/pa-module/README.md` §3、§8.1 | HW |
+| [ ] D-20 | ⛔ **ULN2003A `IN1–IN6` 各加 10 kΩ 下拉到 GND（6 只）**（2026-09-26 新发现） | TCA9535 上电时 I/O 为**输入**且带**约 100 µA 弱上拉电流源**；达林顿阵列**不能悬空输入**，无下拉则上电瞬间 ULN 输入被弱上拉抬到导通阈值附近 → **6 只继电器可能同时误吸合**。10 kΩ 下拉把电平钳到 1.0 V ≪ V_I(on) ≈ 2.4 V（固件也在正式初始化前把输出锁存器清 0，构成两道保险） | [`hardware/atu-module/relay-wiring.md`](atu-module/relay-wiring.md) §4.2/§4.4；私有固件仓 `components/drv_relay/include/drv_relay.h` 文件头；BOM 行 `R_RLY1-R_RLY6` | HW | 🔴 加 6 只 10 kΩ（0805）到 BOM 与原理图，位置**尽量靠近 ULN2003A 的 IN 脚** |
+| [ ] D-21 | ⛔ **电感旁路触点必须用 `COM–NC`（方案 A）**（2026-09-26 新发现） | 若按 `COM–NO` 跨接电感（"吸合=旁路"），则**上电全释放态 = 92 µH**，与固件 `ATU_MATCH_SAFE_COMBO = 0`（= 0 µH/0 pF 直通）的契约冲突 → 上电安全态、NVS 记忆组合、SWR 判据全部对不上号 | [`hardware/atu-module/relay-wiring.md`](atu-module/relay-wiring.md) §1.5、§2.6；私有固件仓 `components/atu_match/include/atu_match.h` §组合↔位模式 | HW | 🔴 原理图评审时逐只核对 **K1–K3 的 `NC` 脚**是否接在电感另一端；丝印标 `COM/NC/NO`，**不要**只标脚号 |
 
 ---
 
@@ -136,7 +140,7 @@
 | # | 判据 | 证据位置 |
 |---|---|---|
 | [ ] F-01 | **A. 组全部 ⛔ 项已闭环**（A-2 / A-4 / A-5 / A-6 / A-7） | 本清单 A 组 |
-| [ ] F-02 | **C. 组 C-01 / C-02 / C-06 / C-07 已闭环**（原理图、PCB、匹配网络接法、LPF 参数） | 本清单 C 组 |
+| [ ] F-02 | **C. 组 C-01 / C-02 / C-07 / C-15 已闭环**（原理图、PCB、LPF 参数、HK4100F 脚位核实）—— **C-06 已于 2026-09-26 闭环**（[`relay-wiring.md`](atu-module/relay-wiring.md)） | 本清单 C 组 |
 | [ ] F-03 | **D. 组 ⛔ 项在原理图上逐条可见并已复核** | 本清单 D 组 |
 | [ ] F-04 | **E. 组 E-01 已修正**（`hardware/README.md` 的 2N7002 过时行） | `hardware/README.md` §3 |
 | [ ] F-05 | **BOM 的 `LCSC 编号` 列已回填**（当前全部 `待查`） | [`hardware/bom/README.md`](bom/README.md) §3 |
@@ -155,4 +159,5 @@
 | [`docs/04-hardware-architecture.md`](../docs/04-hardware-architecture.md) | 硬件架构（⚠️ §3.5 有过时内容，见 E-02） |
 | [`docs/adr/ADR-0008`](../docs/adr/ADR-0008-st7567-spi-and-pa-keying.md) | ST7567 / PA 驱动 / CW 键控 / 继电器驱动链 |
 | [`hardware/bom/README.md`](bom/README.md) | 立创EDA 导入包与 BOM 说明、LCSC 待查原因 |
+| [`hardware/atu-module/relay-wiring.md`](atu-module/relay-wiring.md) | 🔴 **ATU 继电器逐脚接法规格**（C-06 的关闭文档；D-20/D-21/C-15/C-16 的来源） |
 | [`hardware/README.md`](README.md) | 硬件设计区总说明（⚠️ §3 有过时行，见 E-01） |
