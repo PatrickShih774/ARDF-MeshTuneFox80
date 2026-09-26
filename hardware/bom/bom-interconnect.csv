@@ -1,0 +1,8 @@
+﻿位号,参数,封装,数量,建议型号,LCSC 编号,关键规格,模块,备注,统一数量,来源
+J11-J16,模块侧 SMA 母座,SMA 母座,6,SMA 母座 50ohm,待查,射频链路: Si5351->PA->LPF->ATU->ANT; 各环节 50ohm,interconnect,PA/LPF/ATU 模块各 2 个(输入+输出); 与底板 3 个合计 9 个,6,hardware/interconnect/README.md §3; docs/04 §3
+W1-W3,SMA 公-公短线,SMA 跳线,3,SMA 公-公短线,待查,"50ohm 屏蔽线, 长度尽量短; PA->LPF, LPF->ATU 等",interconnect,BOM 计 3 根,3,hardware/interconnect/README.md §3; docs/04 §3
+J17-J22,模块排针,2.54mm 排针,6 组,2.54mm 排针,待查,与底板 J1-J6 排母配对; 传递 GPIO/PWM/SWR/12V/5V/3V3/GND,interconnect,逐脚定义待 interconnect/connector/ 补充(目录现为空),6 组,hardware/interconnect/README.md §3; docs/04 §3
+J23,电池座/电池接口,2S 电池座,1,2S 电池座,待查,与电源模块电池连接,interconnect,与 power-module BT1 配套,1,hardware/interconnect/README.md §3; docs/04 §3
+J24,天线座,SMA 母座,1,SMA 母座,待查,ATU 输出至天线,interconnect,"与 core-board J10 为同一件, 汇总时避免重复计数",1,hardware/interconnect/README.md §3; docs/04 §3
+-,线束材料,多股软铜线/杜邦线/热缩管/扎带,1 套,线束材料套件,待查,12V 功放轨与 5V 主轨峰值电流下压降需实测; 模拟信号(ADC FWD/REV)建议屏蔽线,interconnect,线径/颜色约定/压接方式待 harness/ 补充,1 套,hardware/interconnect/README.md §3; docs/04 §3
+-,屏蔽线(可选),屏蔽双绞/同轴,可选,屏蔽线,待查,用于 SWR 检波模拟信号与 Si5351 I2C 长距离走线,interconnect,可选,可选,hardware/interconnect/README.md §3; docs/04 §3

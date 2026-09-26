@@ -1,0 +1,4 @@
+﻿位号,参数,封装,数量,建议型号,LCSC 编号,关键规格,模块,备注,统一数量,来源
+L4-L6,低通滤波电感,磁环绕制,3,磁环 T106-6 (待定),待查,三阶椭圆低通; 中心频率 3.55MHz; 通带 3.5-3.6MHz; 7.1MHz 处衰减 >=55dB,lpf-module,磁环型号/圈数待硬件设计后填入(本模块 README 未给值),3,hardware/lpf-module/README.md §3; docs/04 §3
+C8-C10,低通滤波电容,1206/1812,3,NP0/COG 电容 (待定),待查,NP0 材质; 耐压按谐振点高压留足裕量,lpf-module,容值与耐压待硬件设计后填入,3,hardware/lpf-module/README.md §3; docs/04 §3
+SH1,金属屏蔽罩,模块级,0-1,定制屏蔽罩,待查,"可选, 抑制辐射耦合",lpf-module,DNP 可选,0-1,hardware/lpf-module/README.md §3; docs/04 §3

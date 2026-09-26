@@ -1,0 +1,7 @@
+﻿位号,参数,封装,数量,建议型号,LCSC 编号,关键规格,模块,备注,统一数量,来源
+J1-J6,模块插座,2.54mm 排母,6 组,2.54mm 排母,待查,6 组模块插座(pa/lpf/atu/power/mcu-ui 等); 承载 GPIO/PWM/SWR/电源轨,core-board,建议用圆孔排母提升插拔寿命,6 组,hardware/core-board/README.md §3; docs/04 §3
+J7-J9,射频连接器,SMA 母座(PCB 焊接),3,SMA 母座 50ohm,待查,底板侧射频互联 50ohm; 配合 SMA 公-公短线使用,core-board,"底板 3 个, 模块侧共 6 个(ATU 模块自带)",3,hardware/core-board/README.md §3; docs/04 §3
+J10,天线座,SMA 母座(面板),1,SMA 母座,待查,ATU 输出 -> 天线座,core-board,天线座也计入 interconnect 清单,1,hardware/core-board/README.md §3; docs/04 §3
+C14-C20,高频去耦电容组,0805,多只,X7R 100nF 套件,待查,每个模块插座旁就近布置,core-board,"数量按插座数 x 2 估算, 布线时定",多只,hardware/core-board/README.md §3; docs/04 §3
+X1,32.768 kHz 晶振 DNP 焊盘,DNP,1,32.768kHz 晶振焊盘,待查,Mesh 时钟可选升级; DNP 不贴,core-board,仅焊盘,0-1,hardware/core-board/README.md §3; docs/04 §3
+-,PCB 四层板,130x95mm 四层,1,四层板 (1.6mm),待查,射频链路 50ohm; 电源平面分离: 12V/5V/3.3V射频/3.3V数字; 数字地与射频地单点汇接,core-board,"🟠 叠层(层序/厚度/阻抗)未定义, 下单前需补(E-05)",1,hardware/core-board/README.md §3; docs/04 §3

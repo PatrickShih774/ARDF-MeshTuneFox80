@@ -1,0 +1,8 @@
+﻿位号,参数,封装,数量,建议型号,LCSC 编号,关键规格,模块,备注,统一数量,来源
+"Q1,Q2,Q3",N 沟道 MOSFET,TO-92,3,BS170,待查,"3管并联 E类开关功放; 总耗散能力约1.05-2.5W; 壳温<85C(2.5W连续30分钟, 热电偶实测)",pa-module,需 TO-92 散热片/底板铺铜; 无温度传感(无过温保护),3,hardware/pa-module/README.md §3; docs/04 §3
+Q4 (备选),N 沟道功率 MOSFET,TO-220,0-1,IRF510,待查,Pd=20W; 需5W输出时的备选; 预留兼容焊盘,pa-module,DNP: 仅在壳温实测超限时启用,0-1,hardware/pa-module/README.md §3; docs/04 §3
+D5 (或 ZD1),10V 稳压二极管,SOT-23,3,BZX84-C10,待查,"10V 双向稳压, 栅极保护; 每管1只",pa-module,注意寄生电容不得显著劣化方波边沿,3,hardware/pa-module/README.md §3; docs/04 §3
+R1,10 kohm,0805,1,电阻 10kohm 1%,待查,栅极固定偏置分压上臂(自5V LDO取得约2.1V),pa-module,"纯固定偏置, 无温度补偿",1,hardware/pa-module/README.md §3; docs/04 §3
+R2,2.2 kohm,0805,1,电阻 2.2kohm 1%,待查,"栅极固定偏置分压下臂, 下端直接接地",pa-module,"NTC 已取消(2026-09-26, docs/17 §12.5)",1,hardware/pa-module/README.md §3; docs/04 §3
+C6,100 nF,0805,3,X7R 100nF 50V,待查,"旁路电容, 每管1只",pa-module,数量按3管计,3,hardware/pa-module/README.md §3; docs/04 §3
+C7,升压输出滤波电容,电解/钽,1,待定,待查,12V 轨纹波峰峰值 <0.5V @2.5W 发射,pa-module,型号与容值待 12V 升压模块 P7 定型后确定,1,docs/05 §3.3; docs/05 §7 #7

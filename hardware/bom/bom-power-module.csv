@@ -1,0 +1,10 @@
+﻿位号,参数,封装,数量,建议型号,LCSC 编号,关键规格,模块,备注,统一数量,来源
+U9,同步降压 DC-DC,SOT-23-8/SOIC-8,1,MP2315,待查,"5V 主轨; 峰值效率高; 替代原 7805 LDO(原效率约68%, 发热严重)",power-module,满载30分钟温升需实测,1,hardware/power-module/README.md §3; docs/04 §3
+U10,LDO 线性稳压器,SOT-23-5/89,1,MD7673E50VC1,待查,"3.3V 射频轨(低噪声, 供 Si5351); 需与数字轨分轨 + pi 型滤波",power-module,型号写法以模块README为准(MD7673),1,hardware/power-module/README.md §3; docs/04 §3
+U11,升压 DC-DC 模块,成品模块,1,3.7V->12V 升压模块 (PWM 可调),待查,12V 功放轨; PWM 可调输出; 输出 12-13.8V; 纹波峰峰值 <0.5V @2.5W,power-module,🔴 型号与 FB 网络参数未定(docs/05 §7 #7 待冻结); 电池为2S(7.4V)而模块标称3.7V输入需核对(E-02),1,"docs/05 §3.3, §7 #7; hardware/power-module/README.md §3"
+U12,自恢复保险丝/保护,贴片,1,待定,待查,电池保护/充电接口; 具体方案未定,power-module,P8 相关: 电池保护与充电接口方案待设计,1,hardware/power-module/README.md §3; docs/04 §3
+BT1,2S 锂聚合物电池,2S 500mAh,1,2S 500mAh 7.4V 锂电,待查,续航: 连续发射@2.5W 约38分钟; 竞赛静默释放继电器约100分钟; 待机约150分钟,power-module,需配套电池座 + 保护/充电接口,1,hardware/power-module/README.md §3; docs/04 §3
+BH1,电池座,2S 电池座,1,2S 电池座,待查,适配所选2S 500mAh电池,power-module,,1,hardware/power-module/README.md §3; docs/04 §3
+C11-C13,输入/输出电容套件,电解 + 钽 + 陶瓷,1 套,电解+钽+陶瓷 套件,待查,DC-DC 输入/输出电容; 含 100nF X7R 用于 pi 型 RC 滤波(3.3V 数字轨与本振独立滤波),power-module,容值与耐压待 DC-DC 选型确定,1 套,hardware/power-module/README.md §3; docs/04 §3
+FB1,π 型 RC 滤波元件组,0805/磁珠,1 套,pi 型 RC 滤波 (待定),待查,3.3V 数字轨独立 pi 型 RC 滤波; 含 100nF X7R,power-module,"🟠 模块README 写 RC, README 目录树/总表亦写 π 型 RC —— RC 通常靠电阻压降, 需确认是否有意为之(E-04)",1 套,docs/04 §3.6; hardware/power-module/README.md §3
+C_3V3RF,0.1 uF / 10 uF,0805,2,X7R 100nF + 10uF,待查,3.3V 射频轨去耦(Si5351 就近),power-module,需实测噪声对本振相噪的影响,2,hardware/power-module/README.md §3; docs/04 §3

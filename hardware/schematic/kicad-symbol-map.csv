@@ -1,0 +1,48 @@
+﻿位号,建议 KiCad 符号,图页,网络标签,备注
+U4,MCU_Espressif:ESP32-C3,mcu-ui,ADC_FWD;ADC_REV;ADC_VBAT;EC11_A;EC11_B;EC11_SW;KEY_USER;I2C_SDA;I2C_SCL;LCD_SCK;LCD_MOSI;LCD_DC;PA_PWR_PWM,模组级封装需自建或选通用 Module 符号
+U7,Oscillator:Si5351A-B-GT,mcu-ui,I2C_SDA;I2C_SCL;RF_SRC_CLK,"CLK0 输出; CLKx_DIS 由 I2C 写, 无专用引脚"
+U1,Interface_Expansion:TCA9535,mcu-ui,IOEXP_RELAY_K1..K6;IOEXP_LCD_BL,A2/A1/A0 接法待定(docs/05 §7 #2)
+U2,Transistor_Array:ULN2003A,atu,IOEXP_RELAY_K1..K6;+12V;GND,COM 必须接 +12V
+U8,74xGxx:74ACT244,pa,RF_SRC_CLK;PA_GATE,5V 供电; 输入侧 10kohm 下拉
+U9,Regulator_Switching:MP2315,power,+5V;VBAT;GND,
+U10,Regulator_Linear:MD7673,power,+3V3_RF;+5V;GND,封装未定
+U11,Module:Boost_Module_12V,power,+12V;VBAT;PA_PWR_PWM;GND,型号未定; 3.7V->12V 标称输入需核对
+U5,Display:ST7567_128x64,mcu-ui,LCD_SCK;LCD_MOSI;LCD_DC;LCD_RST;LCD_BL_CTRL,CS 接 GND; RST 与板复位共用
+U6,Device:Rotary_Encoder_Switch,mcu-ui,EC11_A;EC11_B;EC11_SW;GND,A/B 需 10kohm 上拉
+U3,Amplifier_Operational:LM358,atu,LM358_IN;ADC_FWD;ADC_REV;+5V;GND,"可选级, 数量 0-1, 待 stage-4 定"
+K1..K6,Relay:HK4100F-DC-12V,atu,RELAY_K1_COIL..RELAY_K6_COIL;+12V;RELAY_CONTACTS,触点接法未定(见 B-01)
+"T1,T2",Device:Transformer_1P_SS,atu,XFWD_SEC;XREV_SEC;RF_THRU,"Tandem Match, FT37-43, 初级1匝/次级10匝"
+L1,Device:L,atu,ATU_L1,"12uH, T37-6 约63圈"
+"L2,L3",Device:L,atu,ATU_L2;ATU_L3,"33uH/47uH, T106-6 约53/64圈"
+L4..L6,Device:L,lpf,LPF_L4..LPF_L6,磁环型号/圈数待定(C-07)
+"C3,C4,C5",Device:C,atu,ATU_C3;ATU_C4;ATU_C5,"NP0, 耐压 >=630V"
+C8..C10,Device:C,lpf,LPF_C8..LPF_C10,容值待定
+"D1,D2",Diode:1N5711,atu,DET_FWD;DET_REV;ADC_FWD;ADC_REV,肖特基检波
+"D3,D4",Diode:HSMS-2850,atu,DET_FWD;DET_REV;ADC_FWD;ADC_REV,双管封装按其实际引脚数放置
+D5,Diode:BZX84C10,pa,PA_GATE;GND,"10V 栅极保护, 每管1只"
+Q1..Q3,Transistor_FET:BS170,pa,PA_GATE;PA_BIAS;PA_DRAIN;GND,E 类并联
+Q4,Transistor_FET:IRF510,pa,PA_GATE;PA_DRAIN;GND,备选 DNP
+Q5,Transistor_FET:2N7002,mcu-ui,LCD_BL_CTRL;LCD_BL_K;GND,背光驱动
+"R1,R2",Device:R,pa,PA_BIAS;+5V;GND,10k/2.2k 固定偏置
+"R3,R4,R5",Device:R,mcu-ui,EC11_A;EC11_B;EC11_SW;+3V3_DIG,各 10kohm 上拉
+"R6,R7",Device:R,mcu-ui,I2C_SDA;I2C_SCL;+3V3_DIG,各 4.7kohm 上拉
+"R8,R9,R10",Device:R,pa,RF_SRC_CLK;PA_GATE;GND,各 10kohm 下拉(强制)
+R_VBAT1..3,Device:R,mcu-ui,VBAT;VBAT_DIV;ADC_VBAT;GND,22k/9.1k/1k
+"R_sense_F,R_sense_R",Device:R,atu,XFWD_SEC;XREV_SEC;DET_FWD;DET_REV;GND,"1kohm 初值, 待微调"
+R_esd,Device:R,atu,ANT_ESD;GND,1kV 100kohm 或 GDT
+R12,Device:R,mcu-ui,GPIO12_FB_PD;GND,建议未定(A-7a)
+"C6,C_decout",Device:C,pa,PA_DRAIN;DEC244;GND,100nF
+C_VBAT,Device:C,mcu-ui,ADC_VBAT;GND,0.1uF
+C244,Device:C,pa,DEC244;GND,244 每 Vcc 100nF
+C11..C13,Device:C_Polarized,power,VBAT;+5V;+12V;GND,电解+钽+陶瓷套件
+C_3V3RF,Device:C,power,+3V3_RF;GND,0.1uF + 10uF
+BT1,Device:Battery,power,VBAT;GND,2S 500mAh
+X1,Device:Crystal,mcu-ui,OSC32K,32.768kHz DNP 焊盘
+LS1,Device:Buzzer,mcu-ui,BUZZER_DRV;GND,驱动位待分配
+"SW1,SW2",Switch:SW_Push,mcu-ui,KEY_USER;GND,SW2 复用 BOOT
+J1..J6,Connector_Generic:Conn_02x??_Odd_Even,core,PWR-12V;PWR-5V;PWR-3V3-RF;PWR-3V3-DIG;CTRL-GPIO;ADC-SWR;BUS-I2C,针脚定义待定(C-09)
+J7..J16,Connector:Conn_Coaxial,core;interconnect,RF_PA_IN;RF_PA_OUT;RF_LPF_OUT;RF_ANT,SMA 50ohm
+J_USB,Connector:USB_C_Receptacle,mcu-ui,USB_DM;USB_DP;GND,原生 USB 控制台
+J_UART,Connector_Generic:Conn_01x04,mcu-ui,UART0_TX;UART0_RX;+3V3_DIG;GND,
+FB1,Device:FerriteBead,power,+3V3_DIG,pi 型滤波元件(见 B-07)
+TP1..TP8,Connector:TestPoint,core,ADC_FWD;ADC_REV;+12V;+5V;GND;I2C_SDA;I2C_SCL,调试测试点

@@ -1,0 +1,7 @@
+﻿位号,参数,封装,数量,建议型号,LCSC 编号,关键规格,模块,备注,统一数量,来源
+-,垂直导线,多股软铜线/镀锡铜线,5 m,多股软铜线 5m,待查,推荐 5m(最小4m/最大8m); 3.5-3.6MHz; 垂直极化; 远离树干与金属物,antenna,"无匹配网络时效率极低, 必须配合 ATU",5 m,hardware/antenna/README.md §3; docs/04 §3
+-,地线,多股软铜线,5 m,地线 3 段 x 2m,待查,"至少 5m, 推荐 3 段 x 2m 辐射状铺设",antenna,,3 x 2 m,hardware/antenna/README.md §3; docs/04 §3
+-,地钉,金属地钉,3,地钉,待查,固定辐射状地线,antenna,,3,hardware/antenna/README.md §3; docs/04 §3
+-,悬挂件,绝缘绳/抛绳器/绝缘支撑杆,1 套,绝缘绳 + 抛绳器/弹弓 + 绝缘支撑杆,待查,垂直悬挂; 现场架设与收放,antenna,,1 套,hardware/antenna/README.md §3; docs/04 §3
+-,馈线,同轴馈线,1,同轴馈线 (对接 ATU 输出),待查,SMA 座与同轴馈线; 弯曲半径满足要求,antenna,与 interconnect 的 SMA 跳线区分,1,hardware/antenna/README.md §3; docs/04 §3
+-,测量仪器(非 BOM),手持矢量网络分析仪,1,NanoVNA-F 或同类,待查,用于实测 3.5MHz 阻抗 R+jX 与匹配轨迹; 属于工具而非装机物料,antenna,"非装机件, 单独列出以便采购判断",1,hardware/antenna/README.md §3; docs/04 §3

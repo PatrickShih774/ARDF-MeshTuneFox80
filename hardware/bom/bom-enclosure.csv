@@ -1,0 +1,6 @@
+﻿位号,参数,封装,数量,建议型号,LCSC 编号,关键规格,模块,备注,统一数量,来源
+-,外壳(3D 打印件),3D 打印 上下壳+模块支架+LCD压框+电池仓,1 套,3D 打印件 (STL/STEP/3MF),待查,内部容纳 130x95mm 底板 + 55x65mm ATU + 2S 500mAh 电池; 成本目标约 5 元/套,enclosure,模型文件尚未建模(3d-print/ 目录为空),1 套,hardware/enclosure/README.md §3; docs/04 §3
+-,通用塑料盒(备选),成品盒改制,0-1,通用塑料盒,待查,按底板尺寸选型并手工开孔; 与 3D 打印件二选一,enclosure,替代方案,0-1,hardware/enclosure/README.md §3; docs/04 §3
+-,M3 铜柱与螺钉,M3,1 套,M3 铜柱 + 螺钉套件,待查,模块与底板固定; 含自攻螺钉,enclosure,长度待结构设计确定,1 套,hardware/enclosure/README.md §3; docs/04 §3
+-,面板件,亚克力或 PCB 材质,1,亚克力/PCB 面板,待查,"开孔: LCD 12864 视窗, EC11 旋钮孔, 按键孔, SMA 座孔, 天线座孔, 蜂鸣器出声孔",enclosure,面板开孔图纸(DXF/PDF)待出(panel/ 目录为空),1,hardware/enclosure/README.md §3; docs/04 §3
+-,散热片/通风栅格(可选),成品/打印件,0-1,TO-92 散热片 + 通风栅格,待查,BS170 区域通风; 功放 2.5W 连续30分钟不超温; 壳温判据 <85C,enclosure,"散热片为 PA 模块必需(见 pa-module BOM), 此行指壳体风道",0-1,hardware/enclosure/README.md §3; docs/04 §3

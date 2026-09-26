@@ -169,3 +169,12 @@ hardware/
 | [`hardware/datasheets/README.md`](datasheets/README.md) | 数据手册归档规范 |
 | [`hardware/reference/README.md`](reference/README.md) | 外部参考设计说明 |
 | [`hardware/archive/README.md`](archive/README.md) | 历史版本归档规则 |
+| [`hardware/bom/README.md`](bom/README.md) | **立创EDA 导入包**：分模块 BOM + 汇总 BOM + 立创EDA 导入能力调研 |
+| [`hardware/bom/bom.md`](bom/bom.md) | 全部 BOM 的 Markdown 呈现（GitHub 直接看） |
+| [`hardware/schematic/netlist.md`](schematic/netlist.md) | **逐脚连接表** + 子系统覆盖（12 GPIO / TCA9535 / ULN2003A / SPI / I²C / ADC / 电源域 / CW 键控 / 星形地） |
+| [`hardware/schematic/KIcad-skeleton-decision.md`](schematic/KIcad-skeleton-decision.md) | ⚠️ **为什么没有生成 KiCad 原理图文件**（含立创EDA 版本兼容结论） |
+| [`hardware/schematic/kicad-symbol-map.csv`](schematic/kicad-symbol-map.csv) | 位号 → 建议 KiCad 标准库符号 → 图页 → 网络标签 映射 |
+| [`hardware/pre-fab-checklist.md`](pre-fab-checklist.md) | 🔴 **打样前检查清单**（`docs/05 §7` 全部条目 + `docs/17` 决策 + 本次发现的遗留） |
+
+> 📌 **2026-09 新增**：`hardware/bom/` 与 `hardware/schematic/` 下的 BOM / 网表 / 检查清单
+> 由 `scripts/build-lceda-import-pack.py` 与 `scripts/build-netlist.py` 生成，**请勿手工编辑**。

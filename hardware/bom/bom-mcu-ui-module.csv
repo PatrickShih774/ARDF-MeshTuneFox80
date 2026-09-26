@@ -1,0 +1,25 @@
+﻿位号,参数,封装,数量,建议型号,LCSC 编号,关键规格,模块,备注,统一数量,来源
+U4 (模组),ESP32-C3 主控模组,2.54mm 排针模组,1,"合宙 LuatOS ESP32C3-CORE (新款, 原生 USB)",待查,"12个可用GPIO: GPIO0-8,10,12,13; GPIO11 不解锁 eFuse; GPIO18/19 原生USB; GPIO20/21 UART0; flash 必须 DIO 模式",mcu-ui-module,"型号待用户确认: 模块README写 ESP32-C3 SuperMini, docs/05/docs/04 写合宙 LuatOS ESP32C3-CORE 新款 -> 需统一(E-01)",1,docs/05 §2.1-§2.2; docs/04 §3.5; hardware/mcu-ui-module/README.md §2
+U5,160 段点阵 LCD 控制器模组,12864 模组(单排/双排待定),1,ST7567 12864 液晶模组,待查,128x64; 仅 SPI; CS 接 GND(总线唯一从机); RST 与板复位共用; DC(A0)=GPIO10; 132列驱动/128列可见,mcu-ui-module,"面板 180 度安装(W0=0, 方向位0xA0+0xC8); 排线针脚定义待硬件确认",1,hardware/mcu-ui-module/README.md §3; docs/04 §3
+U6,旋转编码器,EC11 带按压开关,1,EC11 (带SW),待查,"A/B 相接 GPIO2/GPIO8 (strapping, 须各加 10kohm 上拉, 静止为高); SW 接 GPIO13+GND, 10kohm 上拉, 中断驱动",mcu-ui-module,上电时勿转动旋钮(启动画面提示),1,hardware/mcu-ui-module/README.md §3; docs/04 §3
+"SW1,SW2",轻触开关,6x6mm 直插/贴片,2,轻触按键,待查,"功能键/返回键; 其中之一复用板载 BOOT(GPIO9, strapping, 上电前不可下拉)",mcu-ui-module,GPIO9 已作 KEY_USER; 另一只为独立轻触键,2,hardware/mcu-ui-module/README.md §3; docs/04 §3
+LS1,有源蜂鸣器,12mm 直插,1,有源蜂鸣器 3.3V/5V,待查,"有源(自带振荡); 挂 TCA9535 空闲位驱动(未分配, 见 docs/05 §2.3)",mcu-ui-module,"GPIO 已用满, 不得直连 MCU; 驱动位待定(IOEXP_SPARE)",1,hardware/mcu-ui-module/README.md §3; docs/04 §3
+U7,I2C 可编程时钟发生器,MSOP-10 模块/芯片,1,Si5351A (模块或芯片),待查,"I2C 地址 0x60; 3.3V 射频轨(MD7673, 低噪声); 3.5-3.6MHz, 100Hz 步进",mcu-ui-module,"CW 键控走 CLKx_DIS 使能命令, 不占 GPIO",1,hardware/mcu-ui-module/README.md §3; docs/04 §3
+U8,八路缓冲器/线路驱动器,TSSOP-20 (PWR),1,SN74ACT244PWR,待查,"5V 供电(ACT 4.5-5.5V); TTL 输入阈值, 3.3V 可直驱; +/-24mA, 输出 0-5V 方波驱动 MOS 栅极",mcu-ui-module,"输入侧必须加 10kohm 下拉到 GND, 否则 Si5351 停振时输入悬空 -> 244 振荡 -> PA 自激发射; 每个 Vcc 加 100nF",1,docs/05 §2.5; ADR-0008 §2; hardware/mcu-ui-module/README.md §4
+Q5,N 沟道 MOSFET,SOT-23,1,2N7002,待查,LCD 背光低边开关; 栅极经 R 1kohm 接 TCA9535 P1.1; Vdss=60V,mcu-ui-module,"栅极必须加 10kohm 下拉到 GND: TCA9535 上电为输入高阻, 否则背光状态不定",1,docs/05 §2.3; hardware/atu-module/README.md §3
+R_BL,1 kohm,0805,1,电阻 1kohm,待查,TCA9535 P1.1 到 2N7002 栅极串联电阻,mcu-ui-module,,1,docs/05 §2.3
+R_BL2,10 kohm,0805,1,电阻 10kohm,待查,2N7002 栅极下拉到 GND(上电安全),mcu-ui-module,,1,docs/05 §2.3
+R_BLLED,背光限流电阻,0805,1,待定,待查,背光 LED 串限流; 阻值待模组背光电流确定,mcu-ui-module,待查模组规格,1,docs/05 §2.3
+"R3,R4",10 kohm,0805,2,电阻 10kohm,待查,"EC11 A/B 上拉(strapping 强制要求, 静止为高)",mcu-ui-module,缓解2/3: 启动提示 + 看门狗重试,2,docs/05 §2.6
+R5,10 kohm,0805,1,电阻 10kohm,待查,"EC11_SW 上拉到 3.3V, 按下为低(接 GND)",mcu-ui-module,,1,docs/05 §2.2; ADR-0008 §8.3
+"R6,R7",4.7 kohm,0805,2,电阻 4.7kohm,待查,I2C0 SDA/SCL 上拉到 3.3V(共享总线: Si5351 + TCA9535),mcu-ui-module,,2,docs/05 §2.2
+"R8,R9",10 kohm,0805,2,电阻 10kohm,待查,"SN74ACT244 输入侧下拉到 GND(每路1只, 防悬空振荡)",mcu-ui-module,"🔴 强制要求, 见 docs/05 §2.5",2,docs/05 §2.5
+R10,MOS 栅极下拉电阻,0805,3,电阻 10kohm,待查,保证 OE/停振时 MOS 可靠截止(docs/05 §2.5 要求2),mcu-ui-module,数量按 3 只 BS170 计,3,docs/05 §2.5
+R_VBAT1,22 kohm,0805,1,电阻 22kohm 1%,待查,VBAT 分压上臂; 备选 24kohm(比值0.294),mcu-ui-module,8.4V->2.46V; 6.0V->1.76V,1,docs/05 §2.7
+R_VBAT2,9.1 kohm,0805,1,电阻 9.1kohm 1%,待查,VBAT 分压下臂; 备选 10kohm,mcu-ui-module,源阻抗 R3+(22k//9.1k)=7.4kohm < 10kohm 满足 ADC 要求,1,docs/05 §2.7
+R_VBAT3,1 kohm,0805,1,电阻 1kohm,待查,ADC 串联限流/隔离电阻(GPIO3),mcu-ui-module,静态电流 270uA,1,docs/05 §2.7
+C_VBAT,0.1 uF,0805,1,X7R 100nF 50V,待查,"VBAT 分压滤波, fc 约 245Hz",mcu-ui-module,,1,docs/05 §2.7
+R12,10 kohm,0805,1,电阻 10kohm,待查,GPIO12 -> 升压模块 FB 下拉(上电安全硬件兜底),mcu-ui-module,📌 建议采纳未定(docs/05 §7 #7a); 采纳才计入 BOM(E-03),0-1,"docs/05 §2.10.3, §7 #7a; docs/17 §12.6.5"
+X1,32.768 kHz 晶振,DNP 焊盘,0-1,32.768kHz 晶振,待查,Mesh 时钟可选升级 DNP; 当前依靠 ESP-NOW 每5分钟重同步,mcu-ui-module,DNP 不贴,0-1,hardware/mcu-ui-module/README.md §3; docs/04 §3
+R_ADC,检波负载/分压电阻,0805,待定,待定,待查,前向/反向检波 ADC 满量程由耦合器与 R_sense 决定; ADC 读数应落量程 20%-80%,mcu-ui-module,P4 R_sense 微调后再定值,待定,docs/05 §3.2
+TP1-TP8,测试点,焊盘,8,测试点焊盘,待查,建议: 3.3V/5V/12V/ADC_FWD/ADC_REV/GND/I2C_SDA/I2C_SCL,mcu-ui-module,便于打样后调试,8,推导
