@@ -57,7 +57,8 @@
 - **定位**：固件与中控之间的**唯一事实来源**，两者都不许各自手写帧结构
 - **分层**：Mesh 帧（设备间 ESP-NOW）与 Console 帧（设备 ↔ 中控）分开定义
 - **报文清单**：`HELLO`、`TIME_SYNC_REQ/RSP`、`TX_SCHEDULE`、`SET_FREQ`、`SET_POWER`、`SET_MODE`、`ATU_TUNE_START`、`ATU_STATUS`、`TELEMETRY`、`ACK/NACK`、`SELFTEST`
-- **遥测字段**：设备 ID、UTC 时间、发射状态、频率、功放温度、电池电压、ATU 调谐状态、SWR
+- **遥测字段**（共 7 个，负载 16 字节）：设备 ID、UTC 时间、发射状态、频率、电池电压、ATU 调谐状态、SWR
+  （原「功放温度」字段已于 2026-09-26 随 NTC 温度功能取消，见 [docs/17 §12.5](../docs/17-gpio-allocation-audit.md)）
 - **安全**：ESP-NOW 原生 CCMP + 应用层 HMAC-SHA256 + MAC 白名单 + 序列号防重放
 - **许可**：`Apache-2.0`
 - **规范文档**：将写入 [docs/README.md](../docs/README.md) 待补清单中的 `11-mesh-protocol-and-security.md`

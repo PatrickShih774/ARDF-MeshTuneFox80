@@ -575,6 +575,11 @@ I (77) app_main: bsp_board : ok (hw_rev=1)
 ## 10. 附录 B · 本次审计修正的文档错误索引
 
 > 表中行号均为**修改前**的行号，便于用 `git diff` 复核。
+>
+> ⚠️ **本附录是历史快照**：表中涉及「功放 NTC 未分配引脚 / 标注未分配」的两行
+> （F-03 与 `docs/05:289–291`）记录的是**审计当时**的处置（"未分配"）。
+> 该功能此后已被**整体取消**——见 [§12.5](#125-已采纳取消-ntc-功放温度功能硬件不装-ntc固件不测温)。
+> 本附录**刻意不改写**，以保留审计过程的可追溯性。
 
 | 文件 | 行 | 错误 | 修正 |
 |------|----|------|------|
@@ -664,3 +669,170 @@ I (77) app_main: bsp_board : ok (hw_rev=1)
 本决策**不影响** C.1 的可行性，只是判定"现在不必付这个代价"。
 C.1 的做法（EC11 A/B/SW 全挂 TCA9535 轮询、不用 INT、`PA_PWR_PWM` → GPIO13）
 仍记录在 §5，**PCB 打样前**都可切换。
+
+### 12.5 已采纳：**取消 NTC 功放温度功能**（硬件不装 NTC、固件不测温）
+
+| 项 | 内容 |
+|---|---|
+| **决策日期** | 2026-09-26 |
+| **决策人** | 项目所有者（用户拍板） |
+| **选定** | **彻底取消 NTC 温度功能**——PA 模块 BOM 删除 NTC 10 kΩ B=3950；固件删除测温换算、温度字段、温度显示、温度自检项与过温联锁 |
+| **连带变更** | 遥测帧**删除温度字段：18 字节 → 16 字节**（字段数 8 → 7） |
+| **不涉及** | 引脚分配本身**不变**（仍是方案 A，12/12 用满）；本决策只是**放弃**一个本来就无处安放的采集通道 |
+
+#### 12.5.1 决策理由：**没有 ADC 通道可分配给 NTC**
+
+`drv_analog` 可用的 **12 个 GPIO（GPIO0–8、10、12、13）已全部用满**，
+其中 ADC1 的 5 个通道（CH0–CH4）**无一空闲**——这正是 §3.1 与 §2 核对表的结论：
+
+| ADC1 通道 | 引脚 | 归属 | 能否让给 NTC |
+|---|---|---|---|
+| CH0 | GPIO0 | `ADC_FWD` SWR 前向检波 | ❌ 不可（SWR 判决必需） |
+| CH1 | GPIO1 | `ADC_REV` SWR 反射检波 | ❌ 不可（SWR 判决必需） |
+| CH2 | GPIO2 | `EC11_A` 编码器 A 相 | ❌ 已被占用（且是 strapping 脚） |
+| CH3 | GPIO3 | `ADC_VBAT` 电池电压 | ❌ 不可（电池监测必需） |
+| CH4 | GPIO4 | `I2C_SDA` I²C 数据线 | ❌ 已被占用 |
+
+- 空闲的 ADC1 通道只剩 GPIO2（CH2）与 GPIO4（CH4），**两者都已被 EC11_A / I²C_SDA 占用**
+  （§3.1 原文：*"空闲的 ADC1 通道只剩 GPIO2（CH2）与 GPIO4（CH4），两者都已被 EC11_A / I²C_SDA 占用"*）。
+- 也就是说：**"用 MCU 读 NTC 做温度补偿 / 过温保护"这条路径在本板上物理不可实现**。
+  要给它腾一个通道，就必须牺牲 SWR 前向/反射检波、电池监测、编码器或 I²C 中的一项，
+  代价远高于收益（NTC 只提供"辅助性的热保护"）。
+- 既然固件读不到温度，**保留 PA 模块上的 NTC 就只剩成本与失效点**（BOM 料、装配工序、
+  一个可能虚焊的模拟节点），于是硬件侧同步删除。
+
+> 📌 与 §12.1 的关系：§12.1 决定"引脚分配保持方案 A 不变"，本决策正是该约束的**直接推论**——
+> 12/12 用满 ⇒ 没有空闲 ADC 通道 ⇒ 温度功能无法落地 ⇒ 整体取消。
+
+#### 12.5.2 连带影响清单
+
+| 位置 | 变化 |
+|---|---|
+| `hardware/pa-module/README.md` | **BOM / 核心器件删除 NTC 10 kΩ B=3950**；栅极偏置改为**纯固定偏置**（不再是"温度补偿偏置"） |
+| `hardware/README.md` | PA 模块器件行删除 NTC |
+| `docs/04` §3.2 | 删除 NTC 温度补偿建模 |
+| `docs/03` §5 / §3 | 删除流水线中的"温度检查"环节 |
+| `docs/05` §3.2 / §5.2 | ADC 分配表删除"功放 NTC"行；遥测字段表删除"功放温度"，**18 → 16 字节、8 → 7 字段** |
+| `docs/00` §3.1 / §6.3 | 删除 NTC 温度补偿与功放温度上报字段 |
+| `docs/01` §3.3 | 栅极偏置删除"NTC 温度补偿" |
+| private `components/drv_analog` | 删除 `drv_analog_ntc_millicelsius()` 与 `DRV_ANALOG_TEMP_INVALID` 及其全部宿主机断言（drv_analog 宿主机检查数 **120 → 106**） |
+| private `components/app_core` | 删除 `app_state_t.pa_temp_cdeg` / `temp_valid` |
+| private `components/ui_menu` | 删除温度显示项、`ui_menu_status_t.pa_temp_cdeg` 与 `ui_menu_fmt_cdeg()` |
+| private `components/diag_selftest` | 无温度自检项（ADC 项本就只覆盖 FWD/REV/VBAT，仅更新说明文字） |
+| private `components/rf_power` | 删除 `RF_POWER_REASON_OVER_TEMP` 过温联锁原因位（位空间顺次下移，`RF_POWER_REASON_ALL` 由 `0xFFF` 收窄为 `0x7FF`） |
+| private `components/comm_console` | 遥测帧 `COMM_CONSOLE_TELEMETRY_LEN` **18 → 16**，逐字段编解码与断言同步更新 |
+
+#### 12.5.3 ⚠️ 取消的代价（必须知情）
+
+- 🔴 **失去功放温度保护**。本板**没有任何温度传感与过温联锁**：长时间满功率发射时，
+  BS170 的结温/壳温**只能靠外部散热设计与发射占空比保证**，固件不会因为"太热"而降功率或断功放。
+- **现有兜底手段**：
+
+  | 兜底 | 位置 | 覆盖范围 |
+  |---|---|---|
+  | 峰值时长限制：**3.5 W 峰值 ≤ 30 s** | 固件 `pa_scan()` / `rf_power` 的 `RF_POWER_REASON_PEAK_TIMEOUT` | ✅ 只覆盖**峰值档**（> 额定 2.5 W） |
+  | 散热设计：TO-92 散热片 / 底板铺铜 | `hardware/pa-module/README.md` §3、§6 | 设计余量，非运行时保护 |
+  | 壳温实测判据：**2.5 W 连续 30 分钟壳温 < 85 °C** | `hardware/pa-module/README.md` §6 | 一次性验证结论，非运行时保护 |
+
+- 🔴 **明确缺口**：**额定档（1–2.5 W）连续发射没有任何时间限制**，也不存在温度反馈。
+  上表的峰值超时**管不到**额定档——即"2.5 W 连续发射 10 分钟"在固件层面是完全放行的行为，
+  其热安全**100% 依赖** §6 的壳温实测结论在该工况下依然成立。
+- **若日后实测壳温超限**，处置见 `hardware/pa-module/README.md` §6：
+  把额定功率下调至 2 W，或启用 IRF510（TO-220，Pd = 20 W）兼容焊盘。
+- **恢复路径**：若将来重新需要热保护，必须**先解决 ADC 通道问题**
+  （释放 GPIO2/GPIO4 之一，或走外部 I²C 数字温度传感器——后者不占 ADC，
+  但需要新增器件与 I²C 地址规划，且 I²C 总线已挂 TCA9535 与 LCD）。
+
+### 12.6 已采纳：**GPIO 所有权重构 —— `bsp_board` 不再配置外设引脚**
+
+| 项 | 内容 |
+|---|---|
+| **决策日期** | 2026-09-26 |
+| **决策人** | 项目所有者 |
+| **选定** | **方案 A：`bsp_board` 只保留「引脚映射 + 硬件版本 + 上电安全（GPIO12）+ I²C 总线所有权」，外设引脚的 `gpio_config`/方向/上下拉一律交给各自驱动** |
+| **不涉及** | **引脚分配本身完全不变**（仍是 §12.1 的方案 A，12/12 用满）；本次只改**固件内部所有权** |
+| **公开仓变更** | 本文 §12.6 + [docs/05](05-hw-sw-interface-contract.md) 新增 §2.10「GPIO 所有权与上电安全」、§2.6.2 补注、§2.5 交叉引用、§6 禁止事项新增 2 行、§7 新增 7a |
+| **私有仓变更** | `components/bsp_board`（`bsp_board.c` / `bsp_board.h` / `board_pins.h` / README）、`components/drv_pa`（`drv_pa.c` / CMakeLists / README）、`components/drv_lcd12864`（`drv_lcd12864.c` / README） |
+
+#### 12.6.1 触发原因：两条**误导性**簿记警告（实测）
+
+改前启动日志：
+
+```
+W (198) gpio: conflict found for GPIO[10]                        ← LCD_DC
+W (224) ledc: GPIO 12 is not usable, maybe conflict with others   ← PA_PWR_PWM
+```
+
+根因链（已在 ESP-IDF v6.1 源码逐层核实）：
+
+1. `components/esp_driver_gpio/src/gpio.c` 的 `gpio_config()` 在**输出模式**下调用
+   `esp_gpio_reserve(bit_mask)`，把该脚**重新登记为「已保留」**；若已被登记则打印
+   conflict 警告，源码注释原文 *"Right now, we just give a warning."* —— **不 return、
+   不 continue，照样完整配置**。
+2. 旧 `bsp_board.gpio_init_board()` 对 GPIO2/8/9/**10**/12/13 调用了 `gpio_config()`
+   → 把 GPIO10/12 登记为保留。
+3. 随后 `drv_lcd12864` 对 **GPIO10** 再 `gpio_config(输出)` → conflict；
+   `drv_pa` 的 `ledc_channel_config()` → `ledc.c` `_ledc_set_pin()` 再
+   `esp_gpio_reserve()` → `GPIO 12 is not usable`。
+4. 这解释了为什么早先给 GPIO12/13 加 `gpio_reset_pin()`「**只解决了一半**」：
+   GPIO13 只被配置过一次 → 无第二条警告；GPIO10/GPIO12 有第二次配置 → 仍冲突。
+
+> ⚠️ 两条警告都**不影响功能**（conflict 后不返回；LEDC 之后照样 `gpio_matrix_output`），
+> 但它们是**误导性噪音** —— 将来真出问题会被忽略。本次是"澄清所有权 + 消除噪音"。
+
+#### 12.6.2 重构后的所有权分配
+
+| 引脚 | 所有者 |
+|---|---|
+| GPIO0/1/3（ADC） | `drv_analog` |
+| GPIO2/8（EC11_A/B）、GPIO13（EC11_SW） | `drv_ec11` |
+| GPIO4/5（I²C） | **I²C 驱动**（`i2c_new_master_bus()` 自行 reserve 与配置；**总线对象**仍归 `bsp_board`） |
+| GPIO6/7（SPI2）、GPIO10（LCD_DC） | `drv_lcd12864` |
+| GPIO9（KEY_USER） | `drv_keys` |
+| GPIO12（PA_PWR_PWM） | **`bsp_board`（仅上电安全）+ `drv_pa`（LEDC）** |
+
+**留在 BSP 的三项**（逐条理由）：
+
+| 项 | 为什么不能交出去 |
+|---|---|
+| 引脚映射表 | 本来就是单一事实来源；纯数据，不涉及配置 |
+| **GPIO12 上电安全**（抢先置低 + 内部下拉） | 从芯片复位到 `pa_init()` 之间有**几百 ms**，该脚接升压 FB，必须**最早**被钉在低电平。BSP 是 init 链第一步，只有它有资格做"上电瞬间"的动作；这是**安全**而非"外设配置" |
+| **I²C 总线的所有权**（`i2c_new_master_bus` + 互斥量） | Si5351 与 TCA9535 **共享**同一条总线，且两者的驱动都晚于 BSP；总线对象必须有唯一所有者与唯一互斥量。⚠️ 但 **SDA/SCL 的 IO 配置归 I²C 驱动**（`i2c_new_master_bus()` 内部已完成 reserve/开漏/上拉/matrix 连接），BSP 不再动 GPIO4/5 |
+
+#### 12.6.3 GPIO13 的"只撤销、不配置"（本次的关键细节）
+
+`gpio_config()` 的 conflict 判定对**纯输入模式**同样成立 —— 源码里两条判定互补：
+
+```
+(reserved && input_en) || (reserved && !input_en)   ==   reserved
+```
+
+即 **只要该脚被 MSPI 保留，无论配成输入还是输出都会打警告**。因此
+`bsp_board` 必须保留一次 `gpio_reset_pin(GPIO13)`（GPIO13 = SPIWP，被
+`esp_mspi_pin_reserve()` 登记），**但只撤销保留位，不设方向、不设上下拉** ——
+GPIO13 的"输入 + 上拉"完全由 `drv_ec11` 负责。
+
+#### 12.6.4 撒手窗口的安全性（逐脚）
+
+| 脚 | 撒手期间状态 | 判定 |
+|---|---|---|
+| GPIO2/8（EC11_A/B） | 外部 10 kΩ 上拉 → 高 | ✅ 且正是 strapping 要求的电平 |
+| GPIO9（KEY_USER） | 外部上拉 → 高 | ✅ 未按下 |
+| GPIO13（EC11_SW） | 外部 10 kΩ + 内部上拉 → 高 | ✅ 未按下 |
+| GPIO10（LCD_DC） | 高阻 | ✅ SPI2 未建立、面板无时钟，不会产生误命令 |
+| GPIO0/1/3（ADC） | 输入浮空 | ✅ 模拟脚，无害 |
+| GPIO12（PA_PWR_PWM） | **BSP 已抢先置低**（输出 0 + 内部下拉） | ✅ 见 §12.6.2 与 docs/05 §2.10.2 |
+
+#### 12.6.5 📌 连带的硬件建议（PCB 未打样）
+
+**建议在 GPIO12 与升压 FB 之间加一颗 10 kΩ 下拉到 GND**（docs/05 §2.10.3）：
+固件侧已覆盖"复位 → BSP 置低"之前的窗口之外的**全部**时间，硬件下拉则连那段
+极短的高阻窗口也兜死。零风险、近乎零成本；采纳时需同步 `hardware/**` 的 BOM/原理图
+与 docs/04。**本条是建议而非契约** —— 不采纳也不影响 §12.6 的成立。
+
+#### 12.6.6 与 §12.1 的关系
+
+`§12.1` 决定"**引脚分配**保持方案 A 不变"；本次决定"**固件内部所有权**如何划分"。
+两者**正交**：本次重构**没有动任何一个引脚号**，`docs/05` §2.2 引脚表、
+`board_pins.h` 的 `BOARD_*` 宏全部保持原样。§12.4（若将来要动 GPIO12 → 走 C.1）
+与 §12.3（仍需硬件确认的开放项）继续有效。

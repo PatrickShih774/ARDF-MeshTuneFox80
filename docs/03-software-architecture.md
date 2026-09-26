@@ -129,7 +129,7 @@
 | `drv_keys` | 双按键消抖与长按识别、有源蜂鸣器提示音 | `bsp_io_expander` |
 | `drv_relay` | 6 路继电器组抽象（K1–K6）：组合写入、最小切换间隔、机械寿命计数 | `bsp_io_expander` |
 | `drv_pa` | 功放控制：PA_EN 使能 + LEDC 调压（0.02–2.5 W），功率档位映射 | `bsp_board`、`bsp_io_expander` |
-| `drv_analog` | ADC 采样与滤波：电池电压、电源电流、NTC 功放温度、前向/反向检波 | `bsp_board` |
+| `drv_analog` | ADC 采样与滤波：电池电压、电源电流、前向/反向检波（NTC 功放温度已取消，见 [docs/17 §12.5](17-gpio-allocation-audit.md)） | `bsp_board` |
 
 ### L2 射频层（3）
 
@@ -169,7 +169,7 @@
 | 组件 | 职责 | 依赖 |
 |------|------|------|
 | `app_core` | 应用主框架、事件总线、任务编排、模式调度、全局状态机（待机/长音/识别码/间隔） | 全部 L0–L5 |
-| `ui_menu` | 菜单系统与界面状态机：显示台号/频率/模式/功率/SWR/温度/电池 | `drv_lcd12864`、`drv_ec11`、`drv_keys`、`bsp_storage` |
+| `ui_menu` | 菜单系统与界面状态机：显示台号/频率/模式/功率/SWR/电池 | `drv_lcd12864`、`drv_ec11`、`drv_keys`、`bsp_storage` |
 | `comm_console` | 与中控 PC 的通信：USB-CDC / UART / WiFi；引入 `software/protocol/generated/`（规划中，待创建）的包头 | `net_espnow`、`bsp_storage` |
 | `diag_selftest` | 上电自检与产测模式 | 全部 L0–L2、`net_espnow` |
 
@@ -330,8 +330,10 @@ LCD 走 SPI2 独占（[ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)）：
    │      ├─ 2.0 < SWR ≤ 3.0 ──► 降功率发射（或触发重新调谐）
    │      └─ SWR ≤ 2.0 ──► 正常发射
    │
-   └─► 温度检查 (drv_analog NTC)
-          └─ 超限 ──► 降功率 / 停止发射
+   └─► （原「温度检查 (drv_analog NTC)」已于 2026-09-26 取消：
+          12 个可用 GPIO 已全部用满、ADC1 无空闲通道，
+          故**本板无任何温度联锁**，热安全由散热设计 + 峰值时长限制兜底。
+          见 [docs/17 §12.5](17-gpio-allocation-audit.md)）
 ```
 
 **低功率探测**：ATU 搜索与功率档位切换时，先以低功率探测扫点，避免满功率失谐遍历击穿 BS170。
