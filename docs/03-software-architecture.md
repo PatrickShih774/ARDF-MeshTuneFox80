@@ -238,16 +238,40 @@ components/<组件名>/
 - `include/` 存在时，ESP-IDF 自动将其加入 include 路径；不存在则组件根目录入 include 路径。
 - **只把需要对其它组件暴露的内容放 `include/`**；其余一律 `src/`。
 
-### 4.3 分区表规划
+### 4.3 分区表
 
-| 分区 | 类型 | 大小（规划） | 用途 |
-|------|------|-------------|------|
+> 权威清单是**私有固件仓的 `partitions.csv`**（`Offset` 列一律留空，由 `gen_esp32part.py`
+> 按顺序自动排布）。下表与之一致：4 MB Flash 已用 2188 KB，留白约 1.86 MB。
+
+| 分区 | 类型 | 大小 | 用途 |
+|------|------|------|------|
 | `nvs` | data/nvs | 24 KB | 配置、调谐记忆 |
 | `otadata` | data/ota | 8 KB | OTA 状态 |
 | `phy_init` | data/phy | 4 KB | 射频校准 |
 | `nvs_keys` | data/nvs_keys | 4 KB | NVS 加密密钥（预留） |
-| `factory` | app/factory | 1.5 MB | 主固件 |
+| `factory` | app/factory | 1536 KB | 主固件 |
+| **`coredump`** | data/coredump | **64 KB** | **Core Dump 落盘（崩溃现场）——2026-09 新增** |
 | `storage` | data/spiffs | 512 KB | 字库、Web 页面、OTA 暂存 |
+
+**`coredump` 分区（2026-09 新增）**：
+
+- 大小 64 KB，与 ESP-IDF 官方预置分区表（`components/partition_table/partitions_singleapp_coredump.csv`）一致；
+- 位置**紧跟 `factory`、在 `storage` 之前**，与官方预置表同序。理由：① 让"固件区 + 诊断区"在
+  flash 上连续；② 日后追加 `ota_0`/`ota_1` 时它仍在 app 分区之后，顺序不变；③ `storage`
+  （SPIFFS：字库 / Web 页面 / OTA 暂存）是**后续会增长**的一块，把它留在最尾部，扩容只需
+  往后吃留白，不必挪动其它分区的偏移；
+- 🔴 与之配套，`sdkconfig.defaults` 已开启 `CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y`
+  （此前是 `CONFIG_ESP_COREDUMP_ENABLE_TO_NONE=y`，与本文档"调试主线 = 串口日志 + Core Dump"
+  **直接矛盾**）。
+
+**为什么必须开 Core Dump**：本项目的调试主线是「串口日志 + Core Dump」，刻意不做交互式
+断点调试（见 [15-DSH/ESP-IDF 集成](15-dsh-esp-idf-integration.md) §8）。崩溃往往是偶发的，
+串口日志只留一行 panic 回溯；Core Dump 把**崩溃任务的寄存器与各任务的栈**落进 flash，
+reset 之后仍可用 `idf.py coredump-info` 解出崩溃任务与栈回溯，栈帧地址再用
+`riscv32-esp-elf-addr2line` 反查 `file:line` —— **这是偶发崩溃的唯一事后证据**。
+
+> 实测教训：`ui_menu` 首次渲染曾出现一次 `Load access fault`，当时未开转储，
+> 现场（任务栈、其它任务状态、寄存器）全部丢失，只能靠回溯地址逐个反查。
 
 ### 4.4 默认配置要点（`sdkconfig.defaults`）
 
@@ -266,6 +290,7 @@ components/<组件名>/
 | `CONFIG_ESP_MAIN_TASK_STACK_SIZE` | `4096` | — |
 | `CONFIG_PARTITION_TABLE_CUSTOM_FILENAME` | `partitions.csv` | 自定义分区 |
 | `CONFIG_ESPTOOLPY_FLASHSIZE_4MB` | `y` | 4 MB Flash（choice 形式） |
+| `CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH` | `y` | **崩溃现场落盘**（配套 §4.3 的 64 KB `coredump` 分区）；`DATA_FORMAT_ELF` / `CHECKSUM_*` 在 v6.1 已由内部符号 `select`，**不可手写** |
 | `CONFIG_ESP_TASK_WDT_TIMEOUT_S` | `10` | 任务看门狗 |
 
 > 🔴 **本表只是设计意图；权威清单是私有固件仓的 `sdkconfig.defaults`。**

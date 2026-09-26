@@ -146,16 +146,30 @@ CONFIG_BT_ENABLED=n
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
 CONFIG_ESP_TASK_WDT_TIMEOUT_S=10
 ```
+
+> ⚠️ `sdkconfig.defaults` 只在**生成** `sdkconfig` 时生效；已存在的 `sdkconfig` 优先于
+> `sdkconfig.defaults`（ESP-IDF 自身测试的注释原文：*sdkconfig takes priority over
+> sdkconfig.defaults*）。因此在别人已经构建过的目录里改了 defaults，需要先用
+> `idf.py fullclean`（或删掉 `sdkconfig`）再构建，新项才会生效。
 
 ### 3.4 分区表
 
 规划见 [03-软件架构](03-software-architecture.md) §4.3。要点：
 
 - `nvs` 24 KB（配置 + 调谐记忆）
-- `factory` 1.5 MB（主固件）
+- `factory` 1536 KB（主固件）
+- **`coredump` 64 KB**（崩溃现场落盘；2026-09 新增，位于 `factory` 与 `storage` 之间）
 - `storage` 512 KB（SPIFFS：字库、Web 页面、OTA 暂存）
+
+> ⚠️ **分区表改过之后必须重烧分区表**：`idf.py flash` 会一并写入
+> `partition-table.bin`；若只烧 app，芯片上的旧分区表会让 `coredump` 分区不可见。
+> 最终偏移/大小以构建产物 `build/partition_table/partition-table.bin` 为准
+> （v6.1 不再生成 `partition-table.csv`，用
+> `python %IDF_PATH%/components/partition_table/gen_esp32part.py build/partition_table/partition-table.bin`
+> 反解成 CSV 文本）。
 
 ### 3.5 注意：目标芯片切换
 
@@ -458,8 +472,19 @@ idf.py build
 ### 12.6 调试相关
 
 ESP32-C3 用**内置 USB-JTAG**（GPIO18/19），无需额外调试器。
-Core Dump 需先在 `sdkconfig.defaults` 开启 `CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y` 等项。
-完整操作见**用户级技能 `esp-idf`**（`~/.dsh/skills/esp-idf/SKILL.md`）。
+
+**Core Dump 已开启**（2026-09）：`sdkconfig.defaults` 里
+`CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y`，配套 `partitions.csv` 的 64 KB `coredump` 分区
+（见 §3.4 与 [03-软件架构](03-software-architecture.md) §4.3）。
+崩溃后复位，芯片上的转储用 `idf.py coredump-info` 解出崩溃任务与栈回溯
+（`riscv32-esp-elf-addr2line` 反查 `file:line`）。这是本项目的调试主线之一：
+**串口日志 + Core Dump**，刻意不做交互式断点调试。
+
+> `CONFIG_ESP_COREDUMP_ENABLE` 在 v6.1 会自动 `select` ELF 格式 + SHA256 校验，
+> 因此**不要**再手写 `CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF` /
+> `CONFIG_ESP_COREDUMP_CHECKSUM_CRC32`（这两个符号已不存在，写了只会产生未知项警告）。
+
+完整操作见**用户级技能 `esp-idf-flash-debug`**（`~/.dsh/skills/esp-idf-flash-debug/SKILL.md`）。
 
 ### 12.7 版本选择：**v6.1**（2026-09-25 经源码实测修正）
 
