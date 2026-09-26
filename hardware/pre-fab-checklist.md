@@ -133,6 +133,7 @@
 | [ ] E-04 | **`docs/17 §4 F-10` 的过时项未闭环**（审计已列出但未修） | `docs/17` §4 F-10、§12.6 | HW |
 | [ ] E-05 | **`docs/05` §1.2 结论仍写"远超可用 GPIO（15）"**，而同文 §1.1 已统一为 12 | `docs/05` §1.2（L52）vs §1.1 | SW/HW |
 | [ ] E-06 | 📌 **开发板选型（SuperMini vs LuatOS）对照已完成，决策待项目所有者拍板**：结论是 **SuperMini 缺 GPIO12/13（`PA_PWR_PWM`/`EC11_SW` 必须换到 GPIO20/21）、GPIO8 有板载 LED 冲突、余量 +2→0**；推荐**留在 LuatOS**。**若决定换 SuperMini，必须先闭环 §13.7 的 P-1（拆/断 GPIO8 的 LED）、P-2（重排 pin map 并走 `docs/05` §6 流程）、P-3（确认控制台全在原生 USB-Serial/JTAG）** —— 三条缺一不可，否则不能投板 | `docs/17` §13（§13.1 结论、§13.4 缺口、§13.7 前置条件） | HW/OWNER |
+| [ ] E-07 | 🔴 **"外接 WiFi 天线"这个换板动机已被证伪（2026-09-27）**：**合宙 LuatOS ESP32C3-CORE 与 ESP32-C3 SuperMini 都没有 IPEX/U.FL 座** —— LuatOS 是**板载 PCB 蛇形天线**（官方硬件资源清单原文「2.4G PCB板载天线」，官方原理图 `CORE-ESP32-A12.kicad_sch` 全图无 `ANT`/`IPEX`/`U.FL` 位号）；SuperMini 是**陶瓷贴片天线 `CrossAir CA-C03`**，厂家"外接天线"一节的配图是「**屏蔽层 + 线芯**」= **焊一条线**，也不是插座。⇒ 外接天线在两块板上都是**同样的改板动作**（断开串联匹配器件 → 同轴线芯焊到 `LNA_IN` 侧焊盘 → 屏蔽层就近接地），**换板不带来任何天线便利**；且 SuperMini 的陶瓷天线开箱**更弱**。<br>⇒ **E-06 的决策不应再把"能外接天线"计入 SuperMini 的收益**；若确需外接天线，按 [`docs/17`](../docs/17-gpio-allocation-audit.md) **§13.11.4 方案 E-1** 单独立项（需 VNA + A/B 实测） | [`docs/17` §13.11](../docs/17-gpio-allocation-audit.md)（T-1/T-2/T-4 一手证据、T-5/T-6 厂家资料） | HW/OWNER |
 
 ---
 
