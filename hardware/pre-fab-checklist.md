@@ -129,9 +129,10 @@
 |---|---|---|---|
 | [ ] E-01 | ⛔ **`hardware/README.md` §3 仍写"atu-module 驱动 = 6× 2N7002"**，与现行方案（TCA9535 + ULN2003A）冲突 | `hardware/README.md` §3（atu-module 行）；`docs/05` §2.4；`ADR-0008` §3.3 | HW |
 | [ ] E-02 | **`docs/04` §3.5 仍有过时内容**（15 个可用 GPIO / LCD 走 I²C / IO 扩展器含 LCD RST / 2N7002 分立） | `docs/17` §4 **F-10**（明确"未改，超出授权范围"）；`docs/04` §3.5 | HW |
-| [ ] E-03 | **主控模组名称不一致**：`mcu-ui-module/README.md` 写 "ESP32-C3 SuperMini"，`docs/05`/`docs/04` 写 "合宙 LuatOS ESP32C3-CORE 新款" | `hardware/mcu-ui-module/README.md` §2；`docs/05` §2；`docs/04` §3.5 | HW/OWNER |
+| [ ] E-03 | **主控模组名称不一致**：`mcu-ui-module/README.md` 写 "ESP32-C3 SuperMini"，`docs/05`/`docs/04` 写 "合宙 LuatOS ESP32C3-CORE 新款" → **现行板卡已由 `docs/17` §13 逐脚核实为合宙 LuatOS ESP32C3-CORE 新款（15 脚引出）**；`mcu-ui-module/README.md` §2/§3 的 "SuperMini" 字样属**过时**，须改为现行板卡 | `hardware/mcu-ui-module/README.md` §2、§3；`docs/05` §2；`docs/04` §3.5；**`docs/17` §13.2/§13.6(a)** | HW/OWNER |
 | [ ] E-04 | **`docs/17 §4 F-10` 的过时项未闭环**（审计已列出但未修） | `docs/17` §4 F-10、§12.6 | HW |
 | [ ] E-05 | **`docs/05` §1.2 结论仍写"远超可用 GPIO（15）"**，而同文 §1.1 已统一为 12 | `docs/05` §1.2（L52）vs §1.1 | SW/HW |
+| [ ] E-06 | 📌 **开发板选型（SuperMini vs LuatOS）对照已完成，决策待项目所有者拍板**：结论是 **SuperMini 缺 GPIO12/13（`PA_PWR_PWM`/`EC11_SW` 必须换到 GPIO20/21）、GPIO8 有板载 LED 冲突、余量 +2→0**；推荐**留在 LuatOS**。**若决定换 SuperMini，必须先闭环 §13.7 的 P-1（拆/断 GPIO8 的 LED）、P-2（重排 pin map 并走 `docs/05` §6 流程）、P-3（确认控制台全在原生 USB-Serial/JTAG）** —— 三条缺一不可，否则不能投板 | `docs/17` §13（§13.1 结论、§13.4 缺口、§13.7 前置条件） | HW/OWNER |
 
 ---
 

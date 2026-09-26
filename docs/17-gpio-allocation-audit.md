@@ -905,3 +905,227 @@ W0' = (132 − 128) − W0 = 4 − W0
 本决策只改**显示几何常量与文档**，**不占任何 GPIO**（ST7567 的 `CS`/`RST` 本就不占脚，见 docs/05 §2.2）。
 ⚠️ 若日后改安装方式或换模组，**方向位与 `W0` 必须同步重定**（换模组会换 SEG 走线）：
 画 x=0 / x=127 两条 1 像素竖线，先定方向位，再读出 `W0`（见 docs/05 §2.2、§7 #10）。
+
+---
+
+## 13. 开发板选型对照：ESP32-C3 SuperMini vs 合宙 LuatOS ESP32C3-CORE
+
+> **触发问题**（项目所有者，2026-09-27）：「ESP32-C3 SuperMini 的 GPIO 是不是不够？」
+>
+> 🔴 **本节不改变任何引脚分配。** §12.1 的「方案 A / 12 个可用脚用满 / DIO 强制断言」、
+> §0 的一句话结论、`docs/05` §2.2 的引脚表**全部继续有效**，本节**没有**动固件仓任何文件。
+> 本节只算「换板 / 不换板」这笔账，**结论不构成换板决定** —— 决定权在项目所有者。
+
+### 13.1 结论先行
+
+| 问题 | 答案 |
+| --- | --- |
+| SuperMini **缺几个脚**？ | **按"脚数"算：一个都不缺** —— 它引出 **13 个 GPIO**，我们正好需要 13 个；<br>**按"脚号"算：缺 2 个 —— `GPIO12` 与 `GPIO13`**，这两脚在 SuperMini 上**根本没有引出** |
+| 精确到信号名 | `BOARD_PA_PWR_PWM`（原 GPIO12）与 `BOARD_EC11_SW`（原 GPIO13）**在原脚号上无处可放**；<br>唯一的落点是 **GPIO20 / GPIO21**（= UART0 的 RX/TX） |
+| 隐藏冲突 | ⚠️ **SuperMini 的板载蓝色 LED 焊在 GPIO8 上（高电平有效）**，而 GPIO8 正是 `EC11_B` ——<br>与我们在本板上**拆掉 D5（GPIO13 的 LED）**、**D4（GPIO12 的 LED）**是**同一个问题**；<br>另外 GPIO2 / GPIO8 / GPIO9 三个 strapping **全部**被需求吃满（与现状相同） |
+| 换过去的**收益** | ① 🔴 **R1（"改回 QIO 就变砖"）彻底消失** —— 这是**唯一实质电气收益**（SuperMini 不用 GPIO12/13，与 flash 模式解耦）<br>② 板子更小（22.52×18 mm）、更便宜、通常更好买 —— **采购/结构收益，不是引脚收益** |
+| 换过去的**代价** | ① 两个信号必须**换号**（12→20、13→21）→ 文档 + 固件 pin map 按 `docs/05` §6 流程重走<br>② **必须处理 GPIO8 的板载 LED** ③ **放弃 UART0**（ROM 早期日志 + UART 下载）<br>④ 引脚余量 **+2 → 0** ⑤ 13 个信号与全部外设**重验** ⑥ 机械：仍需改 `mcu-ui-module` PCB（见 §13.6 (d)） |
+| **引脚能力上的净收益** | **0**（换来换去还是"13 个信号用满、0 空闲"，只是把 DIO 耦合风险换成了 LED + UART0 两项新约束） |
+| 推荐 | **留在 LuatOS ESP32C3-CORE**（§13.7）—— 不是"SuperMini 放不下"，而是**换板买不到引脚，却要付 4 项代价**；<br>只有当**采购/尺寸/供货**成为主要矛盾时才值得换，且必须先满足 §13.7 的三条前置条件 |
+
+### 13.2 SuperMini 的精确 pinout（逐脚）
+
+**来源**：① 厂家页（WMNologo / nologo.tech）规格与 Pin Usage 页；
+② [ESPboards 的 SuperMini 引脚表](https://www.espboards.dev/esp32/esp32-c3-super-mini/)（自绘，注明依据 *ESP32-C3 Series Datasheet v2.4*）；
+③ **strapping 三脚的权威依据**：乐鑫官方 [ESP32-C3-DevKitM-1 用户指南](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c3/esp32-c3-devkitm-1/user_guide.html)（脚注 2 明确列出 GPIO2 / GPIO8 / GPIO9）。
+⚠️ **不同厂家的 SuperMini 略有差异**，下表以"16 脚 2×8 排针"的通用版为准，**下单前必须对照实物丝印**。
+
+| 排针# | 丝印 | GPIO | 板载占用 / 角色 | 判定 |
+| --- | --- | --- | --- | --- |
+| 1 | `5V` | — | 电源 | — |
+| 2 | `GND` | — | 地 | — |
+| 3 | `3V3` | — | 电源 | — |
+| 4 | `IO0` / `A0` | **0** | ADC1_CH0 | ✅ 干净（厂家列为首选脚） |
+| 5 | `IO1` / `A1` | **1** | ADC1_CH1 | ✅ 干净 |
+| 6 | `IO2` / `A2` | **2** | 🔴 **strapping**（**不选择启动模式**，启动模式由 GPIO9 决定；厂家建议外部上拉抗复位毛刺） | ⚠️ 与我们现状相同 |
+| 7 | `IO3` / `A3` | **3** | ADC1_CH3 | ✅ 干净 |
+| 8 | `IO4` / `A4` / `SCK` | **4** | ADC1_CH4 / SPI2（IO_MUX 兼 JTAG `MTMS`） | ✅ 干净（见下方勘误） |
+| 9 | `IO5` / `A5` / `MISO` | **5** | ADC2_CH0 / SPI2（兼 `MTDI`） | ✅ 干净 |
+| 10 | `IO6` / `MOSI` | **6** | SPI2 `CLK` 的 IO_MUX 默认脚（兼 `MTCK`） | ✅ 干净 |
+| 11 | `IO7` / `SS` | **7** | SPI2 `MOSI` 的 IO_MUX 默认脚（兼 `MTDO`） | ✅ 干净 |
+| 12 | `IO8` / `SDA` | **8** | 🔴 **板载蓝色 LED（高电平有效）** + 🔴 **strapping（复位须为高**，为低时 UART 下载/启动可能失败） | 🔴 **与 `EC11_B` 冲突** |
+| 13 | `IO9` / `SCL` | **9** | 🔴 **板载 BOOT 按键** + 🔴 **strapping（选择启动模式**：高 = SPI Flash 启动，低 = UART 下载） | ✅ 正好就是我们的 `KEY_USER` |
+| 14 | `IO10` | **10** | SPI2 `CS` 的 IO_MUX 默认脚；厂家列为"无任何启动/系统职责" | ✅ 干净 |
+| 15 | `IO21` / `TX` | **21** | **UART0 TXD**（控制台/引导输出的默认脚） | ⚠️ 需占用即失去 UART0 |
+| 16 | `IO20` / `RX` | **20** | **UART0 RXD**（控制台/下载的默认脚） | ⚠️ 同上 |
+
+**未引出（板上不可得）**：
+
+| GPIO | 在 SuperMini 上为什么不可得 |
+| --- | --- |
+| **11** | `VDD_SPI`（flash 供电脚；只有烧 eFuse 才能当 GPIO，本工程已决定**不解锁**） |
+| **12 / 13** | **flash 的 `SPIHD` / `SPIWP`**（`C:\esp\esp-idf\components\esp_hal_gpspi\esp32c3\include\soc\spi_pins.h:11-12`）——**本板根本没引到排针** |
+| **14 / 15 / 16 / 17** | flash 的 `CS0` / `CLK` / `SPID` / `SPIQ` |
+| **18 / 19** | **原生 USB**（`USB_D-` / `USB_D+`），走 Type-C 座，不引到排针 |
+
+**三条待核实的说法 —— 结论**：
+
+| 说法 | 核实结果 | 依据 |
+| --- | --- | --- |
+| 「GPIO8 = LED」 | ✅ **属实**，且**高电平有效**（厂家示例 `digitalWrite(led, HIGH)` 注释为 "turn the LED on"），另有红色电源灯不占 GPIO | nologo Pin Usage 页 + ESPboards |
+| 「GPIO9 = BOOT」 | ✅ **属实**，且**同时是 strapping 脚**（低电平进下载模式） | ESPboards + 乐鑫 DevKitM-1 用户指南脚注 2 |
+| 「GPIO2 = strapping」 | ✅ **属实**，但**它不决定启动模式**（决定者是 GPIO9）；厂家只建议外部上拉抗复位毛刺 | ESPboards + 乐鑫 DevKitM-1 用户指南脚注 2 + 本项目 §1.2 事实 3 |
+
+> ⚠️ **ESPboards 电气注释勘误（本审计发现）**：该页把 `IO4–IO7` 注为 *"Bootstrapping pin; Flash data
+> (FSPIHD/FSPIWP/FSPICLK/FSPID in internal-flash models)"* —— **两处都不准确**：
+> ① 它们**不是 strapping 脚**（C3 的 strapping 只有 2/8/9）；② 它们是 **SPI2（通用 SPI）的 IO_MUX
+> 四线脚**（`spi_pins.h:19-25`：`SPI2_IOMUX_PIN_NUM_HD=4 / WP=5 / CLK=6 / MOSI=7 / CS=10`），
+> **与 flash 无关**（flash 在 SPI0/1 = GPIO12–17，`spi_pins.h:11-16`）。
+> ⇒ 该页**只作"哪些脚被引出"的清单使用**，**电气注释一律不采信**。
+> 这条勘误同时回答了一个安全问题：**I²C 放 GPIO4/5 在任何 C3 变体（含封装内 flash）上都安全**。
+
+### 13.3 我们的 13 个信号 × 两板逐信号对照
+
+**LuatOS 列的排针号**取自合宙官方文档的 32 脚表（来源 S-6，见 §13.8；完整映射见 §13.6(a)），
+**这是"我们的 13 个信号是否真的都引出了"的直接证据**。
+
+| # | 我们的信号 | 需要的电气特性（为什么不能随便挪） | SuperMini 可用脚 | SuperMini 判定 | LuatOS 排针#（现用） |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `ADC_FWD` | **ADC1_CH0**（ADC2 未标定/部分版本不可用，WiFi 下更不可用） | GPIO0（pin 4） | ✅ | **2** |
+| 2 | `ADC_REV` | **ADC1_CH1** | GPIO1（pin 5） | ✅ | **3** |
+| 3 | `EC11_A` | 中断输入 + **strapping（上电须为高）** | GPIO2（pin 6） | ⚠️ 同现状 | **19** |
+| 4 | `ADC_VBAT` | **ADC1_CH3** | GPIO3（pin 7） | ✅ | **20** |
+| 5 | `I2C_SDA` | I²C0 SDA（matrix 可任意脚）+ 4.7 kΩ 上拉 | GPIO4（pin 8） | ✅ | **28** |
+| 6 | `I2C_SCL` | I²C0 SCL | GPIO5（pin 9） | ✅ | **27** |
+| 7 | `LCD_SCK` | SPI2 SCK（**恰好是 SPI2 IO_MUX 默认脚**，无 matrix 开销） | GPIO6（pin 10） | ✅ | **22** |
+| 8 | `LCD_MOSI` | SPI2 MOSI（同上默认脚） | GPIO7（pin 11） | ✅ | **23** |
+| 9 | `EC11_B` | 中断输入 + **strapping（上电须为高）** | GPIO8（pin 12） | 🔴 **板载蓝 LED 挂在此脚** | **29** |
+| 10 | `KEY_USER` | 板载 BOOT 键（strapping，上电前不可下拉） | GPIO9（pin 13） | ✅ 正好复用 BOOT 键 | **30** |
+| 11 | `LCD_DC` | 每字节翻转的**输出**，**必须直连**（9-bit SPI 已否决，§5.4.2）；恰好是 SPI2 `CS` 的 IO_MUX 默认脚 | GPIO10（pin 14） | ✅ | **21** |
+| 12 | `PA_PWR_PWM` | **LEDC**（芯片 6 通道，可映射**任意** GPIO）+ **非 strapping**（上电即输出低电平） | ❌ 原脚 GPIO12 未引出 → 只能落 **GPIO20**（pin 16） | ⚠️ **须换号** | **4**（LED D4 已拆） |
+| 13 | `EC11_SW` | GPIO 中断输入 + 10 kΩ 上拉（非 strapping） | ❌ 原脚 GPIO13 未引出 → 只能落 **GPIO21**（pin 15） | ⚠️ **须换号** | **10**（LED D5 已拆） |
+| — | （USB 日志/下载） | 原生 USB-Serial/JTAG | GPIO18/19 走 Type-C | ✅ 等价 | 排针 **5 / 6** |
+| — | （备用串口 UART0） | 本项目**已不用于控制台**（`CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y`） | GPIO20/21 | ❌ **换板后会被占用** | 排针 **8 / 9** |
+
+**三条电气结论**：
+1. **ADC 全部满足**：三路模拟量（0/1/3）都在 **ADC1**，两板都直接可用（`adc_channel.h:9-22` 本机核对）。
+2. **SPI 与 I²C 全部满足**：我们的 LCD 三脚（6/7/10）**正好是 C3 的 SPI2 IO_MUX 默认脚**（`spi_pins.h:19-25`），
+   换到 SuperMini 后**完全不变**；I²C 走 GPIO matrix，4/5 可用。
+3. **`PA_PWR_PWM` 可搬家**（LEDC 不绑脚），**`EC11_SW` 也可搬家**（任意 GPIO 都能中断）
+   ⇒ 缺口是"**脚号**缺口"，不是"**功能**缺口"。
+
+### 13.4 缺口清单（精确到信号名）
+
+| # | 项 | 结论 |
+| --- | --- | --- |
+| G-1 | 🔴 **`BOARD_PA_PWR_PWM`（GPIO12）** | SuperMini **未引出 GPIO12**（flash `SPIHD`）⇒ **必须换号**（唯一落点 GPIO20） |
+| G-2 | 🔴 **`BOARD_EC11_SW`（GPIO13）** | SuperMini **未引出 GPIO13**（flash `SPIWP`）⇒ **必须换号**（唯一落点 GPIO21） |
+| G-3 | 🟠 **`EC11_B`（GPIO8）与板载蓝 LED 同脚** | 不是缺脚，是**负载冲突**：LED 会下拉高电平、缩小噪声容限；若引脚被驱高则 LED 点亮。**需与 D4/D5 同样处置**（拆除/不装/断开） |
+| G-4 | 🟠 **UART0 被吃掉** | GPIO20/21 让给 PWM 与 SW ⇒ 失去"备用串口"（ROM 早期日志 + esptool UART 下载）。**主控制台已在原生 USB-Serial/JTAG**（实测 `VID:PID 303A:1001` / `CONFIG_ESP_CONSOLE_ROM_SERIAL_PORT_NUM=3`），故实际影响小 |
+| G-5 | 🟡 **余量归零** | LuatOS 板引出 **15 个 GPIO**（官方"GPIO外部管脚15路"），本项目用 13、**留 2（GPIO20/21）作备用串口** = **余量 +2**；SuperMini 引出 **13**，需求 13 ⇒ **余量 0** |
+| G-6 | 🟡 **strapping 占用不变** | 两板的 GPIO2/8/9 都被需求吃满（A/B 用 2/8，BOOT 键用 9）——**这是本设计固有的**，不是 SuperMini 引入的 |
+| G-7 | ⚪ **不存在的缺口** | `GPIO11` 两板都用不上（需 eFuse，已决定不解锁）；`GPIO14–17` 两板都不可得（flash）。**这两条对选型没有区分度** |
+
+**一句话**：**缺 2 根（GPIO12、GPIO13）→ 两个信号换号即可补上；但补上之后，SuperMini 的 13 个脚一个不剩。**
+
+### 13.5 "省引脚"的五条思路 —— 逐条判定
+
+| # | 思路 | 判定 | 依据 / 定量 |
+| --- | --- | --- | --- |
+| 1 | **EC11 的 A / B / SW 三线合并** | ❌ **不行** | 正交解码需要 A、B 两相**各自独立**（判向靠相位差）；SW 是独立开关，与 A/B 无电气关系。三者物理上就是 3 根线 |
+| 2 | **去掉某路 ADC（如 VBAT）腾脚** | ❌ **功能裁剪，不推荐** | 会破坏 `docs/05` §5.2 遥测契约里的"电池电压 uint16 mV"（属**必须全部实现**），且 ADC1 通道用尽后**不会再有第二次机会**。详见 §5.4.1（备选 A′） |
+| 3 | **LCD 用 9-bit SPI 去掉 `LCD_DC`** | ❌ **已否决** | ST7567 的 `A0` 是与数据并行的独立选通，**不存在"第 9 位即 A0"的帧格式**；C3 的 SPI2 数据手册明确 "Data transmission is in **bytes**"。详见 §5.4.2（备选 B′） |
+| 4 | **编码器/按键挂 I²C 扩展器（TCA9535）** | ⚠️ **可行，但有代价** | 审计已量化：TCA9535 @400 kHz 读 2 字节 ≈ 135–200 µs，对"5 ms/格"的手转速度有 **~25 倍余量**；但 ① 判向退化为"I²C 读 + 去抖状态机" ② **I²C 挂了 = 旋钮完全失效**（需保留 GPIO9 BOOT 作兜底）③ 若走轮询，**必须与刚修好的 ADC 忙等修复共存**——采样循环里不得再插阻塞式 I²C 读。详见 §5.3 风险①、§6.2.1（C.1，本审计推荐的变体） |
+| 5 | **已经省掉的脚（不可回收）** | ✅ 已用尽 | LCD `CS`→GND（省 1）· LCD `RST`→板复位（省 1）· CW 键控→Si5351 使能命令（省 1）。**这三处是本设计能只占 13 脚的原因**（见 §2.2、§2.5） |
+
+### 13.6 四个方案对照 (a) (b) (c) (d)
+
+#### (a) 留在合宙 LuatOS ESP32C3-CORE —— **现状，推荐**
+
+| 维度 | 内容 |
+| --- | --- |
+| **引脚账** | 板子引出 **15 个 GPIO**（官方 32 脚表：IO0–IO10、IO12、IO13、GPIO20、GPIO21；另 18/19 = USB、PB_11 = GPIO11 需 eFuse）<br>本项目用 **13**（12 个可用脚 + GPIO9 BOOT 键），**GPIO20/21 留给 UART0 备用** ⇒ **余量 +2** |
+| **13 个信号是否都引出** | ✅ **全部引出**：`IO0`→排针 2、`IO1`→3、`IO2`→19、`IO3`→20、`IO4`→28、`IO5`→27、`IO6`→22、`IO7`→23、`IO8`→29、`GPIO9(BOOT)`→30、`IO10`→21、`IO12`→4、`IO13`→10（合宙官方文档一手来源，见 §13.8） |
+| **收益** | ① **零改动、零重验**（真机日志已实测，§9 附录 A）② EC11 **直连判向**最可靠 ③ 余量 +2 ④ ADC/I²C/SPI 全在真引脚 |
+| **代价 / 风险** | ① 🔴 R1：GPIO12/13 与 flash 模式耦合（"改回 QIO 就变砖"）——**但已有构建期 DIO 断言 + 双向实测**（§12.1/§12.2），残留风险 = "有人既删断言又改 QIO" ② 🟠 R2：EC11 在 strapping 脚（靠人手纪律 + 10 kΩ 上拉）③ 必须拆板载 LED D4/D5（**已决策并落实**，§12 前置） |
+| **一句话** | **原则已满足，风险用纪律与断言守住，成本 0** —— §6.1/§6.4 的推荐不变 |
+
+#### (b) 换 ESP32-C3 SuperMini
+
+| 维度 | 内容 |
+| --- | --- |
+| **引脚账** | 引出 **13 个 GPIO**（0–10、20、21）；需求 13 ⇒ **一个不剩**；`PA_PWR_PWM`→GPIO20、`EC11_SW`→GPIO21 |
+| **收益** | ① 🔴 **R1 彻底消失**（不用 GPIO12/13，与 flash 模式解耦）② 22.52×18 mm / 更便宜 / 更好买 ③ 原生 USB 与现板等价（刷写与日志链路不变） |
+| **代价** | ① 两个信号**换号** ⇒ 公开仓 5 处 + 私有仓 3 处同步（§8 清单）+ 按 `docs/05` §6 流程重走 ② **GPIO8 的 LED 必须处置**（G-3）③ **放弃 UART0**（G-4）④ **余量 0**（G-5）⑤ 13 信号 + LCD/EC11/ADC/I2C **全量重验** ⑥ 陶瓷天线的 WiFi/ESP-NOW 距离（§13.8 外部资料，公认弱项）需实测 ⑦ 机械：见 (d) |
+| **判定** | ⚠️ **技术上可行（不缺功能），但净收益为负**：用"已缓解的 R1"换"4 项新代价 + 重验" |
+
+#### (c) 换"引脚更多"的板 / 芯片
+
+| 候选 | 引脚账 | 代价 | 判定 |
+| --- | --- | --- | --- |
+| **ESP32-C3-DevKitM-1**（官方，ESP32-C3-MINI-1） | 官方 J1+J3 引出 **15 个 GPIO**：IO0–10、**IO18、IO19、IO20、IO21** —— **同样没有 GPIO12/13**（MINI-1 的 4 MB flash 在封装内）。而且 **GPIO8 挂 RGB LED**、GPIO18/19 是 USB `D-`/`D+` | 与 SuperMini **同一笔账**（12/13 缺失 + GPIO8 有灯），只是多引出 18/19 —— 而占用 18/19 就等于**放弃原生 USB** | ❌ 对我们的需求**没有净优势** |
+| **ESP32-S3**（GPIO 30+） | 引脚**绰绰有余**（我们只要 13），余量与未来扩展都够 | 🔴 **换芯片级重估**：flash 模式与封装、USB 通道（S3 的 USB-Serial/JTAG 与 PLL 约束）、分区表与 flash 容量、**ADC1 通道映射不同**（标定与分压网络要重算）、LEDC/I2C/SPI 行为差异、**功耗上升**（双核 → 直接冲击 README §3.3 的电池续航预算）、13 个信号的电气特性逐条重验 | ⚠️ **只在"未来确实要加很多真引脚外设"时才值得**；本项目当前 13 脚刚好够，**为余量付"整机重验 + 续航下降"不划算** |
+
+#### (d) ⚠️ 换个角度 —— **本设计本来就是模块化子板结构** ✅
+
+- 架构事实（[`hardware/README.md`](../hardware/README.md) §3、[`core-board/README.md`](../hardware/core-board/README.md)）：
+  **130×95 mm 四层核心底板** + **6 组 2.54 mm 排母插座**，
+  当前规划插入 5 个模块：`pa-module` / `lpf-module` / `atu-module` / `mcu-ui-module` / `power-module`。
+- ⇒ **MCU 只属于 `mcu-ui-module` 这一块子板**，它与底板之间的**接口**（I²C / SPI / 编码器按键 / ADC 检波 / PWM / 键控）才是**冻结契约**（`docs/05`）。
+  换 MCU 板**不动** PA / LPF / ATU / power / antenna / 底板。
+- ⇒ "换板"的成本被**结构性限制**在：**`mcu-ui-module` 的 PCB + BOM + 固件 pin map + 重验**。
+- ⚠️ **但不要把它误读成"零成本换板"**：
+  ① **pin map 是冻结契约**，任何换板都要按 `docs/05` §6 重走（改文档 → 硬件确认 → 软件确认 → 评审 → 改回"冻结" → 同步代码）；
+  ② **两种板子不可能共用同一封装**：SuperMini 是 **16 脚 2×8 排针**，LuatOS CORE 是 **21×51 mm 32 脚邮票孔**（官方文档）⇒ 仍要改 `mcu-ui-module` 的 PCB；
+  ③ 本项目 BOM 把 U4 写成"2.54 mm 排针模组"，与官方"邮票孔"不一致 —— **下单/装配前必须核对实物引出形式**（只影响机械，不影响引脚账）。
+- ⇒ 结论：**(d) 是对的视角**，它把换板从"整机重做"降级为"一块子板 + 固件重排"；但它**不能把换板的收益变成正的**，只是让代价可承受。
+
+### 13.7 推荐：留在 LuatOS；若必须换，先满足三条前置条件
+
+**推荐 (a) 留在合宙 LuatOS ESP32C3-CORE**，理由按权重：
+
+1. 🔴 **换板买不到引脚**：两边都是"13 个信号用满、0 空闲"；SuperMini 只把 R1 换成了"LED + UART0"两项新约束。
+2. 🔴 **R1 已经被工程手段守住**：构建期 DIO 断言（§12.1）+ 真机三重确认 `mode:DIO`（§9 附录 A）。
+   换板消除的是**已缓解的风险**，代价却是**未验证的新风险**。
+3. 🟠 **余量从 +2 掉到 0**：LuatOS 板的 GPIO20/21 现在还能在将来"备用串口不要了"时回收（§5.4.3 讨论过）；换到 SuperMini 后这两脚**开箱即被 PWM/SW 占用**。
+4. 🟢 **零改动、零重验**：现状是唯一有**真机日志证据**的方案（§9），而 LED/天线/换号都要新的实测。
+
+**若采购/尺寸/供货迫使换到 SuperMini**，三条前置条件（缺一不可）：
+
+| # | 前置条件 | 验收方式 |
+| --- | --- | --- |
+| P-1 | **处置 GPIO8 的板载蓝 LED**（拆除 / 不装 / 断开），并在 BOM 与装配说明里写明 | 万用表确认 GPIO8 与 LED 网络断开；示波器看 EC11 静止高电平回到 ~3.3 V（详见 §13.9 的实测建议） |
+| P-2 | **重排 pin map**：`PA_PWR_PWM`→GPIO20、`EC11_SW`→GPIO21，且 GPIO20 加**上电 10 kΩ 下拉**（把 A-7a 的建议一并落到新脚上） | 公开仓 5 处 + 私有仓 3 处同步（§8 清单）；`docs/05` §6 流程走完再改代码 |
+| P-3 | **接受失去 UART0**，并确认控制台/ROM 日志全在原生 USB-Serial/JTAG（`CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y` + `CONFIG_ESP_CONSOLE_ROM_SERIAL_PORT_NUM=3`） | 冷启动抓一次完整日志，确认 `ESP-ROM:` 与 `boot:` 行都从 USB 出来（不依赖 GPIO20/21） |
+
+> 🔴 **本节不做决定**。若项目所有者选择 (b)，请按 `docs/05` §6 的变更流程发起，本节可作为变更的理由书与验收清单。
+
+### 13.8 本节引用的外部资料与可信度
+
+| # | 资料 | URL | 用了它的哪一条 | 可信度 |
+| --- | --- | --- | --- | --- |
+| S-1 | WMNologo（厂家）SuperMini 规格页 | https://www.nologo.tech/en/product/esp32/esp32c3SuperMini/esp32C3SuperMini.html | 「On-board blue LED: GPIO8」·「1×I2C/1×SPI/2×UART/11×GPIO(PWM)/4×ADC」 | 🟢 **一手（厂家）** |
+| S-2 | WMNologo SuperMini Pin Usage 页 | https://www.nologo.tech/en/product/esp32/esp32c3SuperMini/esp32C3SuperMiniFoot.html | 「主板只引出 GPIO0–10、20、21」+ LED 示例代码（**证明 LED 高电平有效**） | 🟢 **一手（厂家）** |
+| S-3 | ESPboards SuperMini 引脚表 | https://www.espboards.dev/esp32/esp32-c3-super-mini/ | 16 脚逐脚清单、IO2/8/9 的角色、GPIO20/21 = UART0 | 🟡 **二手**（自绘，注明依据 datasheet v2.4）；**电气注释有错，已勘误**（§13.2）；「陶瓷天线弱项」亦出自该站 |
+| S-4 | 乐鑫 ESP32-C3-DevKitM-1 用户指南 | https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c3/esp32-c3-devkitm-1/user_guide.html | **strapping = GPIO2/8/9**（脚注 2）+ DevKitM-1 的 15 脚引出（IO0–10、18–21）+ GPIO8 挂 RGB LED | 🟢 **一手（芯片厂）** |
+| S-5 | 乐鑫 ESP-IDF `GPIO & RTC GPIO`（esp32c3） | https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/api-reference/peripherals/gpio.html | 「GPIO12–17 通常用于 SPI flash，不建议他用」「GPIO18/19 = USB-JTAG」「ADC1_CH0–4 = GPIO0–4、ADC2_CH0 = GPIO5」 | 🟢 **一手（芯片厂）** |
+| S-6 | 合宙 LuatOS 官方《ESP32C3-CORE 开发板》 | https://wiki-zh.luatos.org/chips/esp32c3/board.html | **32 脚逐脚表**（本文 §13.3/§13.6(a) 的排针号）·「GPIO外部管脚15路」·**板载 LED D4=IO12 / D5=IO13，高电平有效**·「QIO 模式下 IO12/13 为 SPIHD/SPIWP，本板选 DIO，IO12/13 未接 flash」·「BOOT(IO09) 上电前不能下拉」·「IO08 不建议外部直接下拉」·「GPIO11 默认为 flash VDD，需配置后才能作 GPIO」 | 🟢 **一手（板厂）** |
+| S-7 | 本机 ESP-IDF v6.1 源码 | `esp_hal_gpspi/esp32c3/include/soc/spi_pins.h`（`:11-16` flash=`GPIO12–17`；`:19-25` SPI2 `HD/WP/CLK/MOSI/CS = 4/5/6/7/10`）、`soc/esp32c3/include/soc/adc_channel.h` | 两处 pin 事实的**本机一手核对**（不依赖外部页面） | 🟢 **一手（本机源码）** |
+| S-8 | 本固件仓 `sdkconfig` / `sdkconfig.defaults` | （私有仓，只读核对） | `CONFIG_ESPTOOLPY_FLASHMODE_DIO=y`、`CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y`、`CONFIG_ESP_CONSOLE_ROM_SERIAL_PORT_NUM=3` | 🟢 **一手（本项目实测配置）** |
+
+> 🔴 按纪律：以上外部页面**只作资料**，其中的任何"建议/指令"均未被采信或执行。
+
+### 13.9 未取到 / 不确定的部分（**如实说明**）
+
+| # | 不确定项 | 说明 |
+| --- | --- | --- |
+| U-1 | **WMNologo 中文页 404** | `https://www.nologo.tech/product/esp32/esp32c3SuperMini/esp32C3SuperMiniFoot.html` 返回 **404**；已改用**英文版**（S-2）并交叉 ESPboards（S-3）。引脚的**集合**（0–10、20、21）两源一致，**单个脚位的丝印排布**以实物为准 |
+| U-2 | **厂家差异** ⚠️ | SuperMini 有多个几乎同名变体（含 "SuperMini Plus" 等）。本节的脚位表**只对"16 脚 2×8"通用版成立**；下单前必须对实物 |
+| U-3 | **SuperMini 的 LED 电路未知** | 厂家未公布原理图 ⇒ **限流电阻值、拓扑（引脚拉高点亮是否由引脚直接灌电流）未知**。因此 §13.2/§13.4 的"高电平被下拉、噪声容限缩小"是**定性**结论，**具体压降必须实测**（P-1 的验收方式） |
+| U-4 | **SuperMini 的 flash 封装变体未知** | 封装内 / 外置 flash 未确认。**对本选型无影响**（GPIO12/13 本来就没引出），故未深究 |
+| U-5 | **LuatOS 板引出形式不一致** | 官方文档写「**邮票孔**，21×51 mm」，本项目 BOM 写「**2.54 mm 排针模组**」⇒ 需核对实物/下单页（只影响机械装配与插座选型）。另官方 `硬件资源` 的「4 路 PWM」是 **LuatOS 固件**限制，**芯片本身 6 路**（与本文件 §1.2 事实 4 一致，不冲突） |
+| U-6 | ⚠️ **本文件他处的 LED 电流数字待核对**（**不在本次改动范围**） | `ADR-0008` §8.3 / `docs/05` §2.6.1 / `README` §4.4.1 用「D5 约 **1.3 mA**」论证拆灯。但若 GPIO13 是**输入 + 10 kΩ 上拉**，LED 支路电流上限只有 **≈0.33 mA**（(3.3−V_f)/10 kΩ）；要到 1.3 mA 需要引脚**直接驱动**该 LED。**结论不受影响**（拆灯同时有"电平容限 + 待机电流 + 视觉"三条理由），但**这个数字的量级需要与实物电路核对** |
+
+### 13.10 本节对既有结论的影响
+
+| 既有结论 | 是否改变 |
+| --- | --- |
+| §0 一句话结论 / §12.1「方案 A 不变」 | ❌ **不变** |
+| `docs/05` §2.2 引脚表、`board_pins.h` 的 `BOARD_*` 宏 | ❌ **不变**（本节**未改任何固件文件**） |
+| §7 R1（DIO/QIO 残留风险） | ❌ 不变；本节给出的是"换成 SuperMini 可消除 R1，但代价如 §13.6(b)" |
+| 新增 | ✅ 本节（§13）· `hardware/pre-fab-checklist.md` 的 E-03 证据位置补本节 |
