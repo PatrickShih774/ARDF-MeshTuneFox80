@@ -278,7 +278,7 @@ reset 之后仍可用 `idf.py coredump-info` 解出崩溃任务与栈回溯，�
 | 配置项 | 值 | 理由 |
 |--------|----|----|
 | `CONFIG_IDF_TARGET` | `esp32c3` | — |
-| `CONFIG_FREERTOS_HZ` | `1000` | 1 ms 时基，满足时序精度 |
+| `CONFIG_FREERTOS_HZ` | `1000` | 1 ms tick（**注意**：CW 键控**不依赖 tick**，它由 `esp_timer`（µs 精度）+ 任务通知驱动；HZ=1000 的真实收益是 `pdMS_TO_TICKS()` 无取整损失、tick 与毫秒一一对应。降到 100–250 Hz 也不会损伤键控时序） |
 | `CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_160` | `y` | 性能优先（choice 形式，非裸 `_MHZ`） |
 | `CONFIG_COMPILER_OPTIMIZATION_SIZE` | `y` | `-Os`，Flash 与体积平衡（choice 形式） |
 | `CONFIG_BT_ENABLED` | `n` | 不使用蓝牙；配置入口走 USB-CDC |
@@ -291,7 +291,9 @@ reset 之后仍可用 `idf.py coredump-info` 解出崩溃任务与栈回溯，�
 | `CONFIG_PARTITION_TABLE_CUSTOM_FILENAME` | `partitions.csv` | 自定义分区 |
 | `CONFIG_ESPTOOLPY_FLASHSIZE_4MB` | `y` | 4 MB Flash（choice 形式） |
 | `CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH` | `y` | **崩溃现场落盘**（配套 §4.3 的 64 KB `coredump` 分区）；`DATA_FORMAT_ELF` / `CHECKSUM_*` 在 v6.1 已由内部符号 `select`，**不可手写** |
-| `CONFIG_ESP_TASK_WDT_TIMEOUT_S` | `10` | 任务看门狗 |
+| `CONFIG_ESP_TASK_WDT_TIMEOUT_S` | `5` | 任务看门狗超时（2026-09 由 10 收紧到 5） |
+| `CONFIG_ESP_TASK_WDT_PANIC` | `y` | **超时即 panic ⇒ 复位 + 落 Core Dump**（此前未开 ⇒ 看门狗只打回溯、不复位，形同虚设） |
+| `CONFIG_FREERTOS_UNICORE` | `y` | 单核（C3）；显式写出以保证新克隆可复现 |
 
 > 🔴 **本表只是设计意图；权威清单是私有固件仓的 `sdkconfig.defaults`。**
 > 配置项名称**必须以实际 ESP-IDF 的 Kconfig 为准**——本表早期草稿中曾出现若干**不存在的符号名**，
@@ -308,15 +310,33 @@ reset 之后仍可用 `idf.py coredump-info` 解出崩溃任务与栈回溯，�
 
 ### 4.5 FreeRTOS 任务规划
 
-| 任务名 | 优先级 | 栈（字） | 周期 / 触发 | 职责 |
-|--------|--------|---------|------------|------|
+| 任务名 | 优先级 | 栈（**字节**） | 周期 / 触发 | 职责 |
+|--------|--------|---------------|------------|------|
 | `task_rf_ctrl` | 高（10） | 3072 | `esp_timer` 1 ms 回调 + 事件 | CW 键控时序、软起软降、发射窗口切换 |
 | `task_atu` | 中高（8） | 4096 | 事件触发 | 调谐搜索、SWR 采样、NVS 写回 |
 | `task_mesh` | 中（6） | 4096 | ESP-NOW 收包回调 + 队列 | 同步帧收发、中继转发、队列处理 |
-| `task_telemetry` | 中（5） | 3072 | 1 Hz | ADC 采样、状态打包、上报 |
+| `task_telemetry` | 中（5） | 3072 | 1 Hz | ADC 采样、状态打包、上报；另打**栈水位遥测**（每 30 s） |
 | `task_ui` | 低中（4） | 4096 | 10–20 Hz | 菜单刷新、编码器/按键处理、LCD 局部刷新 |
 | `task_console` | 低（3） | 4096 | 事件触发 | 中控协议解析与应答 |
 | `app_main` | — | — | 初始化完成后退出 | 初始化装配 |
+
+> 🔴 **单位勘误（2026-09-26，Critical）**：上表原表头写的是「栈（字）」，**是错的**。
+> ESP-IDF 的 `xTaskCreate()` 的 `usStackDepth` 单位是**字节**，不是 vanilla FreeRTOS 的
+> 「字（`StackType_t` 个数）」—— IDF 头文件原文为 *"The size of the task stack specified as
+> the NUMBER OF BYTES. Note that this differs from vanilla FreeRTOS."*，且 RISC-V port 的
+> `#define portSTACK_TYPE uint8_t`（`StackType_t = uint8_t`）⇒ 内核里 `×1`，**不做任何换算**。
+>
+> 因此表中数值**一直就是字节**：3072 字节 = 3 KB（不是 3072 字 = 12 KB），
+> 6 个任务的栈合计 **22 528 B ≈ 22 KB**（不是原以为的 ≈ 88–90 KB）——
+> **真实安全裕度比设计意图少 4 倍**，而 `task_rf_ctrl` 的 3072 B 甚至小于
+> ESP-IDF 给 `esp_timer` 任务的 4096 B 基线。
+>
+> 处置（本批，采"承认现值 + 补遥测"）：① 符号全面改名 `..._STACK_BYTES`、
+> 字段 `stack_bytes`、文档表头改「字节」；② 在 `app_core_logic.c` 加防复发断言
+> `_Static_assert(sizeof(StackType_t) == 1, ...)`；③ **不把数值 ×4**（不偷偷多占 RAM），
+> 改由 `task_telemetry` 用 `uxTaskGetStackHighWaterMark()` 每 30 s 打印每个任务的
+> **栈余量历史最小值**（余量 <25% 打 WARN），把「栈够不够」从猜测变成数据。
+> ⚠️ 另注：`configSTACK_OVERHEAD_TOTAL == 0`，ESP-IDF 不会替任务预留任何额外余量。
 
 **设计约束**
 
@@ -409,6 +429,19 @@ LCD 走 SPI2 独占（[ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)）：
 - 同步报文带 UTC 时间戳与主控发送时刻，从机用往返延迟（RTT）估算偏差并平滑。
 - 依托 5 分钟重同步，内部 RC 振荡器可满足需求；底板**保留 32.768 kHz 晶振 DNP 焊盘**作为升级选项。
 - 无主控时支持 NTP 校时（需 WiFi 接入）。
+
+#### 5.5.1 实现状态（2026-09-27：固件 `main/` 装配接线补齐）
+
+> 背景：`net_timesync`（L5）与 `comm_console_usbcdc`（L6）的**组件层**已交付，但装配层
+> 一直把链路/传输后端留空（`link.send = NULL`、`transport = NULL`）。下表记录接线后的事实。
+
+| 项 | 事实 |
+|----|------|
+| ESP-NOW 收发链路 | ✅ 已接线。`main/app_main.c` 的 `step8_timesync()` 调一行 `net_timesync_espnow_link_attach(NULL)`（组帧/解析在内建适配器里，装配层不写协议）。主机周期广播 `TIME_ANN`，从机由 `TIME_ANN` **自动学主机 MAC** |
+| 手工主机 MAC（产测用） | NVS **配置区**命名空间 `ardf_cfg`，键 **`ts_master`**，值为 **6 字节二进制 MAC**（不是字符串）。优先级「手动 > 自动发现」：手动值存在时，别的 `TIME_ANN` 不会覆盖，只告警一次 |
+| 真 UTC | ❌ **本机没有可信 UTC 源**：板上没有外部 RTC 器件（`drv_*` 无 RTC 驱动），运行期也不关联 AP。因此主机时基是「开机以来的单调时间」，状态为 `MASTER` 而**不是** `MASTER_UTC` ⇒ `net_timesync_is_ready() == false`。装配层**刻意不调用** `net_timesync_master_set_utc()` 去拿 `esp_timer` 起点冒充 UTC —— 「未就绪」是一等状态，`ardf_schedule` / `ardf_mode` 据此禁止进入竞赛发射 |
+| NTP | 未启用：`net_timesync_ntp_start()` 要求**先关联 AP**（本工程只用 ESP-NOW 固定信道，不做 AP 关联），故运行期不调用；接口保留 |
+| 中控 Console 传输 | ✅ 已接线：`comm_console_usbcdc_idf_init()` + `comm_console_usbcdc_transport()` + `comm_console_app_appcore()`。传输复用本板唯一的 USB-CDC（USB-Serial/JTAG，esptool 烧录与 IDF 控制台日志同口）；`vfs_takeover` **保持缺省 `false`** ⇒ 日志路径与接线前逐字节一致（不接管控制台 VFS），失败时降级为 `transport = NULL` 且只打 WARN |
 
 ---
 
