@@ -38,4 +38,16 @@
 
 ## 4. 当前状态
 
-> 本轮仅占位，**无实现脚本**。
+已实现的脚本（全部纯宿主 Python，无第三方依赖）：
+
+| 脚本 | 用途 | 产物 |
+| --- | --- | --- |
+| [`build-lceda-import-pack.py`](build-lceda-import-pack.py) | 生成立创EDA 导入包的 BOM 部分 | `hardware/bom/bom-*.csv`、`bom.md` |
+| [`build-netlist.py`](build-netlist.py) | 生成逐脚连接表（BOM 导入包的一部分） | `hardware/bom/netlist.csv`、`hardware/schematic/netlist.csv`、`netlist.md` |
+| [`build-kicad-schematic.py`](build-kicad-schematic.py) | 生成 8 份互相独立的 **KiCad 6** 原理图骨架（符号内嵌，不依赖任何外部库） | `hardware/schematic/*.kicad_sch`、`kicad-net-map.csv`、`kicad-row-coverage.csv`、`kicad-build-report.md` |
+| [`check-kicad-schematic.py`](check-kicad-schematic.py) | 自检上面 8 份文件（括号配平/库引用/标签落点/跨文件唯一性/几何/清单一致性），并跑 `hardware/schematic/tests/` 的对照组 | 无（退出码 0/1） |
+| [`verify-atu-lc-combos.py`](verify-atu-lc-combos.py) | 校验 ATU 的 L/C 组合与继电器位模式 | 无 |
+| [`check-repo-separation.ps1`](check-repo-separation.ps1) | 校验公开仓/私有仓的分离边界 | 无 |
+
+每个脚本都支持 `--help`；退出码遵循 §3：`0` 成功、`1` 检查/构建失败、`2` 用法错误。
+`build-kicad-schematic.py` **幂等**（UUID 由稳定种子导出，不写时间戳），重跑结果逐字节相同。

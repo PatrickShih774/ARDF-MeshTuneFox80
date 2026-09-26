@@ -341,8 +341,20 @@ LCD 走 SPI2 独占（[ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)）：
 ### 5.1 事件总线（`app_core`）
 
 - 类型：FreeRTOS 队列 + 事件组，或 `esp_event` 默认事件循环。
-- 事件命名：`APP_EVENT_<域>_<动作>`，例如 `APP_EVENT_ATU_TUNE_REQ`、`APP_EVENT_TX_START`、`APP_EVENT_TX_STOP`、`APP_EVENT_SWR_ALARM`、`APP_EVENT_TIME_SYNCED`、`APP_EVENT_MESH_RX`。
+- 事件命名：`APP_EVENT_<域>_<动作>`，例如 `APP_EVENT_ATU_TUNE_REQ`、`APP_EVENT_TX_START`、`APP_EVENT_TX_STOP`、`APP_EVENT_SWR_ALARM`、`APP_EVENT_TIME_SYNCED`、`APP_EVENT_MESH_RX`、`APP_EVENT_MODE_REQ`、`APP_EVENT_PARAM_REQ`（参数集提交）、`APP_EVENT_SELFTEST_REQ`（自检请求）。
 - 所有跨层交互走事件；组件之间不直接互相 `#include` 对方的私有头。
+- 上层请求的**统一入口**都在 `app_core`（内部只发事件，绝不直接调用下层组件）：
+  `app_request_tune(reason)` · `app_request_mode(mode)` · `app_request_params(set)` · `app_request_selftest()`。
+  - `app_request_params()` 的落地次序固定为「停发 → 关功放 → 改参数 → 重新放行」（即 `ardf_mode_set_*` 的安全序列），
+    并在**频率实际发生变化**时自动追加 `app_request_tune(ATU_REASON_FREQ_CHANGED)`：
+    联锁原因位里没有"ATU 未调谐"这一位，换频不重调就会带着旧匹配网络发射。
+  - `app_request_selftest()` 只把请求送到**最低优先级**任务上下文（`task_console`），
+    执行时机由装配层确认「非发射态」后决定（自检会逐只切换继电器并强制关功放）。
+- 开机自动调谐：装配完成（1 ms 节拍已启动）后发 `app_request_tune(ATU_REASON_BOOT)`，
+  而联锁放行 `rf_power_mark_ready()` **排在其后**（先建立匹配、再允许常规发射）。
+  调谐所需的"非发射态"许可**不含** `NOT_INIT`（自检放行位），否则会形成
+  "要先放行才能调谐、要先调谐才放行"的循环依赖；`SWR_HIGH` 与显式急停仍在许可范围内。
+
 
 ### 5.2 发射安全联锁（`rf_power`）
 
