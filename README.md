@@ -1,6 +1,6 @@
 # ARDF-MeshTuneFox80
 
-> **80 米波段（3.5–3.6 MHz）开源 ARDF 无线电测向信号源**
+> **80 米波段（3.5–3.6 MHz）开源 ARDF 猎狐竞赛系统** —— 信号源设备网络 · 赛事管理网关 · PC 中控台
 > 原名：80米波无线电测向信号源 ARDF_80M_3.5MHZ｜规划版本：**V3.7**｜中文名：**待定**
 
 [![硬件许可](https://img.shields.io/badge/Hardware-CERN--OHL--S%20v2-blue.svg)](#许可)
