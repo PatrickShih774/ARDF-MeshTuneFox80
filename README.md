@@ -7,7 +7,7 @@
 [![固件许可](https://img.shields.io/badge/Firmware-ARDF--NC--1.0-orange.svg)](#许可)
 [![中控许可](https://img.shields.io/badge/Console-Apache%202.0-green.svg)](#许可)
 [![主控](https://img.shields.io/badge/MCU-ESP32--C3-red.svg)](docs/03-software-architecture.md)
-[![框架](https://img.shields.io/badge/Framework-ESP--IDF%20v5.x-orange.svg)](docs/06-build-and-dev-environment.md)
+[![框架](https://img.shields.io/badge/Framework-ESP--IDF%20v6.1-orange.svg)](docs/06-build-and-dev-environment.md)
 
 ---
 
@@ -67,7 +67,7 @@
 | **赛中监控** | 一屏总览全部信号源；单台详情（参数 / 调谐 / 诊断）；事件与告警日志 + 强制弹窗；**发射期禁止改参数**（唯一例外：授时校时） |
 | **赛后** | 赛报与导出（CSV / JSON / Markdown），含逐台"计划 vs 实际"、链路健康、告警证据、时间线 |
 | **无上位机备用** | 网关可**独立运行**：手机热点授时后由无线网络给全部信号源校时，并在网关本机的 LCD + 旋钮菜单上完成赛事配置 |
-| **网关故障热备** | 任意一台信号源可**现场切换为赛事管理网关**，比赛不必中断（见下方创新点 3） |
+| **网关故障热备** | 目标：任意一台信号源可**现场切换为赛事管理网关**，比赛不必中断 —— 🔴 **运行期切角色尚未实现（计划中，批 11）**，见下方创新点 3 |
 
 ### 1.3 名称里的五个基因
 
@@ -84,19 +84,34 @@
 **三大创新点**
 1. **多机联动**：ESP-NOW 无线自动同步，从机间 Mesh 中继容错（开阔地 100 m，密林 30–50 m）。
 2. **ATU 自动调谐**：解决 80 m 波段短导线天线"高电抗、低辐射电阻"导致的发射效率极低问题（挂树实测 X≈-1050 Ω）。
-3. **一份固件、双角色、现场可热切（网关热备）**：同一份固件既能作**信号源（从机）**，也能作**赛事管理网关**；
-   角色保存在**设备本机非易失存储（NVS）**中，在设备的 **LCD + 旋钮菜单**上切换并重启即生效 ——
-   **无需上位机、无需 USB、无需刷写工具**。
+3. **一份固件、两种角色：信号源（从机）与赛事管理网关** —— 同一份**源码**、同一套**组件**，
+   由**编译期配置**选择角色；角色决定**外设能力掩码**，进而决定哪些外设被初始化。
+   常规做法要维护「从机固件 + 网关固件」两套镜像；本设计用**一份固件承载两种角色**。
 
-   **动机**：赛事管理网关一旦现场故障，**任意一台信号源可立即顶替**，比赛不必中断。
+   **✅ 已实现（2026-09 落地；本机 ESP-IDF v6.1 构建实测 0 error）**
 
-   **为什么算创新**：常规做法是维护「从机固件 + 网关固件」两套镜像，角色切换必须依赖 PC 与刷写工具；
-   而"网关突然坏掉"的场景，往往**恰恰没有 PC** —— 于是传统方案在最需要它的时候失效。
-   本设计把角色从**编译期/镜像层面**下移到**运行时/设备本机**，
-   以"一份固件同时承载两种角色"换取**现场可自救**（代价是放弃了按角色裁剪瘦身的余地）。
+   - **同一份固件源码编译出两种角色**：角色由**编译期**配置 `CONFIG_ARDF_MESH_ROLE_MASTER` /
+     `CONFIG_ARDF_MESH_ROLE_SLAVE` 决定（choice 定义在 `main/Kconfig.projbuild`）；
+   - **角色 → 外设能力掩码**：掩码按 `hw_rev × role` 裁剪。**网关角色下射频链路整条不初始化**
+     （Si5351 / ATU 继电器 / 功放 / 检波 ADC / 电池 ADC / 独立按键全关、整条 I²C 总线不建立）
+     ⇒ `rf_power_is_ready()` 恒为 false、**安全联锁永不解除** ⇒ 网关固件**不会发射**；
+   - **"默认即安全"**：仓库默认值 = **网关（不发报）**，避免误烧后上电即按排程发报（见 [§3.2](#32-软件基线)）。
 
-   > ⚠️ **实现状态（据实登记）**：**运行期角色切换（role 存 NVS + 菜单切换 + 重启生效）尚未实现**。
-   > 当前角色**只能**由编译期配置决定，且**默认 = 网关（不发报）** —— 见 [§3.2 软件基线](#32-软件基线)。
+   **🔴 尚未实现（计划中 —— 属网关独立运行计划的批 11）**
+
+   - **运行期切换角色**：即"角色存 **NVS** + LCD/旋钮**菜单切换入口** + 切换前**安全关闭** +
+     `esp_restart()` **重启生效**"这一整条链路 —— **目前一行都没有**。
+     当前**角色只能由编译期配置决定**，换角色必须**重新构建 + 重新烧录**。
+   - ⇒ 因此 **"网关现场故障时，随手拿一台信号源、不接 PC、不用刷写工具就能顶替它"这一能力
+     现在还不具备**（这正是上面那条链路要解决的问题）。
+
+   **动机（为什么最终要做运行期切换）**：赛事管理网关一旦现场故障，我们希望任意一台信号源都能立即顶替、
+   比赛不必中断。而"网关突然坏掉"的场景往往**恰恰没有 PC** —— 传统"两套镜像 + 依赖刷写工具"的方案
+   在最需要它的时候失效。把角色从**镜像层面**下移到**设备本机**，才能换取现场可自救
+   （代价是放弃按角色裁剪瘦身的余地）。**该目标尚待批 11 实现。**
+
+   > ⚠️ **对外口径纪律**：在批 11 落地前，**不得**把本项写成"现场可热切""在菜单里切一下就行"
+   > 或"已在路上"之类的中间态表述。当前唯一途径是 §3.2 的**编译期换配置 + 重新烧录**。
 
 
 ---
@@ -183,13 +198,25 @@ ARDF-MeshTuneFox80/
 
 | 项 | 决策 |
 |----|------|
-| 框架 | **ESP-IDF v5.x**（`esp32c3`），**不使用 Arduino** — 理由见 [ADR-0001](docs/adr/ADR-0001-adopt-esp-idf-over-arduino.md) |
-| 构建 | CMake + `idf.py`，组件化（28 个组件，L0–L6 分层） |
+| 框架 | **ESP-IDF v6.1**（`esp32c3`），**不使用 Arduino** — 理由见 [ADR-0001](docs/adr/ADR-0001-adopt-esp-idf-over-arduino.md) |
+| 构建 | CMake + `idf.py`，组件化（L0–L6 分层；**2026-09-28 实测 30 个已入库组件**，见 [03 §4.1](docs/03-software-architecture.md#41-目录树2026-09-28-以-git-ls-files-实测校正)） |
 | RTOS | FreeRTOS（`CONFIG_FREERTOS_HZ=1000`） |
 | 测试 | Unity + pytest-embedded；纯算法组件必须可脱离硬件测试 |
 | 存储 | NVS（配置 / 调谐记忆 / 密钥） |
 | 时序基准 | `esp_timer` + 每 5 分钟 ESP-NOW 重同步 |
 | 中控 | 技术栈待定，见 [ADR-0005](docs/adr/ADR-0005-console-tech-stack-tbd.md) |
+
+> 🔴 **ESP-IDF 版本口径：以本机实测为准 = `v6.1`**（本表此前写 `v5.x`，那是把**当时的规划值**当成了**当前版本**，已改正）。
+>
+> 实测依据（2026-09-28，本机 `C:\esp\esp-idf`）：
+> ① `tools/cmake/version.cmake` → `IDF_VERSION_MAJOR 6` / `IDF_VERSION_MINOR 1` / `IDF_VERSION_PATCH 0`；
+> ② 激活环境后 `idf.py --version` 实测输出 **`ESP-IDF v6.1`**；
+> ③ 旁证（版本格式名）：本机 `idf.py size --format` 的合法取值含 **`json2`**（`tools/idf_py_actions/core_ext.py:549`）——
+> `json2` 是 v6.x 的格式名，老版本是 `json`；
+> ④ 旁证（环境路径）：工具链装在 `%IDF_TOOLS_PATH%\python_env\idf6.1_py3.13_env`（esptool v5.4.0）。
+>
+> ⚠️ **表述纪律**：本仓文档中出现 `v5.x` 时，它**只能**是"**引入版本 / 最低支持版本**"这类历史限定（且必须写明限定语），
+> **不得**用来表示"当前使用的版本"。安装与构建的权威口径见 [06 构建与开发环境](docs/06-build-and-dev-environment.md) §12.7。
 
 #### 🔴 默认构建 = 网关角色（不发报）—— 动手烧录前先读这一条
 
@@ -199,7 +226,7 @@ ARDF-MeshTuneFox80/
 | 构建方式 | 角色 | 会不会发报 |
 |---|---|---|
 | `idf.py build`（默认，什么都不加） | **网关**（`CONFIG_ARDF_MESH_ROLE_MASTER`） | ❌ **不发报** |
-| `-D SDKCONFIG=<绝对路径>\sdkconfig.slave` | 从机（`..._SLAVE`，狐狸） | ✅ 会发报 |
+| `-D SDKCONFIG=…\sdkconfig.slave` **+** `-D SDKCONFIG_DEFAULTS=…`（见下方命令，两个都要给） | 从机（`..._SLAVE`，狐狸） | ✅ 会发报 |
 | `-D SDKCONFIG=<绝对路径>\sdkconfig.gw2` | 网关（`..._MASTER`，纯网关板 `hw_rev=2`） | ❌ 不发报 |
 
 这是**故意的**（"默认即安全"）：网关角色下射频链路被外设能力掩码（`hw_rev × role`）整条裁掉 ——
@@ -208,15 +235,31 @@ Si5351 / ATU 继电器 / 功放 / 检波 ADC / 电池 ADC / 独立按键都不�
 
 ⇒ **把默认构建烧进狐狸板，板子不会发报。这不是板子坏了，是构建选错了角色。**
 
-**要一台会发报的狐狸（从机）**，用下面这条命令。
-⚠️ 从机配置 `sdkconfig.slave` 是**本地文件**（`sdkconfig*` 已被 `.gitignore` 忽略，**不入库**），
-新克隆的树里没有它 —— 生成办法见私有固件仓的 `docs/BUILD-STRATEGY.md`「角色与构建」：
+**要一台会发报的狐狸（从机）** —— 下面这段**整段照抄**即可，**新克隆的树也能一次构建成功**
+（2026-09-28 实测：全新路径冷构建 **0 error**，生成的配置里 `CONFIG_ARDF_MESH_ROLE_SLAVE=y`）：
 
 ```powershell
-# <abs> = 固件仓的绝对路径（例：C:\src\ARDF-MeshTuneFox80-firmware）
-idf.py -B build-slave -D SDKCONFIG="<abs>\sdkconfig.slave" --ccache build
-idf.py -p COM3 -B build-slave -D SDKCONFIG="<abs>\sdkconfig.slave" flash monitor
+# 在【私有固件仓根目录】执行。$abs = 该仓的绝对路径：
+$abs = (Get-Location).Path
+idf.py -B build-slave -D SDKCONFIG="$abs\sdkconfig.slave" -D SDKCONFIG_DEFAULTS="$abs\sdkconfig.defaults;$abs\sdkconfig.defaults.slave" --ccache build
+idf.py -p COM3 -B build-slave -D SDKCONFIG="$abs\sdkconfig.slave" flash monitor
 ```
+
+**为什么是两个 `-D`（缺一不可）**：
+
+| 参数 | 作用 | 入库？ |
+|---|---|---|
+| `-D SDKCONFIG=…\sdkconfig.slave` | **产物落点**：本次构建读写哪一份 `sdkconfig` | ❌ 本地生成物（被 `.gitignore` 的 `sdkconfig.*` 忽略） |
+| `-D SDKCONFIG_DEFAULTS="a;b"` | **配置源头**：`sdkconfig.defaults` **叠加** `sdkconfig.defaults.slave`（后者优先），供**首次生成**上面那份配置 | ✅ **两个文件都已入库** |
+
+⇒ 只给 `SDKCONFIG` 时，**新克隆的树里没有 `sdkconfig.slave`，构建会直接失败**（不是静默回落）；
+补上 `SDKCONFIG_DEFAULTS` 后，首次构建会由**入库的 defaults 文件**生成 SLAVE 角色的配置，
+**无需先手改 `menuconfig`、也无需从别处复制**。
+角色语义、三份 `sdkconfig` 的关系与自检清单见私有固件仓 `docs/BUILD-ROLES.md`「角色与构建」。
+
+> ⚠️ 表中第三行（`sdkconfig.gw2`，纯网关板 `hw_rev=2`）**尚未配套入库 defaults 叠加文件**
+> （暂无 `sdkconfig.defaults.gw2`）⇒ 它在**新克隆**上仍有和上面同样的失败问题，仍需先手工生成。
+> 本仓**不**声称它已经可用。
 
 ⚠️ **运行期在菜单里切角色（role 存 NVS）尚未实现**：当前角色**只能**由编译期配置决定。
 已烧进设备的固件是什么角色就是什么角色 —— 换角色必须**重新构建 + 重新烧录**。

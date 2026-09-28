@@ -9,7 +9,7 @@
 | 项 | 决策 | 说明 |
 |----|------|------|
 | 芯片 | **ESP32-C3**（RISC-V 单核，160 MHz，400 KB SRAM，4 MB Flash） | 继承工程基座 |
-| 框架 | **ESP-IDF v5.x** | **不使用 Arduino** — 理由见 [ADR-0001](adr/ADR-0001-adopt-esp-idf-over-arduino.md) |
+| 框架 | **ESP-IDF v6.1** | **不使用 Arduino** — 理由见 [ADR-0001](adr/ADR-0001-adopt-esp-idf-over-arduino.md)。**版本以本机实测为准**：`tools/cmake/version.cmake` → 6.1.0，`idf.py --version` → `ESP-IDF v6.1`（依据与旁证见根 [README §3.2](../README.md#32-软件基线)） |
 | 目标名 | `esp32c3` | `idf.py set-target esp32c3` |
 | 构建 | CMake + `idf.py` | 组件化组织 |
 | RTOS | FreeRTOS（`CONFIG_FREERTOS_HZ=1000`） | 1 ms 时基，满足发射时序 <0.1 s 要求 |
@@ -197,27 +197,40 @@
 
 ## 4. ESP-IDF 工程结构
 
-### 4.1 规划目录树
+### 4.1 目录树（2026-09-28 以 `git ls-files` 实测校正）
 
 > 下列工程结构位于**私有固件仓**（`ARDF-MeshTuneFox80-firmware`），不在本公开仓。
+> 状态列**不再是规划值**：✅ = **已入库**（`git ls-files` 可见）；无 ⬜ 项 —— 本轮已逐项核实。
 
 ```
 私有固件仓 ARDF-MeshTuneFox80-firmware/
-├── CMakeLists.txt              ⬜ 待创建  工程根：project(ardf_meshtunefox80)
-├── sdkconfig.defaults          ⬜ 待创建  默认配置
-├── partitions.csv              ⬜ 待创建  分区表
-├── version.txt                 ⬜ 待创建  版本（由 git describe 生成）
-├── main/                       ✅ 已建立
-│   ├── CMakeLists.txt          ⬜
-│   ├── Kconfig.projbuild       ⬜
-│   └── app_main.c              ⬜
-├── components/                 ✅ 已建立（28 个组件骨架）
-├── test/                       ✅ 已建立
-├── tools/                      ✅ 已建立
-└── docs/                       ✅ 已建立
+├── CMakeLists.txt              ✅ 已入库  工程根：project(ardf_meshtunefox80)
+├── sdkconfig.defaults          ✅ 已入库  项目默认配置（**唯一入库的 sdkconfig\* 系列文件**）
+├── sdkconfig.defaults.slave    ✅ 已入库  从机（SLAVE）角色的 **defaults 叠加**文件（2026-09-28 新增，见 §4.4）
+├── partitions.csv              ✅ 已入库  分区表
+├── version.txt                 ✅ 已入库  版本（由 git describe 生成）
+├── main/                       ✅ 已入库
+│   ├── CMakeLists.txt          ✅
+│   ├── Kconfig.projbuild       ✅（含角色 choice `ARDF_MESH_ROLE`）
+│   └── app_main.c              ✅
+├── components/                 ✅ 已入库
+├── test/                       ✅ 已入库
+├── tools/                      ✅ 已入库
+└── docs/                       ✅ 已入库
 ```
 
-> 本轮**只创建目录与文档**，未创建上述 `⬜` 构建文件。
+> 🔴 **`sdkconfig` 本体不入库 ≠ `sdkconfig.defaults` 不入库** —— 这是两条不同的规则，别混为一谈：
+>
+> | 文件 | 入库？ | 依据 |
+> |---|---|---|
+> | `sdkconfig.defaults`、`sdkconfig.defaults.slave` | ✅ **入库** | `git ls-files` 可见（实测：`git ls-files \| Select-String sdkconfig` → 这两条） |
+> | `sdkconfig`、`sdkconfig.slave`、`sdkconfig.gw2` | ❌ **不入库** | 本地构建生成物；被 `.gitignore` 的 `sdkconfig` 与 `sdkconfig.*` 忽略 |
+>
+> ⇒ 新克隆的树里**没有** `sdkconfig` / `sdkconfig.slave`，但**有** `sdkconfig.defaults` 与
+> `sdkconfig.defaults.slave` —— 因此从机构建命令可以**照抄即成功**（见 §4.4 的角色专条）。
+
+> 组件数（实测，会随批次增长）：`git ls-files components/*/CMakeLists.txt` → **30 个已入库组件**
+> （另 `components/` 下还有 1 个**在制品**组件目录，尚未入库）。
 
 > ⚠️ 上述目录树与 §4.2 的组件结构均为**私有固件仓**内的工程；本公开仓不含固件源码，只发布编译后的固件二进制。
 
@@ -302,30 +315,40 @@ reset 之后仍可用 `idf.py coredump-info` 解出崩溃任务与栈回溯，�
 > 外设能力掩码按 `hw_rev × role` 裁剪：**网关角色下射频链路整条不初始化**（Si5351 / ATU 继电器 /
 > 功放 / 检波 ADC / 电池 ADC / 独立按键全关、整条 I²C 总线不建立）⇒ `rf_power_is_ready()` 恒为
 > false、**安全联锁永不解除** ⇒ **默认 `idf.py build` 的固件不发射、不发报**（"默认即安全"）。
-> **要会发报的从机（狐狸）必须显式换配置**：
+> **要会发报的从机（狐狸）必须显式换配置**（**照抄即成功**，新克隆亦可 —— 见下）：
 >
 > ```powershell
-> idf.py -B build-slave -D SDKCONFIG="<固件仓绝对路径>\sdkconfig.slave" --ccache build
+> $abs = (Get-Location).Path    # 在【私有固件仓根目录】执行；<abs> 必须绝对路径
+> idf.py -B build-slave -D SDKCONFIG="$abs\sdkconfig.slave" -D SDKCONFIG_DEFAULTS="$abs\sdkconfig.defaults;$abs\sdkconfig.defaults.slave" --ccache build
 > ```
 >
-> ⚠️ `sdkconfig.slave` / `sdkconfig.gw2` 都是**本地文件（不入库）**；二者与 `sdkconfig` 的关系
-> 见私有固件仓 `docs/BUILD-STRATEGY.md`「角色与构建」。
-> ⚠️ **运行期切角色（role 读 NVS + 菜单切换 + 重启生效）尚未实现** —— §3 的组件清单对两种角色
-> **是同一份源码、同一套组件**（角色只决定哪些外设被初始化、哪些被"设计跳过"），
-> 但当前角色**只能**由编译期配置决定，不能在使用中切换。
+> - `SDKCONFIG` = **产物落点**（本地生成物 `sdkconfig.slave`，不入库）；
+>   `SDKCONFIG_DEFAULTS` = **源头**（`sdkconfig.defaults` + 入库的 `sdkconfig.defaults.slave` 叠加，后者优先）。
+>   两者缺一不可：只给 `SDKCONFIG` 时，**新克隆**（没有 `sdkconfig.slave`）会**构建失败**。
+> - ⚠️ `sdkconfig` / `sdkconfig.slave` / `sdkconfig.gw2` 都是**本地文件（不入库）**；
+>   而 `sdkconfig.defaults` **与** `sdkconfig.defaults.slave` 都**入库**。
+>   三者的关系与角色语义见私有固件仓 `docs/BUILD-ROLES.md`「角色与构建」。
+> - ⚠️ **运行期切角色（role 读 NVS + 菜单切换 + 重启生效）尚未实现** —— §3 的组件清单对两种角色
+>   **是同一份源码、同一套组件**（角色只决定哪些外设被初始化、哪些被"设计跳过"），
+>   但当前角色**只能**由编译期配置决定，不能在使用中切换。
 
 > 🔴 **本表只是设计意图；权威清单是私有固件仓的 `sdkconfig.defaults`。**
 > 配置项名称**必须以实际 ESP-IDF 的 Kconfig 为准**——本表早期草稿中曾出现若干**不存在的符号名**，
-> 已于 2026-09 逐项对照 ESP-IDF v5.1.4 源码勘误，记录如下以免再被抄错：
+> 已于 2026-09 逐项对照 ESP-IDF 源码勘误；**2026-09-28 又就本机 v6.1 源码复核了符号名的存在性（结论不变）**，
+> 记录如下以免再被抄错：
 >
 > | 曾写（错误） | 实际情况 |
 > |-------------|---------|
 > | `CONFIG_ESP_WIFI_ENABLE_WPA3_SAFE` | ❌ 不存在。正确名为 `CONFIG_ESP_WIFI_ENABLE_WPA3_SAE` |
 > | `CONFIG_ESP_WIFI_DPP_ENABLED` | ❌ 不存在。正确名为 `CONFIG_ESP_WIFI_DPP_SUPPORT`（默认已为 `n`） |
-> | `CONFIG_ESP_WIFI_11B_LONG_PREAMBLE` | ❌ v5.x 无此符号。长距离模式由**运行期 API** 设置：`esp_wifi_set_protocol(WIFI_PROTOCOL_LR)` + `esp_wifi_config_11b_rate()` |
+> | `CONFIG_ESP_WIFI_11B_LONG_PREAMBLE` | ❌ v6.1 无此符号。长距离模式由**运行期 API** 设置：`esp_wifi_set_protocol(WIFI_PROTOCOL_LR)` + `esp_wifi_config_11b_rate()` |
 > | `CONFIG_ESP_ADC_CAL_CURVE_FITTING` | ❌ `esp_adc` 没有选择校准方案的 Kconfig 开关。ESP32-C3 的曲线拟合由**运行期 API** 决定：`adc_cali_create_scheme_curve_fitting()` |
 > | `CONFIG_LWIP_IPV4=n` / `CONFIG_LWIP_IPV6=n` | ⚠️ **刻意不采用**。激进裁剪 IP 栈会牵连 `esp_netif` / `esp_wifi` 及后续 `comm_console` 的依赖，收益小、风险大；RAM 节省主要来自 WiFi 收发缓冲调小 |
 > | `CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ`、`CONFIG_COMPILER_OPTIMIZATION`、`CONFIG_ESPTOOLPY_FLASHSIZE` | ⚠️ 裸名不生效，实际是 choice：`_160` / `_SIZE` / `_4MB` |
+>
+> **复核出处**（本机 v6.1，2026-09-28）：`components/esp_wifi/Kconfig:300` 定义 `ESP_WIFI_ENABLE_WPA3_SAE`、
+> `:767` 定义 `ESP_WIFI_DPP_SUPPORT`；而 `ESP_WIFI_ENABLE_WPA3_SAFE` / `ESP_WIFI_DPP_ENABLED` /
+> `ESP_WIFI_11B_LONG_PREAMBLE` 在该 Kconfig 中**零命中**。
 
 ### 4.5 FreeRTOS 任务规划
 
@@ -533,7 +556,7 @@ LCD 走 SPI2 独占（[ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)）：
 | `Encoder` / 中断轮询 | EC11 | **自行实现** `drv_ec11`（TCA9535 轮询 + 加速度算法） |
 | `WiFi.h` / `esp_now.h` (Arduino 封装) | 联网 | ESP-IDF 原生 `esp_wifi` + `esp_now` |
 | `Preferences.h` | 参数存储 | `bsp_storage`（nvs_flash API） |
-| `Wire.h` | I2C | ESP-IDF `driver/i2c_master.h`（v5.x 新驱动） |
+| `Wire.h` | I2C | ESP-IDF `driver/i2c_master.h`（**v5.x 引入**的新 I2C 驱动，v6.1 沿用；旧的 `driver/i2c.h` 在 v6.1 **已删除** —— 实测 `components/esp_driver_i2c/include/driver/` 下只有 `i2c_master.h` / `i2c_slave.h` / `i2c_types.h`） |
 | `ArduinoOTA` | 固件升级 | ESP-IDF `esp_https_ota` / `esp_ota_ops` |
 | `millis()` / `delay()` | 时序 | `esp_timer` + FreeRTOS `vTaskDelayUntil` |
 
