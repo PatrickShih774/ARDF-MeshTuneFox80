@@ -66,7 +66,7 @@ ADR 索引与模板见 [adr/README.md](adr/README.md)。
 
 | 文档 | 内容 | 触发时机 |
 |------|------|----------|
-| `09-competition-rules-compliance.md` | 6 种模式 × 规则条款 × 实现方式 × 验证证据 的可追溯矩阵 | 固件实现启动时 |
+| `09-competition-rules-compliance.md` | 6 种模式 × 规则条款 × 实现方式 × 验证证据 的可追溯矩阵（**条文号需两版并列**：2019 版「第二部分 第N章」/ 2024 版「附录X」） | 固件实现启动时 |
 | `10-atu-tuning-algorithm-design.md` | ATU-100 算法移植说明、搜索空间、收敛性分析、仿真验证 | `atu_tuner` 实现前 |
 | `11-mesh-protocol-and-security.md` | 帧格式、路由策略、HMAC 密钥管理、重放窗口 | `mesh_router` 实现前 |
 | `12-power-and-endurance-budget.md` | 各工作模式电流分解与续航核算（对接 00-project-upgrade-plan.md 3.4 节） | 电源模块设计时 |
