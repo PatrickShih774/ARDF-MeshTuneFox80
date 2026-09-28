@@ -95,6 +95,9 @@
    本设计把角色从**编译期/镜像层面**下移到**运行时/设备本机**，
    以"一份固件同时承载两种角色"换取**现场可自救**（代价是放弃了按角色裁剪瘦身的余地）。
 
+   > ⚠️ **实现状态（据实登记）**：**运行期角色切换（role 存 NVS + 菜单切换 + 重启生效）尚未实现**。
+   > 当前角色**只能**由编译期配置决定，且**默认 = 网关（不发报）** —— 见 [§3.2 软件基线](#32-软件基线)。
+
 
 ---
 
@@ -187,6 +190,37 @@ ARDF-MeshTuneFox80/
 | 存储 | NVS（配置 / 调谐记忆 / 密钥） |
 | 时序基准 | `esp_timer` + 每 5 分钟 ESP-NOW 重同步 |
 | 中控 | 技术栈待定，见 [ADR-0005](docs/adr/ADR-0005-console-tech-stack-tbd.md) |
+
+#### 🔴 默认构建 = 网关角色（不发报）—— 动手烧录前先读这一条
+
+本项目**一份固件、两种角色**：**信号源（从机 / 狐狸）** 与 **赛事管理网关**。
+角色由**编译期配置** `CONFIG_ARDF_MESH_ROLE_*` 决定，而**仓库默认值就是网关**：
+
+| 构建方式 | 角色 | 会不会发报 |
+|---|---|---|
+| `idf.py build`（默认，什么都不加） | **网关**（`CONFIG_ARDF_MESH_ROLE_MASTER`） | ❌ **不发报** |
+| `-D SDKCONFIG=<绝对路径>\sdkconfig.slave` | 从机（`..._SLAVE`，狐狸） | ✅ 会发报 |
+| `-D SDKCONFIG=<绝对路径>\sdkconfig.gw2` | 网关（`..._MASTER`，纯网关板 `hw_rev=2`） | ❌ 不发报 |
+
+这是**故意的**（"默认即安全"）：网关角色下射频链路被外设能力掩码（`hw_rev × role`）整条裁掉 ——
+Si5351 / ATU 继电器 / 功放 / 检波 ADC / 电池 ADC / 独立按键都不初始化、整条 I²C 总线不建立，
+于是 `rf_power_is_ready()` 恒为 false、**安全联锁永不解除** ⇒ 本机不会发射。
+
+⇒ **把默认构建烧进狐狸板，板子不会发报。这不是板子坏了，是构建选错了角色。**
+
+**要一台会发报的狐狸（从机）**，用下面这条命令。
+⚠️ 从机配置 `sdkconfig.slave` 是**本地文件**（`sdkconfig*` 已被 `.gitignore` 忽略，**不入库**），
+新克隆的树里没有它 —— 生成办法见私有固件仓的 `docs/BUILD-STRATEGY.md`「角色与构建」：
+
+```powershell
+# <abs> = 固件仓的绝对路径（例：C:\src\ARDF-MeshTuneFox80-firmware）
+idf.py -B build-slave -D SDKCONFIG="<abs>\sdkconfig.slave" --ccache build
+idf.py -p COM3 -B build-slave -D SDKCONFIG="<abs>\sdkconfig.slave" flash monitor
+```
+
+⚠️ **运行期在菜单里切角色（role 存 NVS）尚未实现**：当前角色**只能**由编译期配置决定。
+已烧进设备的固件是什么角色就是什么角色 —— 换角色必须**重新构建 + 重新烧录**。
+（预编译二进制随 Releases 发布时会标注其角色；目前尚未首次发布。）
 
 ### 3.3 七种竞赛模式
 

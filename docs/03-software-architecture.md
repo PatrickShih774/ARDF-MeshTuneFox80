@@ -294,6 +294,25 @@ reset 之后仍可用 `idf.py coredump-info` 解出崩溃任务与栈回溯，�
 | `CONFIG_ESP_TASK_WDT_TIMEOUT_S` | `5` | 任务看门狗超时（2026-09 由 10 收紧到 5） |
 | `CONFIG_ESP_TASK_WDT_PANIC` | `y` | **超时即 panic ⇒ 复位 + 落 Core Dump**（此前未开 ⇒ 看门狗只打回溯、不复位，形同虚设） |
 | `CONFIG_FREERTOS_UNICORE` | `y` | 单核（C3）；显式写出以保证新克隆可复现 |
+| `CONFIG_ARDF_MESH_ROLE_MASTER` / `ARDF_MESH_ROLE_SLAVE`（角色 choice） | **默认 `MASTER`（网关）** | ⚠️ 这一项**不**写在 `sdkconfig.defaults` 里，默认值来自私有固件仓 `main/Kconfig.projbuild` 的 choice default。🔴 **⇒ 默认构建 = 网关角色（不发报）**，见下方专条 |
+
+> 🔴 **角色与"默认构建"（2026-09 落地，构建前必读）**
+>
+> **一份固件、两种角色**，由编译期配置 `CONFIG_ARDF_MESH_ROLE_*` 决定，**仓库默认 = `MASTER`（网关）**。
+> 外设能力掩码按 `hw_rev × role` 裁剪：**网关角色下射频链路整条不初始化**（Si5351 / ATU 继电器 /
+> 功放 / 检波 ADC / 电池 ADC / 独立按键全关、整条 I²C 总线不建立）⇒ `rf_power_is_ready()` 恒为
+> false、**安全联锁永不解除** ⇒ **默认 `idf.py build` 的固件不发射、不发报**（"默认即安全"）。
+> **要会发报的从机（狐狸）必须显式换配置**：
+>
+> ```powershell
+> idf.py -B build-slave -D SDKCONFIG="<固件仓绝对路径>\sdkconfig.slave" --ccache build
+> ```
+>
+> ⚠️ `sdkconfig.slave` / `sdkconfig.gw2` 都是**本地文件（不入库）**；二者与 `sdkconfig` 的关系
+> 见私有固件仓 `docs/BUILD-STRATEGY.md`「角色与构建」。
+> ⚠️ **运行期切角色（role 读 NVS + 菜单切换 + 重启生效）尚未实现** —— §3 的组件清单对两种角色
+> **是同一份源码、同一套组件**（角色只决定哪些外设被初始化、哪些被"设计跳过"），
+> 但当前角色**只能**由编译期配置决定，不能在使用中切换。
 
 > 🔴 **本表只是设计意图；权威清单是私有固件仓的 `sdkconfig.defaults`。**
 > 配置项名称**必须以实际 ESP-IDF 的 Kconfig 为准**——本表早期草稿中曾出现若干**不存在的符号名**，
