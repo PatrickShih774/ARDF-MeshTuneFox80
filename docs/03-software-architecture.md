@@ -151,9 +151,15 @@
 
 | 组件 | 职责 | 依赖 |
 |------|------|------|
-| `ardf_mode` | 六种竞赛模式时序状态机（`MODE_STANDARD` / `MODE_SHORT_DISTANCE` / `MODE_FAST` / `MODE_FOXORING` / `MODE_SUNSHINE` / `MODE_SHORT_FOXORING`） | `ardf_schedule`、`ardf_code` |
+| `ardf_mode` | **七种**竞赛模式时序状态机（2024 基线 7 种；`MODE_STANDARD` / `MODE_SHORT_DISTANCE` / `MODE_FAST` / `MODE_FOXORING` / `MODE_SUNSHINE` / `MODE_SHORT_FOXORING` / **`MODE_MID_DISTANCE`**） | `ardf_schedule`、`ardf_code` |
 | `ardf_code` | 识别码表与报文编码：MO / MOE / MOI / MOS / MOH / MO5、单数字 0–9、字母 AA–OO；摩尔码字库与 WPM 点划时长换算 | `utils_common` |
 | `ardf_schedule` | 发射窗口调度：5 分钟/1 分钟、1 分钟/12 秒、连续发射；频率分配表 | `utils_common` |
+
+> 🔴 **口径（2026-09-30 补注）**：上表 `ardf_mode` 一行原写「**六种**竞赛模式……」（仅列 6 个 `MODE_*`），
+> 现行口径为**七种**：2024 基线 7 种的**模式层与协议层均已实现**（2024 版新增的第 7 种「中距离无线电测向」
+> 于 **2026-09-30** 落地，`ARDF_MODE_MID_DISTANCE = 6`）；⏳ **真机拍发与中控界面待验证/待做**；
+> 🔴 **已发布的 `v0.1.0` 三档 `.bin` 不含该模式**（构建基线早于该功能）⇒ **想用须用更新的源码自行构建**。
+> 汇总口径见 [docs/00 §5.7](00-project-upgrade-plan.md)。
 
 ### L5 网络与同步层（4）
 

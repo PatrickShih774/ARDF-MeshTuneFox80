@@ -37,7 +37,7 @@
 | [`stage-6-antenna-emc`](stage-6-antenna-emc/README.md) | 第 15–18 天 | 实架天线 + 电磁兼容 | 实架 5m 导线 + 5m 地线在 2W 下调谐 SWR **<2.0**；SDR 测杂散，2 次谐波 7.1MHz 衰减 **≥55dB**；12V 升压轨动态负载纹波峰峰值 **<0.5V** |
 | [`stage-7-mesh`](stage-7-mesh/README.md) | 第 19–20 天 | Mesh 组网（软件侧，`net_espnow`/`mesh_router`） | 3 台从机 + 1 台主控，遮挡主控与其中 1 台，回传成功率 **>80%** |
 | [`stage-8-cw`](stage-8-cw/README.md) | 第 21–22 天 | CW 键控（软件侧，`rf_keyer`） | 码速 10–12WPM 误差 **<2%**；识别码正确；1KHz 长音仅标准距离模式且位于发信结束前 2 秒；软起软降 **2–5ms**；5 分钟周期误差 **<0.1s**；SWR>3.0 禁止发射；功率 0.02–2.5W 可调 |
-| [`stage-9-competition-modes`](stage-9-competition-modes/README.md) | 第 23–24 天 | 六种赛事模式（软件侧，`ardf_mode`/`ardf_schedule`） | 标准距离时序误差 **<0.1s**；短距离 11 个频点间隔 **10kHz**；快速测向 1 分钟/12 秒误差 **<0.1s**；定向猎狐功率误差 **<10%**；阳光测向功率 **<0.1W**；短距离定向猎狐识别码正确 |
+| [`stage-9-competition-modes`](stage-9-competition-modes/README.md) | 第 23–24 天 | 七种赛事模式（软件侧，`ardf_mode`/`ardf_schedule`；⚠️ **本阶段尚未执行**，第 7 种专项判据待补） | 标准距离时序误差 **<0.1s**；短距离 11 个频点间隔 **10kHz**；快速测向 1 分钟/12 秒误差 **<0.1s**；定向猎狐功率误差 **<10%**；阳光测向功率 **<0.1W**；短距离定向猎狐识别码正确 |
 
 > 时间窗为相对计划起点的工作日，非自然日；实际执行顺序可按物料到货情况微调，但判据不得放宽。
 
