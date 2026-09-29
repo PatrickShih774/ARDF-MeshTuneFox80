@@ -145,8 +145,11 @@ idf.py -B build-gw2 -p <COM口> -D SDKCONFIG="$abs\sdkconfig.gw2" flash
 ## 6. 直接用【发布产物】烧（现场不想装 ESP-IDF）
 
 发布产物在 [`release/v0.1.0/`](release/v0.1.0/)（含 `SHA256SUMS`，可逐文件复核）。
-🔴 **这些 `.bin` / `.elf` 不在 git 里**（双仓纪律 + 本仓 CI 门禁 `scripts/check-repo-separation.ps1`
-把 `.(bin|elf|map|hex)$` 列为禁止入库）⇒ **请从 [本仓 GitHub Release 页面](https://github.com/PatrickShih774/ARDF-MeshTuneFox80/releases) 的附件下载**，
+🔴 **这些 `.bin` / `.elf` 不在 git 里**（双仓纪律 + 本仓**双仓分离自检脚本**
+`scripts/check-repo-separation.ps1` 把 `\.(bin|elf|map|hex)$` 列为禁止入库的"固件产物"
+—— ⚠️ 那是**本地脚本**，**本仓尚未配置任何 CI workflow**，不会自动拦截，需要人手动跑；
+见 [.github/OVERVIEW.md](.github/OVERVIEW.md)（§3 明写「CI **规划中，尚未启用真实配置**」）与 [CHANGELOG](CHANGELOG.md)）
+⇒ **请从 [本仓 GitHub Release 页面](https://github.com/PatrickShih774/ARDF-MeshTuneFox80/releases) 的附件下载**，
 `release/v0.1.0/` 里入库的只有文本（说明 + `SHA256SUMS`）。
 🔴 **先认清你要的是哪一个 `.bin`**（发布物的角色**只由文件名与说明决定**，没有任何"自动识别"）：
 
@@ -156,11 +159,10 @@ idf.py -B build-gw2 -p <COM口> -D SDKCONFIG="$abs\sdkconfig.gw2" flash
 | `…-slave.bin` | 从机 / 狐狸 `SLAVE` + `hw_rev=1` | ✅ **会** |
 | `…-gw2.bin` | 网关 `MASTER` + 纯网关板 `hw_rev=2` | ❌ 不会 |
 
-```powershell
-# A) 最稳：还装着 ESP-IDF 时，让 idf.py 按构建时的 flasher_args.json 烧（偏移不会写错）
-idf.py -B build-slave -p <COM口> -D SDKCONFIG="$abs\sdkconfig.slave" flash
+### 6.1 ⚫ 本节**唯一**"直接用发布产物烧"的路径 = 下面的 **B**
 
-# B) 不装 ESP-IDF：用 esptool 手烧（👇 偏移取自构建产物 build/flasher_args.json，勿凭记忆改）
+```powershell
+# B) 不装 ESP-IDF：用 esptool 手烧【刚下载的发布 .bin】（👇 偏移取自构建产物 build/flasher_args.json，勿凭记忆改）
 esptool --chip esp32c3 -p <COM口> -b 460800 write-flash `
         --flash-mode dio --flash-size 4MB --flash-freq 80m `
         0x0     bootloader.bin `
@@ -171,6 +173,22 @@ esptool --chip esp32c3 -p <COM口> -b 460800 write-flash `
 # C) 只读复核（不改设备）
 esptool --chip esp32c3 -p <COM口> verify-flash 0x20000 ardf_meshtunefox80-v0.1.0-slave.bin
 ```
+
+### 6.2 ⚠️ 下面这条**不是**"用发布产物烧"，是"用本地源码构建再烧"
+
+```powershell
+# A) 需要【私有固件仓源码】+ ESP-IDF：idf.py 只会烧【本工程构建目录里】的镜像，
+#    ⇒ 它【不会】去烧你刚下载的 ardf_meshtunefox80-v0.1.0-*.bin
+idf.py -B build-slave -p <COM口> -D SDKCONFIG="$abs\sdkconfig.slave" flash
+```
+
+> 🔴 **为什么把它从 §6 的"A）最稳"降级到这里（2026-09-30 勘误）**：
+> `idf.py flash` 烧的是**本工程构建目录（`build-slave/`）里的镜像**，
+> 而且要求你**人在私有固件仓根目录**、**已经装好 ESP-IDF**——
+> 这与本节标题"现场不想装 ESP-IDF、直接用发布产物"的前提**正好相反**。
+> 照旧文按 A 走的人，要么命令直接失败（没有该工程），要么在自己仓里**重新构建并烧了另一个镜像**，
+> 却以为烧的是发布物 —— 这会把"我烧了但它不发报"的排查（§5 第 1/2 条）**误导到错误分支**。
+> ⇒ 要用发布产物请走 **§6.1 的 B**；要走本地构建请连同 §2/§3 的完整命令一起用（`$abs` 与两个 `-D` 缺一不可）。
 
 > ℹ️ 上面用的是 **esptool v5** 的连字符子命令（本机实测 `esptool v5.4.0`）；
 > **esptool ≤ 4.x** 写作下划线形式 `write_flash` / `verify_flash`，参数相同。
@@ -186,9 +204,16 @@ esptool --chip esp32c3 -p <COM口> verify-flash 0x20000 ardf_meshtunefox80-v0.1.
 
 ## 7. 合规口径（**不得省略** —— 诚实性要求）
 
-本工程已实现 **6 种**竞赛模式；**与《无线电测向竞赛规则》（2024 修订版）存在 9 项已知偏差
-（D-01~D-11，其中 D-03 命中全部 6 种模式）**，用户已裁定【先不修、后期再修】。
-**本版本不声称完全合规。** 另：**中距离无线电测向**（2024 基线内新增的第 7 种）**尚未实现**。
+本工程**模式层与协议层已实现 7 种**竞赛模式（2024 基线内新增的第 7 种
+**中距离无线电测向**于 **2026-09-30** 落地）；**与《无线电测向竞赛规则》（2024 修订版）存在 9 项已知偏差
+（D-01~D-11，其中 D-03 命中全部 6 种既有模式）**，用户已裁定【先不修、后期再修】。
+**本版本不声称完全合规。**
+
+> 🔴 **第 7 种（中距离）的精确口径 —— 别读成"已完全可用"**：
+> ① ✅ **已实现**：模式表条目 + 协议层模式枚举（`ARDF_MODE_MID_DISTANCE = 6`）+ 9.6 WPM 键控计算链（离线断言通过）；
+> ② ⏳ **未验证/未做**：**真机拍发**（台面无示波器）与**中控界面** ⇒ 现状是**部分完成**；
+> ③ 🔴 **已发布的 `v0.1.0` 三档 `.bin` 不含该模式**（构建基线早于该功能）⇒
+> **想用第 7 种模式，必须用更新的源码自行构建**（见 §2/§3 的构建命令），或等下一次固件发布。
 
 > 🔴 本仓**不得**出现"完全符合规则""已通过合规核对"一类无保留说法；
 > 逐条差异与修复方案的登记点在**私有固件仓** `docs/ARDF-RULES-CONFORMANCE.md` **§R-5**。

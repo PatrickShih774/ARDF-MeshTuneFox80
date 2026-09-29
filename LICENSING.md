@@ -12,8 +12,15 @@
 
 | 仓库 | 可见性 | 内容 |
 |------|--------|------|
-| [`ARDF-MeshTuneFox80`](https://github.com/PatrickShih774/ARDF-MeshTuneFox80) | **公开** | 硬件设计、文档、**编译后的固件二进制（GitHub Releases）**；共享协议与中控 PC 软件（规划中，待创建） |
-| `ARDF-MeshTuneFox80-firmware` | **私有** | ESP32-C3 固件的**全部源码**，不对外公开 |
+| [`ARDF-MeshTuneFox80`](https://github.com/PatrickShih774/ARDF-MeshTuneFox80) | **公开** | 硬件设计、文档、**编译后的固件二进制（GitHub Releases）** |
+| `ARDF-MeshTuneFox80-firmware` | **私有** | ESP32-C3 固件的**全部源码**，以及 **PC 中控台软件源码**（🔴 **均不对外公开**） |
+
+> 🔴 **中控台（中控 PC 软件）落在私有仓 —— 这是 2026-09-30 据实统一的口径。**
+> 本仓 `software/` 目录下**只有 `README.md`**，**不存在** `software/master-console/`；
+> 中控台源码与固件源码同在**私有仓**。因此下表与 §六、§八 中凡涉及
+> `software/master-console/`、`software/protocol/`、`software/tools/` 的行，
+> 都**只是本仓目录级授权意图的登记**，**不代表这些目录已存在于本仓**。
+> （中控台**已实现 6 个界面**，不是"筹备中"——准确进度见 [README §六](README.md)。）
 
 ---
 
@@ -24,7 +31,7 @@
 | 资产 | 期望的授权行为 |
 |------|---------------|
 | 硬件设计（原理图 / PCB / 结构件） | **强互惠**：衍生设计必须同样开源 |
-| 中控软件 / 协议定义 / 工具（规划中，待创建） | **宽松**：允许闭源集成与二次开发 |
+| 中控软件 / 协议定义 / 工具（🔴 源码在**私有仓**，本仓不发布） | **宽松**：允许闭源集成与二次开发 |
 | 文档 / 验证报告 | **便于引用**：允许转载与改编 |
 | **固件二进制** | **仅限业余无线电非商业使用**；源码在私有仓 |
 
@@ -43,12 +50,17 @@
 | `hardware/` | `CERN-OHL-S-2.0` | [`LICENSES/CERN-OHL-S-2.0.txt`](LICENSES/CERN-OHL-S-2.0.txt) | 强互惠。可商业制造销售，但**修改后的设计必须同样以 CERN-OHL-S v2 开源** |
 | `docs/` | `CC-BY-4.0` | [`LICENSES/CC-BY-4.0.txt`](LICENSES/CC-BY-4.0.txt) | 可自由转载改编，需署名 |
 | `validation/` | `CC-BY-4.0` | [`LICENSES/CC-BY-4.0.txt`](LICENSES/CC-BY-4.0.txt) | 报告可自由引用，需署名 |
-| `software/master-console/`（规划中，待创建） | `Apache-2.0` | [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt) | 允许闭源分发、商业使用 |
-| `software/protocol/`（规划中，待创建） | `Apache-2.0` | [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt) | 协议规范公开，鼓励第三方实现 |
-| `software/tools/`（规划中，待创建）、`scripts/` | `Apache-2.0` | [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt) | 工具链不进入固件镜像 |
+| `software/master-console/`（🔴 **源码在私有仓，本仓不发布**；本仓该目录不存在） | `Apache-2.0` | [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt) | 允许闭源分发、商业使用 |
+| `software/protocol/`、`software/tools/`（🔴 **同上：源码在私有仓，本仓不发布**） | `Apache-2.0` | [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt) | 协议规范公开，鼓励第三方实现 |
+| `scripts/`（本仓**实有**：仓库级硬件设计脚本） | `Apache-2.0` | [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt) | 工具链不进入固件镜像 |
 | **固件二进制**（GitHub Releases） | **`LicenseRef-ARDF-NC-1.0`** | [`LICENSES/LicenseRef-ARDF-NC-1.0.txt`](LICENSES/LicenseRef-ARDF-NC-1.0.txt) | **仅限业余无线电非商业用途**；不授予源代码、不要求公开源码 |
 | **固件源码**（私有仓） | 同上（私有仓内另有 `LICENSE`） | 不在本仓库 | 不对外授权 |
+| **ATU 调谐算法 / Mesh 路由算法** | **商业授权（闭源）** | 不在本仓库 | **核心技术壁垒**：不随本仓开源；商业使用需另行洽商 |
 | **例外**：`hardware/reference/` | **各原始项目许可** | 不在本仓库 | **只读参考，不纳入本仓库任何许可范围** |
+
+> ℹ️ 「ATU 调谐算法 / Mesh 路由算法」一行由 2026-09-30 补入，以消除与
+> [README §七 许可表](README.md) 的口径差异（此前 README 有该行、本权威表缺该行）。
+> 它覆盖的是私有仓中该部分**算法的闭源实现**；本仓内不包含其源码。
 
 ---
 
@@ -122,7 +134,7 @@
 
 | 文件所在路径 | `SPDX-License-Identifier` |
 |-------------|--------------------------|
-| `software/master-console/**`（规划中，待创建）、`software/protocol/**`（规划中，待创建）、`software/tools/**`（规划中，待创建）、`scripts/**` | `Apache-2.0` |
+| `software/master-console/**`、`software/protocol/**`、`software/tools/**`（🔴 均在**私有仓**，本仓不发布；若将来在本仓落地，一律 `Apache-2.0`）、`scripts/**` | `Apache-2.0` |
 | `hardware/**`（源设计文件、BOM、结构件） | `CERN-OHL-S-2.0` |
 | **私有固件仓** `**` | `LicenseRef-ARDF-NC-1.0` |
 
@@ -169,7 +181,7 @@
 | 贡献区域 | 授权协议 |
 |---------|---------|
 | `hardware/` | `CERN-OHL-S-2.0` |
-| `software/master-console/`（规划中，待创建）、`software/protocol/`（规划中，待创建）、`software/tools/`（规划中，待创建）、`scripts/` | `Apache-2.0` |
+| `software/master-console/`、`software/protocol/`、`software/tools/`（🔴 均在**私有仓**，本仓不发布）、`scripts/` | `Apache-2.0` |
 | `docs/`、`validation/` | `CC-BY-4.0` |
 | **固件源码** | **不接受外部贡献**（私有仓，非公开） |
 
@@ -208,6 +220,6 @@ A：不需要。Apache-2.0 不是 copyleft，不要求衍生作品开源。但�
 | [ADR-0007 固件闭源与双仓结构](docs/adr/ADR-0007-firmware-closed-source-two-repo.md) | 本次结构的决策背景 |
 | [ADR-0006 分层授权与 GPL 隔离方案](docs/adr/ADR-0006-layered-licensing-gpl-isolation.md) | **已被 ADR-0007 取代** |
 | [docs/07-coding-standards.md](docs/07-coding-standards.md) | 源文件 SPDX 头规范 |
-| [software/README.md](software/README.md) | 软件入口与规划要点（中控 PC 软件 / 共享协议 / 工具均规划中，待创建） |
+| [software/README.md](software/README.md) | 软件入口与规划要点（🔴 中控 PC 软件源码在**私有仓**，本仓 `software/` 仅有 `README.md`） |
 | [LICENSES/README.md](LICENSES/README.md) | 许可全文获取与校验 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献者许可约定与安全红线 |

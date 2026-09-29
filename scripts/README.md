@@ -25,9 +25,13 @@
 2. 纯宿主机 Python、被两个及以上子工程或 CI 复用 → `software/tools/`（规划中，待创建）。
 3. **只是把上面两者串成一条仓库级流水线**（如"构建 + 打包 + 检查"）→ `scripts/`。
 
-`scripts/` 中的脚本应尽量薄：只做编排与调用，具体逻辑放在 `software/tools/`（规划中，待创建）。
+`scripts/` 中的脚本应尽量薄：只做编排与调用，具体逻辑放在**私有仓**的 `software/tools/`（本仓无此目录）。
 
-> 📌 `software/tools/` 与 `software/master-console/` 均为**规划中，待创建**——软件区三块内容都还没开始写，本仓 `software/` 当前只有 `README.md`（见 [`software/README.md`](../software/README.md)）。
+> 🔴 **口径更正（2026-09-30）**：`software/tools/`（以及 `software/master-console/`、`software/protocol/`）
+> **都在私有仓 `ARDF-MeshTuneFox80-firmware`，本仓不发布、也没有这些目录**。
+> 此处此前写"均为规划中，待创建 —— 软件区三块内容都还没开始写"，**后半句不成立**：
+> 中控台**已实现 6 个界面**、共享协议**已落地**（详见 [`software/README.md`](../software/README.md)）。
+> 本仓 `software/` 当前确实**只有 `README.md`** —— 但那是"源码在私有仓"的结果，**不是"还没开始写"**。
 
 ## 3. 约定
 

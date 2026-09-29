@@ -13,7 +13,7 @@
 | 工具链 | `riscv32-esp-elf-gcc` | 随 ESP-IDF 安装（14.2.0 系列） |
 | 构建系统 | CMake | ≥3.16 |
 | 烧录/调试 | `esptool`、`openocd-esp32`、`riscv32-esp-elf-gdb` | 随 ESP-IDF 安装 |
-| Python | 3.9–3.12（ESP-IDF 要求范围） | 由 `install.ps1` 管理虚拟环境 |
+| Python | **3.12 或 3.13**（🔴 ESP-IDF **只设下限、无上限**：v6.1 ≥ 3.10） | 由 `install.ps1` 管理虚拟环境 |
 | 中控软件 | Python（拟定，**规划中，待创建**）见 [ADR-0005](adr/ADR-0005-console-tech-stack-tbd.md) | 3.11+ |
 | 硬件 EDA | KiCad / 立创 EDA（择一，待定） | — |
 | 测试框架 | Unity（ESP-IDF 自带）+ `pytest-embedded` | — |
@@ -87,15 +87,18 @@ idf.py --version
 
 > ⚠️ **前置条件**：固件源码在**私有仓**（`ARDF-MeshTuneFox80-firmware`），需先取得访问权并克隆到本地；**本公开仓不含固件源码**。
 >
-> ⚠️ **当前状态**：私有固件仓的 **ESP-IDF 工程骨架已于 2026-09 建成**（`CMakeLists.txt`、
-> `sdkconfig.defaults`、`partitions.csv`、`main/`、28 个组件的 `CMakeLists.txt`、`test/`），
-> 具备首次构建条件。但：
+> ⚠️ **当前状态（2026-09-30 更新）**：私有固件仓的 ESP-IDF 工程**已建成并可产出正式固件** ——
+> **v0.1.0 三档二进制已于 2026-09-29 构建并发布**（见 [release/v0.1.0/](../release/v0.1.0/README.md)）。
 >
-> 1. **尚未实机验证构建** —— 建立骨架的环境**未安装 ESP-IDF**（`IDF_PATH` 为空），
->    配置项名称是对照 ESP-IDF v5.1.4 的 Kconfig 源码逐项核对的，未跑过 `idf.py build`。
->    首次构建时请留意是否有 Kconfig 未知项警告，并核对 `factory` 分区余量。
-> 2. **各组件尚无实现** —— 28 个组件目前都注册为"接口组件"（只有 `INCLUDE_DIRS`，无 `SRCS`），
->    `app_main()` 只打印启动日志、不调用任何组件函数。构建产物是一个空壳固件。
+> > 📌 下面 1./2. 两条是 **2026-09 建骨架阶段**的描述，**已过时**，保留作沿革：
+> >
+> > 1. ~~**尚未实机验证构建**，配置项名称是对照 ESP-IDF v5.1.4 的 Kconfig 源码逐项核对的，未跑过 `idf.py build`。~~
+> >    ✅ **已证伪**：本机 ESP-IDF **v6.1** 上三档冷构建实测 **0 error**，且已发布 v0.1.0；
+> >    配置项亦已对照 **v6.1** 源码核对（**27/27 存在**，见 §12.7）。
+> > 2. ~~**各组件尚无实现**，`app_main()` 只打印启动日志、构建产物是空壳固件。~~
+> >    ✅ **已证伪**：组件已大量落地（**2026-09-28 实测 30 个已入库组件**），并能产出会发报的从机固件。
+> >
+> > ⚠️ **首次构建时仍请留意**：是否有 Kconfig 未知项警告，并核对 `factory` 分区余量。
 
 ### 3.1 标准流程
 
@@ -217,33 +220,44 @@ pytest --target=esp32c3 --port=COM5
 
 ---
 
-## 5. 中控 PC 软件（规划中，待创建）
+## 5. 中控 PC 软件（🔴 **源码在私有仓；本仓无此目录**）
 
-> 技术栈**待定**，见 [ADR-0005](adr/ADR-0005-console-tech-stack-tbd.md)。以下为 Python 方案的原型流程。
-> ⚠️ `software/master-console/`（规划中，待创建）目录**尚不存在**，本节命令要等该目录创建后才可执行。
+> ✅ **现状（2026-09-30 更正）**：中控 PC 软件**已实现 6 个界面**（赛前部署 / 赛中监控 / 赛后赛报），
+> 可脱离硬件、用假设备完整演练。**源码在私有固件仓 `ARDF-MeshTuneFox80-firmware`，本仓不发布。**
+> 🔴 本节此前写「规划中，待创建」并给出 `cd software/master-console` —— 那是**不可执行的命令**
+> （本仓 `software/` 下只有 `README.md`），已连同标题一并更正。
+> 授权登记见 [LICENSING.md §三](../LICENSING.md)；技术选型背景见 [ADR-0005](adr/ADR-0005-console-tech-stack-tbd.md)。
+
+要在本地跑中控台，必须在**私有仓**内操作（需要该仓访问权限）：
 
 ```bash
-cd software/master-console       # 规划中，待创建（该目录尚不存在）
+cd ARDF-MeshTuneFox80-firmware/console   # 私有仓内的中控台源码目录
 python -m venv .venv
-.venv\Scripts\activate          # Windows
+.venv\Scripts\activate                   # Windows
 pip install -e ".[dev]"
 pytest
 python -m ardf_console
 ```
 
+> ⚠️ 上面是**私有仓**的路径，**在公开仓里执行一定失败** —— 这是有意为之，不是文档缺陷。
+> 公开仓里可复核的只有它对外的行为规格与协议要点。
+
 ---
 
-## 6. 协议代码生成（规划中，待创建）
+## 6. 协议代码生成（🔴 **实现同在私有仓**）
 
-`software/protocol/`（规划中，待创建）是协议唯一事实来源，固件与中控的帧代码由脚本生成：
+共享协议**已落地**（帧编解码 / 调度 / 遥测），实现与固件源码同在**私有仓**；
+本仓只登记规范要点（见 [software/README.md §3.2](../software/README.md)）。
 
 ```bash
-cd software                       # software/tools/（规划中，待创建）
-python tools/protocol_gen.py      # 生成到 software/protocol/generated/（规划中，待创建）
+# 🔴 以下命令应在【私有仓】内执行 —— 本仓没有 software/tools/ 与 software/protocol/ 目录
+cd ARDF-MeshTuneFox80-firmware
+python tools/protocol_gen.py      # 生成到 software/protocol/generated/
 ```
 
-> ⚠️ 上述 `software/tools/`（规划中，待创建）与 `software/protocol/generated/`（规划中，待创建）目前均不存在。
-> ⚠️ `software/protocol/generated/`（规划中，待创建）**禁止手工修改**，改动会被下次生成覆盖。
+> ⚠️ 本仓**不存在** `software/tools/`、`software/protocol/`、`software/protocol/generated/`
+> （此前本节写"规划中，待创建"，已按实况更正）。
+> ⚠️ `software/protocol/generated/` **禁止手工修改**，改动会被下次生成覆盖。
 
 ---
 
@@ -266,7 +280,7 @@ python tools/protocol_gen.py      # 生成到 software/protocol/generated/（规
 
 新成员上手时逐项确认：
 
-- [ ] ESP-IDF 安装成功：`idf.py --version` 输出 v5.1+
+- [ ] ESP-IDF 安装成功：`idf.py --version` 输出 **v6.1**（🔴 此前写 `v5.1+`，是**过时的规划下限**，非当前版本；口径见 §12.7）
 - [ ] 工具链已装 RISC-V：`riscv32-esp-elf-gcc --version` 可用（在 IDF 环境中）
 - [ ] 目标芯片可设：在私有固件仓根目录执行 `idf.py set-target esp32c3` 成功
 - [ ] 串口连通：`esptool.py -p <PORT> chip_id` 返回芯片信息
@@ -417,12 +431,12 @@ py -3.12 --version
 ### 12.2 安装步骤
 
 ```powershell
-# ① 准备 Python 3.12（择一）
+# ① 准备 Python 3.12 或 3.13（择一）
 winget install Python.Python.3.12
 #   或从 python.org 下载 3.12 安装包；装完确认：
 py -3.12 --version
 
-# ② 克隆 ESP-IDF（推荐 v5.3；分支可换 v5.5）
+# ② 克隆 ESP-IDF（🔴 本项目选用 v6.1；理由见 §12.7）
 git clone -b v6.1 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
 
 # ③ 只装 esp32c3 工具链（省时间与磁盘）
@@ -436,12 +450,18 @@ cd C:\esp\esp-idf
 ### 12.3 验证清单（逐项打勾）
 
 ```powershell
-idf.py --version                      # 应输出 ESP-IDF v5.3.x
+idf.py --version                      # 应输出 ESP-IDF v6.1
 riscv32-esp-elf-gcc --version         # RISC-V 工具链（在 IDF 环境内）
-python --version                      # 3.9–3.12
+python --version                      # 3.12 或 3.13（下限 3.10，见 §12.7）
 esptool.py version                    # 烧录工具
 [System.IO.Ports.SerialPort]::GetPortNames()   # 串口列表
 ```
+
+> 🔴 **`idf.py --version` 的期望值（2026-09-30 勘误）**：此前写「应输出 ESP-IDF **v5.3.x**」，
+> 与同节的 `git clone -b v6.1` 及 §12.7（**v6.1 = 本项目选用**）**自相矛盾** ⇒
+> 照旧文验收，会把一次**正确**的 v6.1 安装判成失败。现统一为 **`v6.1`**。
+> `python --version` 同理：此前写「3.9–3.12」，而本机实测环境是
+> `%IDF_TOOLS_PATH%\python_env\idf6.1_py3.13_env` ⇒ **3.13 也满足**（下限 3.10，无上限）。
 
 ### 12.4 首次构建（在固件仓内）
 
@@ -455,10 +475,10 @@ idf.py build
 
 | 检查项 | 说明 |
 |--------|------|
-| **Kconfig 未知项警告** | `sdkconfig.defaults` 是对照 v5.1.4 源码核对的；换小版本可能有差异，看到 `unknown config item` 要报告 |
+| **Kconfig 未知项警告** | `sdkconfig.defaults` 已对照 **v6.1** 源码逐符号核对（**27/27 存在**，见 §12.7）；换小版本可能有差异，看到 `unknown config item` 要报告 |
 | **`factory` 分区余量** | `idf.py size` 确认 app 未超 1536K |
-| **组件注册** | 28 个组件均为"接口组件"（只有 `INCLUDE_DIRS`、无 `SRCS`），这是**合法**的，不是错误 |
-| **产物** | 当前是**空壳固件**——组件均无实现，`app_main()` 只打日志 |
+| **组件注册** | 组件均为"接口组件"（只有 `INCLUDE_DIRS`、无 `SRCS`）的不在少数，这是**合法**的，不是错误 |
+| **产物** | 已可产出完整固件（**v0.1.0 三档二进制已构建并发布**，见 [release/v0.1.0/](../release/v0.1.0/README.md)） |
 
 ### 12.5 离线包线索
 
@@ -520,19 +540,26 @@ ESP32-C3 用**内置 USB-JTAG**（GPIO18/19），无需额外调试器。
 2. **ESP32-C3 完整支持**（`components/soc/esp32c3` 存在）；
 3. **Python 3.13.12 满足要求**（≥3.10）；
 4. **最新稳定版，支持周期最长**，避免"刚起步就落后一个大版本"；
-5. 🔑 **现在迁移成本最低**——本工程**尚无任何组件实现代码**，只有骨架；
-   若等 28 个组件写完再跨大版本迁移，代价高得多。
+5. **迁移成本已经付清**：本项目**已在 v6.1 上完成三档构建并发布 v0.1.0 固件二进制**
+   （见 [release/v0.1.0/](../release/v0.1.0/README.md)）——「趁骨架期迁移」这个窗口**已经过去了**，
+   现已无"再等一等"的余地；`sdkconfig.defaults` 的 27 个符号 v6.1 全部存在（§12.7）。
 
-**保留回退方案**：若 v6.1 首次构建暴露了骨架层面的问题（如组件注册行为变化），
-可随时切回 `v5.3.6`——因为 `sdkconfig.defaults` 在两版间**通用**。
+> 📌 **本项此前写「本工程尚无任何组件实现代码，只有骨架；若等 28 个组件写完再跨大版本迁移，代价高得多」**——
+> 该句是 **2026-09 早期待迁移状态**的描述，现已被事实取代：组件已大量落地
+> （**2026-09-28 实测 30 个已入库组件**）且**已发布 v0.1.0 固件二进制**。故此处改为"已完成迁移"口径。
+
+**保留回退方案**：若 v6.1 构建暴露了骨架层面的问题，可切回 `v5.3.6`——因为 `sdkconfig.defaults` 在两版间**通用**。
 
 ```powershell
 # 选定：v6.1（标签，可复现）
 git clone -b v6.1 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
 
-# 回退用（如需）
-git clone -b v6.1 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
+# 回退用（如需）—— 🔴 与上一条【不同】：换成 v5.3.6 标签
+git clone -b v5.3.6 --recursive https://github.com/espressif/esp-idf.git C:\esp\esp-idf
 ```
+
+> 🔴 **勘误（2026-09-30）**：上面那条「回退用」此前与主命令**逐字相同**（也是 `-b v6.1`），
+> 是复制粘贴残留 —— 照抄它**得不到任何回退效果**（静默无效，比报错更坏）。现改为 `-b v5.3.6`。
 
 **不要选**：`v4.x`（已停止维护，且本项目用 v5+ API）、`master`（开发分支）、`v6.x-rc*` / `*-beta*`（预览版）。### 12.8 ⚠️ 引用名（ref）的坑
 

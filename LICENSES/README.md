@@ -33,11 +33,14 @@
 > ⚠️ **CERN-OHL-S v2 的 URL 容易取错**（实测）：`https://ohwr.org/cern_ohl_s_v2.txt` 与
 > `https://gitlab.com/ohwr/project/cernohl/-/raw/master/CERN-OHL-S-2.0.txt` **都会返回 HTML 页面**。
 > 正确路径在 `licence_texts/` 子目录下，且拼写是英式的 **`licence`**（非 `license`），
-> 文件名为 `cern_ohl_s_v2.txt`。截至登记时该官方版为 **13708 字节**。
+> 文件名为 `cern_ohl_s_v2.txt`。截至登记时该官方版为 **13708 字节**、**289 行**、
+> 行尾为 **CRLF**，SHA-256 = `830BD5A6…`（见 §四）。
 >
 > SPDX 镜像 `raw.githubusercontent.com/spdx/license-list-data/main/text/CERN-OHL-S-2.0.txt`
-> 可用作备用，但实测其内容为 **13419 字节**，与官方版**不一致**（应为重排版），
-> 因此**优先使用官方 ohwr 版**。
+> 可用作备用，但实测其内容为 **13419 字节**（LF 行尾），与官方版**字节数不一致**（少 289 个 CR）。
+> ✅ **本仓 2026-09-30 的实测与处置**：对仓内那份 13419 B 的文件做"逐行 LF→CRLF"，结果
+> **恰好**得到 13708 B / SHA-256 `830BD5A6…`（**逐字符等于** §四登记值）⇒ 该文件与官方版的差别**只在行尾**，
+> 且已按官方字节恢复入库。恢复方式、属性护栏与自证命令见 **§三.1**。
 
 ---
 
@@ -47,12 +50,15 @@
 
 在仓库根目录执行（Windows PowerShell）：
 
+> 🔴 注意 CERN-OHL-S v2 用的是 **`licence_texts/` 子目录下的英式拼写 `licence`**，
+> **不要**用上面那两条"会返回 HTML"的 URL（见 §一 的警告）。
+
 ```powershell
 # 0) 建立目录（若尚未存在）
 New-Item -ItemType Directory -Force -Path LICENSES | Out-Null
 
 # 三份标准许可：从官方来源下载
-Invoke-WebRequest -Uri "https://ohwr.org/cern_ohl_s_v2.txt"                    -OutFile "LICENSES/CERN-OHL-S-2.0.txt"
+Invoke-WebRequest -Uri "https://gitlab.com/ohwr/project/cernohl/-/raw/master/licence_texts/cern_ohl_s_v2.txt" -OutFile "LICENSES/CERN-OHL-S-2.0.txt"
 Invoke-WebRequest -Uri "https://www.apache.org/licenses/LICENSE-2.0.txt"       -OutFile "LICENSES/Apache-2.0.txt"
 Invoke-WebRequest -Uri "https://creativecommons.org/licenses/by/4.0/legalcode.txt" -OutFile "LICENSES/CC-BY-4.0.txt"
 ```
@@ -61,7 +67,7 @@ Linux / macOS 等价命令：
 
 ```bash
 mkdir -p LICENSES
-curl -L -o LICENSES/CERN-OHL-S-2.0.txt   https://ohwr.org/cern_ohl_s_v2.txt
+curl -L -o LICENSES/CERN-OHL-S-2.0.txt   https://gitlab.com/ohwr/project/cernohl/-/raw/master/licence_texts/cern_ohl_s_v2.txt
 curl -L -o LICENSES/Apache-2.0.txt       https://www.apache.org/licenses/LICENSE-2.0.txt
 curl -L -o LICENSES/CC-BY-4.0.txt        https://creativecommons.org/licenses/by/4.0/legalcode.txt
 ```
@@ -93,18 +99,51 @@ sha256sum LICENSES/*.txt   # Linux / macOS
 
 `LicenseRef-ARDF-NC-1.0.txt` 不适用上述自检规则（自定义许可由本项目自撰）；只需确认其头部保留 `SPDX-License-Identifier: LicenseRef-ARDF-NC-1.0` 声明。
 
+### 三.1 🔴 行尾也是"完整性"的一部分（`CERN-OHL-S-2.0.txt` = CRLF）
+
+**字节数与 SHA-256 都要对**，而行尾会同时改变两者 —— 官方 `cern_ohl_s_v2.txt` 是 **CRLF**：
+
+| 版本 | 字节数 | CR 数 | SHA-256 |
+|---|---|---|---|
+| 官方 ohwr 发行版（**应为**） | **13708** | **289** | `830BD5A6…` ✅ §四登记值 |
+| 仅把官方版按行转成 LF | 13419 | 0 | `253AD3F8…` ❌ |
+
+复算与自证（Windows PowerShell，纯读）：
+
+```powershell
+$f = 'LICENSES\CERN-OHL-S-2.0.txt'
+"{0} bytes  {1}" -f (Get-Item $f).Length, (Get-FileHash $f -Algorithm SHA256).Hash
+# 期望：13708 bytes  830BD5A61C579317156E889E98314C0585958854F2FF3C227256697385431C80
+
+# CR 数必须等于行数（289）+ 结尾换行：本文件第 289 行以换行结束
+$t = [System.IO.File]::ReadAllText($f); ([regex]::Matches($t, "`r")).Count   # 期望 289
+```
+
+> ⚠️ **本仓曾在这里踩坑（2026-09-25 入库 → 2026-09-30 修复）**：仓内那份是 **13419 B / `253AD3F8…`**，
+> 即官方版的 **LF 归一版**。原因不是"下载错了"，而是原 `.gitattributes` 只写了 `LICENSES/*.txt -text`——
+> `-text` 只承诺"**不转换**"，它**不记忆"入库时本来是什么行尾"**：工作区那份既然已经是 LF，
+> `-text` 就把 LF 原样存了进去，等于把错误行尾**固化**了。
+> ⇒ 已改为 **`LICENSES/CERN-OHL-S-2.0.txt text eol=crlf`**（入库归一化为 LF、**每次检出还原官方 CRLF**）。
+> 验证属性是否生效：`git check-attr text eol -- LICENSES/CERN-OHL-S-2.0.txt` → `text: set` / `eol: crlf`。
+
 ---
 
 ## 四、把 SHA-256 登记与归档
 
 校验通过后，把各文件的 SHA-256 记录到本节表格中，作为后续审计依据：
 
-| 文件 | SHA-256 | 字节数 | 登记日期 |
-|------|---------|-------|---------|
-| `CERN-OHL-S-2.0.txt` | `830BD5A61C579317156E889E98314C0585958854F2FF3C227256697385431C80` | 13708 | 2026-09-25 |
-| `Apache-2.0.txt` | `CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30` | 11358 | 2026-09-25 |
-| `CC-BY-4.0.txt` | `9BA9550AD48438D0836DDAB3DA480B3B69FFA0AAC7B7878B5A0039E7AB429411` | 18657 | 2026-09-25 |
-| `LicenseRef-ARDF-NC-1.0.txt` | `3AAF0D44929DFEE73B643325098F3AB2F4D71D8DEBAF0C1100CFFFAD75960FC4` | 8084 | 2026-09-25 |
+| 文件 | SHA-256 | 字节数 | 行尾 | 登记日期 |
+|------|---------|-------|------|---------|
+| `CERN-OHL-S-2.0.txt` | `830BD5A61C579317156E889E98314C0585958854F2FF3C227256697385431C80` | 13708 | **CRLF**（289 行） | 2026-09-25 · 行尾修复 2026-09-30 |
+| `Apache-2.0.txt` | `CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30` | 11358 | LF | 2026-09-25 |
+| `CC-BY-4.0.txt` | `9BA9550AD48438D0836DDAB3DA480B3B69FFA0AAC7B7878B5A0039E7AB429411` | 18657 | LF | 2026-09-25 |
+| `LicenseRef-ARDF-NC-1.0.txt` | `3AAF0D44929DFEE73B643325098F3AB2F4D71D8DEBAF0C1100CFFFAD75960FC4` | 8084 | LF | 2026-09-25 |
+
+> ✅ **2026-09-30 复核：四份全部 MATCH**（本表四行 ↔ 工作区实测，逐项一致）。
+> `CERN-OHL-S-2.0.txt` 当日由 LF 归一版（13419 B / `253AD3F8…`）**按行恢复为官方 CRLF 字节**，
+> 复算得 13708 B / `830BD5A6…`，与本表登记值**逐字符相同** ⇒ 该行现在**成立**。
+> ⚠️ 恢复依据是"官方发行版为 CRLF、289 行"这一**已知事实 + 字节数/哈希双向自证**，
+> 本轮**未联网**重新下载官方文件比对（离线环境）；若日后联网，请按 §一 的官方 URL 取原版复算一次。
 
 > 重算命令：`Get-ChildItem LICENSES\*.txt | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash, $_.Name }`
 > 可同步登记到 [`../LICENSING.md`](../LICENSING.md) 第五节的 `LICENSES/` 目录表，便于集中查阅。

@@ -19,7 +19,7 @@ ARDF-MeshTuneFox80 — 第三方组件声明（NOTICE）
 |------|-------------|------|
 | `hardware/` | `CERN-OHL-S-2.0` | 硬件设计，强互惠 |
 | `docs/`、`validation/` | `CC-BY-4.0` | 文档与验证报告 |
-| `software/master-console/`、`software/protocol/`、`software/tools/`、`scripts/` | `Apache-2.0` | 工具链与上位机 |
+| `software/master-console/`、`software/protocol/`、`software/tools/`（🔴 **源码在私有仓 `ARDF-MeshTuneFox80-firmware`，本仓不发布；本仓无此目录**）、`scripts/` | `Apache-2.0` | 工具链与上位机 |
 | **固件源码** | `LicenseRef-ARDF-NC-1.0` | **私有仓，不对外授权** |
 | **固件二进制** | `LicenseRef-ARDF-NC-1.0` | 仅限业余无线电非商业用途 |
 
@@ -32,9 +32,15 @@ ARDF-MeshTuneFox80 — 第三方组件声明（NOTICE）
 ### 1. ESP-IDF
 
 - 名称：Espressif IoT Development Framework (ESP-IDF)
-- 版本：v5.x（目标芯片 ESP32-C3）
+- 版本：**v6.1**（目标芯片 ESP32-C3）
+  - 取值来源 = 构建所用 ESP-IDF 本机安装：`$IDF_PATH/tools/cmake/version.cmake`
+    （`IDF_VERSION_MAJOR 6` / `IDF_VERSION_MINOR 1` / `IDF_VERSION_PATCH 0`）
+    与 `idf.py --version` 实测输出 `ESP-IDF v6.1`。公开仓口径见 [README §3.2 软件基线](README.md)。
+  - ⚠️ 此前本行写 `v5.x`（把**当时的规划值**当成了**当前版本**），2026-09-30 按实测改正。
 - 许可：Apache License 2.0
 - 版权：Copyright (c) 2010-2024 Espressif Systems (Shanghai) CO LTD
+  - ⚠️ **待核**：该年份区间取自上游声明的历史文本，本轮**未**逐一核对 v6.1 各文件的版权年行；
+    如上游已改为更晚的区间，应以实际随二进制分发的声明为准。
 - 许可全文：https://www.apache.org/licenses/LICENSE-2.0
 - 上游：https://github.com/espressif/esp-idf
 - 义务：Apache-2.0 第 4 条 —— 分发目标代码时须随附本许可副本、

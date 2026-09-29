@@ -152,8 +152,9 @@ ARDF-MeshTuneFox80/
 │
 ├── software/                                  【软件区】Apache-2.0
 │   └── README.md                              ✅ 📄 软件区总览：软件入口与规划要点
-│   ※ 中控 master-console/（规划中，待创建）、共享协议 protocol/（规划中，待创建）、跨子工程工具 tools/（规划中，待创建）；
-│     固件源码在私有仓 ARDF-MeshTuneFox80-firmware（本仓不含固件源码，只发布编译产物）
+│   ※ 🔴 中控 master-console/、共享协议 protocol/、跨子工程工具 tools/ **均不在本仓** ——
+│     中控台（已实现 6 个界面）与共享协议的源码在私有仓 ARDF-MeshTuneFox80-firmware（本仓不发布）；
+│     固件源码同样在私有仓（本仓只发布编译产物）
 │
 ├── validation/                                【硬件在环验证区】
 │   ├── README.md                              ✅ 📄 十阶段总表与记录规范
@@ -221,10 +222,10 @@ ARDF-MeshTuneFox80/
 | 宿主机可跑的算法测试 | 私有仓 `test/`（不依赖硬件） |
 | 固件本地脚本（构建/烧录/版本生成） | 私有仓 `tools/` |
 | 固件专属文档（状态机图、时序图、调试记录） | 私有仓 `docs/` |
-| **通信协议字段定义** | `software/protocol/spec/`（规划中，待创建）、`software/protocol/schema/`（规划中，待创建）——**唯一事实来源**，本仓 |
-| 协议生成的 C 头 / Python 类 | `software/protocol/generated/`（规划中，待创建；**禁止手改**，本仓） |
-| 中控 PC 软件 | `software/master-console/src/ardf_console/<子模块>/`（规划中，待创建，本仓） |
-| 跨子工程工具（协议生成、打包） | `software/tools/`（规划中，待创建，本仓） |
+| **通信协议字段定义** | 🔴 在**私有仓** `software/protocol/spec/`、`software/protocol/schema/` ——**唯一事实来源**，**本仓没有这些目录** |
+| 协议生成的 C 头 / Python 类 | 🔴 在**私有仓** `software/protocol/generated/`（**禁止手改**）；本仓没有该目录 |
+| 中控 PC 软件 | 🔴 **在私有仓**（✅ **已实现 6 个界面**）；**本仓没有** `software/master-console/` |
+| 跨子工程工具（协议生成、打包） | 🔴 在**私有仓** `software/tools/`；本仓没有该目录 |
 | 同时涉及固件与中控的软件文档 | `docs/`（跨专业文档）或 `software/README.md`（软件规划要点） |
 
 ### 3.3 文档与验证文件

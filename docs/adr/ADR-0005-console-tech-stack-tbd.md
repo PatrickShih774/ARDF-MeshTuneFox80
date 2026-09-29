@@ -4,9 +4,15 @@
 - 日期：2026-09
 - 决策者：中控软件组 / 项目组
 
+> 🔴 **现状更新（2026-09-30）**：本 ADR 记录的是**技术栈未定稿时期**的决策。
+> 就**位置**而言事实已经明确：中控台**已实现 6 个界面**，**源码在私有仓
+> `ARDF-MeshTuneFox80-firmware`**，**本公开仓不发布、也没有 `software/master-console/` 目录**
+> （本 ADR 下文凡写"规划中，待创建"处，均按此理解）。
+> 就**技术栈是否仍然待定**而言，本 ADR 未作更新核实（**待核**）。见 [LICENSING.md §一](../../LICENSING.md)。
+
 ## 背景
 
-中控 PC 软件（`software/master-console/`，规划中，待创建）需要完成三件事（见 [`software/README.md`](../../software/README.md) §3.1）：
+中控 PC 软件（🔴 **源码在私有仓**；本仓无 `software/master-console/` 目录）需要完成三件事（规划要点见 [`software/README.md`](../../software/README.md) §3.1）：
 
 1. 通过**串口 / USB-CDC / UDP** 与多台从机通信（可能同时连接多台，需处理多口并发）；
 2. **实时遥测展示**：设备列表、状态刷新、曲线绘制、告警；
@@ -29,7 +35,7 @@
 3. 决策时以三个问题为准：分发给赛场工作人员的体验是否可接受？
    长时间运行的稳定性是否足够？协议变动时的改造成本是否可控？
 
-在此之前，`software/master-console/`（规划中，待创建，目录尚未存在）只保证**目录结构与职责边界**稳定，
+在此之后，`software/master-console/`（🔴 **在私有仓**；本仓无此目录）只保证**目录结构与职责边界**稳定，
 不写任何与框架强耦合的实现代码。
 
 ## 后果
@@ -60,7 +66,7 @@
 
 ## 关联
 
-- `software/master-console/`（规划中，待创建）——规划要点见 [`software/README.md`](../../software/README.md) §3.1
-- 共享协议 `software/protocol/`（规划中，待创建）——规划要点见 [`software/README.md`](../../software/README.md) §3.2
+- `software/master-console/`（🔴 **在私有仓，本仓不发布**）——规划要点见 [`software/README.md`](../../software/README.md) §3.1
+- 共享协议 `software/protocol/`（🔴 **同在私有仓**）——规划要点见 [`software/README.md`](../../software/README.md) §3.2
 - [ADR-0002 软硬件分区的单仓结构](ADR-0002-hardware-software-split-monorepo.md)
 - [docs/03-software-architecture.md](../03-software-architecture.md)

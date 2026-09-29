@@ -50,8 +50,8 @@
 | `fw` | 固件（**私有仓**） |
 | `hw` | 硬件（`hardware/`） |
 | `docs` | 文档与 ADR（`docs/`、各 `README.md`） |
-| `protocol` | 通信协议定义（`software/protocol/`，规划中，待创建） |
-| `console` | 中控 PC 软件（`software/master-console/`，规划中，待创建） |
+| `protocol` | 通信协议定义（🔴 实现/规范在**私有仓** `software/protocol/`，本仓不发布） |
+| `console` | 中控 PC 软件（🔴 **已实现**，源码在**私有仓** `software/master-console/`，本仓不发布） |
 | `ci` | CI、构建与仓库级脚本（`.github/`、`scripts/`） |
 
 > ⚠️ **固件改动不在本仓提交**：固件全部源码位于私有仓 `ARDF-MeshTuneFox80-firmware`，
@@ -119,10 +119,10 @@
 | 固件功能组件 | **私有固件仓**的 `components/<组件名>/` |
 | 固件单元测试 | **私有固件仓**的 `test/` |
 | 固件专用脚本（依赖 ESP-IDF 工具链） | **私有固件仓**的 `tools/` |
-| 中控软件源码 | `software/master-console/src/ardf_console/<子包>/`（规划中，待创建） |
-| 中控单元测试 | `software/master-console/tests/`（规划中，待创建） |
-| 协议人读规范 | `software/protocol/spec/`（规划中，待创建） |
-| 协议机器可读定义 | `software/protocol/schema/`（规划中，待创建） |
+| 中控软件源码 | 🔴 **不在本仓**：私有仓 `software/master-console/src/ardf_console/<子包>/`（✅ 已实现） |
+| 中控单元测试 | 🔴 **不在本仓**：私有仓 `software/master-console/tests/` |
+| 协议人读规范 | 🔴 **不在本仓**：私有仓 `software/protocol/spec/` |
+| 协议机器可读定义 | 🔴 **不在本仓**：私有仓 `software/protocol/schema/` |
 | 协议抓包/十六进制样例 | `software/protocol/examples/`（规划中，待创建） |
 | 跨子工程工具（纯宿主机） | `software/tools/<工具名>/`（规划中，待创建） |
 | 仓库级流水线脚本 | `scripts/` |
@@ -164,7 +164,7 @@
 | --- | --- |
 | `hardware/` | `CERN-OHL-S-2.0` |
 | 固件（私有仓源码 + Releases 二进制） | `LicenseRef-ARDF-NC-1.0`：仅限业余无线电非商业用途 |
-| `software/master-console/`（规划中，待创建）、`software/protocol/`（规划中，待创建）、`software/tools/`（规划中，待创建）、`scripts/` | `Apache-2.0` |
+| `software/master-console/`、`software/protocol/`、`software/tools/`（🔴 均在**私有仓**，本仓不发布）、`scripts/`（本仓实有） | `Apache-2.0` |
 | `docs/`、`validation/` | `CC-BY-4.0` |
 | ATU 调谐算法、Mesh 路由算法 | 商业授权（闭源，不在本仓库公开部分） |
 | `hardware/reference/` | 各原始项目许可（**不纳入本仓库授权范围**） |

@@ -49,7 +49,7 @@ components/<组件名>/
  */
 ```
 
-> **每个源文件必须带 SPDX 标识符**。固件源码位于**私有固件仓**，其 SPDX 标识符为 `LicenseRef-ARDF-NC-1.0`（「ARDF 业余无线电非商业许可 1.0」，仅限业余无线电非商业用途，只覆盖编译后的二进制）。中控 PC 软件（`software/master-console/`，规划中，待创建）与共享协议（`software/protocol/`，规划中，待创建）用 `Apache-2.0`。
+> **每个源文件必须带 SPDX 标识符**。固件源码位于**私有固件仓**，其 SPDX 标识符为 `LicenseRef-ARDF-NC-1.0`（「ARDF 业余无线电非商业许可 1.0」，仅限业余无线电非商业用途，只覆盖编译后的二进制）。中控 PC 软件（🔴 **已实现，源码在私有仓 `software/master-console/`，本仓不发布**）与共享协议（🔴 **已落地，同在私有仓 `software/protocol/`**）用 `Apache-2.0`。
 
 ### 2.3 头文件保护
 
@@ -264,9 +264,10 @@ esp_err_t atu_tuner_run(atu_tuner_ctx_t *ctx, uint16_t target_swr_x100, uint8_t 
 
 ---
 
-## 9. 中控 PC 软件（规划中，待创建）
+## 9. 中控 PC 软件（🔴 **源码在私有仓；本仓无此目录**）
 
-中控 PC 软件（`software/master-console/`，规划中，待创建）技术栈待定（[ADR-0005](adr/ADR-0005-console-tech-stack-tbd.md)）。若采用 Python，约定：
+中控 PC 软件**已实现 6 个界面**，源码在**私有仓** `software/master-console/`（**本仓不发布**）。
+技术栈定稿情况见 [ADR-0005](adr/ADR-0005-console-tech-stack-tbd.md)。若采用 Python，约定：
 
 | 项 | 约定 |
 |----|------|

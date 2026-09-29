@@ -19,9 +19,9 @@
 | `hardware/` | `CERN-OHL-S-2.0` | 强互惠。可商业制造销售，但**修改后的设计必须同样以 CERN-OHL-S v2 开源** | `LICENSES/CERN-OHL-S-2.0.txt` |
 | `docs/` | `CC-BY-4.0` | 可自由转载改编，需署名 | `LICENSES/CC-BY-4.0.txt` |
 | `validation/` | `CC-BY-4.0` | 报告可自由引用，需署名 | `LICENSES/CC-BY-4.0.txt` |
-| `software/master-console/`（规划中，待创建） | `Apache-2.0` | 允许闭源分发、商业使用 | `LICENSES/Apache-2.0.txt` |
-| `software/protocol/`（规划中，待创建） | `Apache-2.0` | 协议规范公开，鼓励第三方实现 | `LICENSES/Apache-2.0.txt` |
-| `software/tools/`（规划中，待创建）、`scripts/` | `Apache-2.0` | 工具链不进入固件镜像 | `LICENSES/Apache-2.0.txt` |
+| `software/master-console/`（🔴 **已实现，源码在私有仓，本仓不发布**） | `Apache-2.0` | 允许闭源分发、商业使用 | `LICENSES/Apache-2.0.txt` |
+| `software/protocol/`（🔴 **已落地，实现同在私有仓**） | `Apache-2.0` | 协议规范公开，鼓励第三方实现 | `LICENSES/Apache-2.0.txt` |
+| `software/tools/`（🔴 **同在私有仓**）、`scripts/`（本仓**实有**：硬件设计脚本） | `Apache-2.0` | 工具链不进入固件镜像 | `LICENSES/Apache-2.0.txt` |
 | **固件二进制**（GitHub Releases） | **`LicenseRef-ARDF-NC-1.0`** | **仅限业余无线电非商业用途**；不授予源代码、不要求公开源码 | [`LICENSES/LicenseRef-ARDF-NC-1.0.txt`](../LICENSES/LicenseRef-ARDF-NC-1.0.txt) |
 | **固件源码**（私有仓） | 同上（私有仓内另有 `LICENSE`） | 不对外授权 | 不在本仓库 |
 | **例外**：`hardware/reference/` | **各原始项目许可** | **只读参考，不纳入本仓库任何许可范围** | 不在本仓库 |
@@ -113,9 +113,15 @@
 >
 > 本文档与 [ADR-0007](adr/ADR-0007-firmware-closed-source-two-repo.md) 均不构成法律意见。
 
-### 2.3 中控软件 / 协议 / 工具（规划中，待创建）：Apache-2.0（宽松）
+### 2.3 中控软件 / 协议 / 工具：Apache-2.0（宽松）
 
-适用路径：`software/master-console/`（规划中，待创建）、`software/protocol/`（规划中，待创建）、`software/tools/`（规划中，待创建）、`scripts/`。
+🔴 **路径口径（2026-09-30 更正）**：中控软件（**已实现 6 个界面**）、共享协议（**已落地**）与跨子工程工具的
+**源码都在私有仓** `ARDF-MeshTuneFox80-firmware`，**本公开仓不发布、也没有这些目录**
+（此前本节写"规划中，待创建"并把它们记在**本仓**，与 [README §六](../README.md)、
+[LICENSING.md §一](../LICENSING.md) 冲突，现已统一）。
+
+适用路径：私有仓的 `software/master-console/`、`software/protocol/`、`software/tools/`；
+**本仓实有的**只有 `scripts/`（硬件设计脚本）。
 
 | 要求 | 说明 |
 |------|------|
@@ -276,7 +282,7 @@
 | 贡献区域 | 授权协议 |
 |---------|---------|
 | `hardware/` | `CERN-OHL-S-2.0` |
-| `software/master-console/`（规划中，待创建）、`software/protocol/`（规划中，待创建）、`software/tools/`（规划中，待创建）、`scripts/` | `Apache-2.0` |
+| `software/master-console/`、`software/protocol/`、`software/tools/`（🔴 均在**私有仓**，本仓不发布）、`scripts/` | `Apache-2.0` |
 | `docs/`、`validation/` | `CC-BY-4.0` |
 | **固件源码** | **不接受外部贡献**（私有仓，非公开） |
 

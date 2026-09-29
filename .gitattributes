@@ -1,12 +1,26 @@
 # 默认：文本文件统一使用 LF
 * text=auto eol=lf
 
-# ---- 许可全文：禁止任何行尾转换 ----
-# 许可全文是法律文本，必须与官方来源**逐字节一致**。
-# `-text` 关闭 EOL 归一化与文本检测，保证原始字节（含 CRLF）原样入库。
-# 注意：CERN-OHL-S-2.0 官方版本身就是 CRLF，其余三份是 LF——
-# 各自的原始行尾都必须保留，SHA-256 才与官方版本可比对。
-LICENSES/*.txt -text
+# ---- 许可全文：行尾必须与官方发行版逐字节一致 ----
+# 许可全文是法律文本，必须与官方来源**逐字节一致**（SHA-256 是登记依据）。
+#
+# 🔴 `CERN-OHL-S-2.0.txt`：官方 ohwr 版是 **CRLF**（289 行 / 13708 B /
+#    SHA-256 `830BD5A6…`）。这里**只写 `-text` 不够**（本仓实测踩过这个坑）：
+#    Git 不记忆"入库时本来是什么行尾"，只要工作区那一份曾经是 LF，
+#    `-text` 就会把 LF **原样**存进去 —— "关闭转换"于是反而固化了错误行尾
+#    （当时工作区为 13419 B / `253AD3F8…`，比官方少 289 个 CR）。
+#    ⇒ 用 `text eol=crlf`：入库时归一化为 LF，**每次检出都还原成官方 CRLF 字节**。
+#    （验属性：`git check-attr text eol -- LICENSES/CERN-OHL-S-2.0.txt`）
+LICENSES/CERN-OHL-S-2.0.txt text eol=crlf
+
+# 其余三份许可：官方发行版本身就是 LF ⇒ `-text` 关闭 EOL 转换与文本检测，
+# 让官方 LF 字节原样进出，SHA-256 才与官方版本可比对。
+#    Apache-2.0.txt              11358 B  `CFC7749B…`
+#    CC-BY-4.0.txt               18657 B  `9BA9550A…`
+#    LicenseRef-ARDF-NC-1.0.txt   8084 B  `3AAF0D44…`（本项目自撰）
+LICENSES/Apache-2.0.txt -text
+LICENSES/CC-BY-4.0.txt -text
+LICENSES/LicenseRef-ARDF-NC-1.0.txt -text
 
 # ---- 二进制文件标记 ----
 *.pdf   binary

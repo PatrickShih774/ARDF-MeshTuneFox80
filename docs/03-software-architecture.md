@@ -570,10 +570,15 @@ LCD 走 SPI2 独占（[ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)）：
 |------|------|------|
 | 固件源码（全部组件） | **不授予** | 源码位于**私有仓** [ARDF-MeshTuneFox80-firmware](https://github.com/PatrickShih774/ARDF-MeshTuneFox80-firmware)，本公开仓不含固件源码 |
 | 固件二进制发布物 | `LicenseRef-ARDF-NC-1.0` | 「ARDF 业余无线电非商业许可 1.0」：**仅限业余无线电非商业用途**；只覆盖编译后的二进制，不要求公开源码 |
-| `software/master-console/`（规划中，待创建） | **Apache 2.0** | 允许闭源分发 |
-| `software/protocol/`（规划中，待创建） | **Apache 2.0** | 共享协议定义的唯一事实来源 |
+| `software/master-console/`（🔴 **已实现，源码在私有仓，本仓不发布**） | **Apache 2.0** | 允许闭源分发 |
+| `software/protocol/`（🔴 **已落地，实现同在私有仓**） | **Apache 2.0** | 共享协议定义的唯一事实来源 |
 
-- 固件工程（`components/`、`main/`、`test/`、`tools/`、组件文档）全部在私有仓维护；本公开仓的 `software/` 当前只放 `README.md`（软件入口与规划要点）。中控 PC 软件（`software/master-console/`，规划中，待创建）、共享协议（`software/protocol/`，规划中，待创建）与跨子工程工具（`software/tools/`，规划中，待创建）**都还没开始写**。
+- 固件工程（`components/`、`main/`、`test/`、`tools/`、组件文档）全部在私有仓维护；本公开仓的 `software/` 当前只放 `README.md`（软件入口与规划要点）。
+  🔴 **2026-09-30 口径更正**：此处此前写「中控 PC 软件、共享协议、跨子工程工具**都还没开始写**」——
+  **不成立**。中控 PC 软件**已实现 6 个界面**（赛前部署 / 赛中监控 / 赛后赛报，可脱离硬件演练），
+  共享协议**已落地**；**两者的源码都在私有仓 `ARDF-MeshTuneFox80-firmware`，本仓不发布**
+  （本仓**不存在** `software/master-console/`、`software/protocol/`、`software/tools/`）。
+  准确进度见 [README §六 当前进度](../README.md)；许可登记见 [LICENSING.md](../LICENSING.md)。
 - 固件**编译后的二进制**通过 GitHub Releases 分发，适用 `LicenseRef-ARDF-NC-1.0`（仅限业余无线电非商业用途）。
 - 许可全文见 `LICENSES/LicenseRef-ARDF-NC-1.0.txt`，授权映射与合规路径见 [08-许可证与合规](08-licensing-and-compliance.md)。
 
