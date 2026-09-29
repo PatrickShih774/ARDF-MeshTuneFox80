@@ -218,7 +218,7 @@ ARDF（运动） + Mesh（ESP-NOW 多机网络） + Tune（自动调谐 ATU） +
 - ❌ **不提供发射许可**。使用者须持有相应业余无线电操作证书并办理设台手续。
 - ❌ **不做 2 米波段**。`ARDF_2M_144MHz` 是并行启动的独立项目（见项目升级计划书 第九章），不在本仓库范围。
 - ❌ **不做天线设计优化**。本项目仅配套 5 m 垂直导线 + 5 m 地线的**部署规范**与匹配方案，不研究天线本体。
-- ❌ **不提供闭源算法源码**。ATU 调谐算法与 Mesh 路由算法的商业闭源版本不在本仓库（见 [ADR-0006](adr/ADR-0006-layered-licensing-gpl-isolation.md)）；本仓库内为其**开源参考实现**。
+- ❌ **不提供闭源算法源码**。ATU 调谐算法与 Mesh 路由算法的商业闭源版本不在本仓库（见 [ADR-0007](adr/ADR-0007-firmware-closed-source-two-repo.md) 与 [LICENSING.md §三](../LICENSING.md)；本句原引 [ADR-0006](adr/ADR-0006-layered-licensing-gpl-isolation.md)，该 ADR **已被取代**）；本仓库内为其**开源参考实现**。
 
 ### 6.3 合规边界
 

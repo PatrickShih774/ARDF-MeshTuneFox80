@@ -117,7 +117,7 @@ idf.py menuconfig
 idf.py build
 
 # 4) 烧录 + 监视
-idf.py -p COM5 flash monitor
+idf.py -p <COM口> flash monitor
 ```
 
 ### 3.2 关键 `idf.py` 命令速查
@@ -207,7 +207,7 @@ idf.py --preview set-target linux   # 或使用独立的主机侧测试目标
 pip install pytest-embedded pytest-embedded-serial-esp
 
 cd ARDF-MeshTuneFox80-firmware/test    # 私有固件仓的 test/ 目录
-pytest --target=esp32c3 --port=COM5
+pytest --target=esp32c3 --port=<COM口>
 ```
 
 ### 4.3 测试组织
@@ -266,7 +266,7 @@ python tools/protocol_gen.py      # 生成到 software/protocol/generated/
 | 任务 | 命令 / 操作 |
 |------|------------|
 | 查看串口 | 设备管理器（Windows）→ 端口；`esptool.py chip_id` 验证连通 |
-| 擦除 Flash（忘记密码/异常启动） | `idf.py -p COM5 erase-flash` |
+| 擦除 Flash（忘记密码/异常启动） | `idf.py -p <COM口> erase-flash` |
 | 更换分区表 | 改 `partitions.csv` → `idf.py build flash`（必要时先 `erase-flash`） |
 | 查看固件大小 | `idf.py size-components` |
 | 生成编译数据库 | `idf.py -DCMAKE_EXPORT_COMPILE_COMMANDS=ON build` |

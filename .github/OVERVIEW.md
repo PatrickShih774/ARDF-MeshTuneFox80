@@ -26,7 +26,7 @@
 
 | Job | 触发路径 | 内容 |
 | --- | --- | --- |
-| 固件构建 | **私有固件仓**（CI 在私有仓运行，产物发布到本仓 Releases） | ESP-IDF（v5.x，`esp32c3`）`idf.py build` |
+| 固件构建 | **私有固件仓**（CI 在私有仓运行，产物发布到本仓 Releases） | ESP-IDF（当前 = **v6.1**，`esp32c3`；`v5.x` 只作历史限定，见 [README §3.2](../README.md)）`idf.py build` |
 | 固件单元测试 | **私有固件仓**（CI 在私有仓运行） | 宿主机侧 Unity / pytest-embedded 单元测试 |
 | 中控测试 | `software/master-console/**`（规划中，待创建）、`software/protocol/**`（规划中，待创建） | 协议编解码与调度逻辑单元测试（技术栈待定）；**CI 随代码落地后启用** |
 | 协议生成一致性 | `software/protocol/**`（规划中，待创建） | 校验 `generated/` 与 `schema/` 一致（禁止手改产物）；**CI 随代码落地后启用** |

@@ -16,7 +16,8 @@
 
 三者的**许可不同**：硬件为 `CERN-OHL-S-2.0`，中控与协议为 `Apache-2.0`，
 固件（**源码在私有仓**）二进制为 `LicenseRef-ARDF-NC-1.0`，
-ATU/Mesh 算法为商业闭源授权（见 [ADR-0006](ADR-0006-layered-licensing-gpl-isolation.md)）。
+ATU/Mesh 算法为商业闭源授权（见 [ADR-0007](ADR-0007-firmware-closed-source-two-repo.md)；
+本 ADR 原文引用的 [ADR-0006](ADR-0006-layered-licensing-gpl-isolation.md) **已被取代**）。
 三者的**工具链不同**：EDA vs ESP-IDF vs Python、.NET。
 三者的**发布节奏不同**：硬件按批次（打样/改板），软件按版本。
 
