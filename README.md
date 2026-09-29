@@ -11,6 +11,14 @@
 
 ---
 
+> # 🔴 要烧录？**先读这一页**：[快速上手 · 烧录前必读](QUICKSTART-BEFORE-FLASHING.md)
+>
+> **默认构建出来的固件是【网关】，它不会发报** —— 把默认构建烧进狐狸板，板子不发报；
+> **这不是板子坏了，是构建选错了角色。** 三个档位的构建命令、烧录前 5 条硬纪律、
+> 「我烧了但它不发报」排查表，都在那一页。
+
+---
+
 ## 一、这是什么
 
 **ARDF-MeshTuneFox80 是一整套面向 ARDF「猎狐」竞赛的端到端系统** —— 不止是一台发射机，
@@ -257,13 +265,15 @@ idf.py -p COM3 -B build-slave -D SDKCONFIG="$abs\sdkconfig.slave" flash monitor
 **无需先手改 `menuconfig`、也无需从别处复制**。
 角色语义、三份 `sdkconfig` 的关系与自检清单见私有固件仓 `docs/BUILD-ROLES.md`「角色与构建」。
 
-> ⚠️ 表中第三行（`sdkconfig.gw2`，纯网关板 `hw_rev=2`）**尚未配套入库 defaults 叠加文件**
-> （暂无 `sdkconfig.defaults.gw2`）⇒ 它在**新克隆**上仍有和上面同样的失败问题，仍需先手工生成。
-> 本仓**不**声称它已经可用。
+> ✅ 表中第三行（`sdkconfig.gw2`，纯网关板 `hw_rev=2`）自 **2026-09-29** 起已配套入库叠加文件
+> `sdkconfig.defaults.gw2` ⇒ **新克隆照抄** [快速上手 §3](QUICKSTART-BEFORE-FLASHING.md) 的命令
+> 即可一次构建成功（依据 = 私有固件仓 `docs/BUILD-ROLES.md` §4.3；本批三档位冷构建实测见该批报告）。
+> ⚠️ 此前"暂无 `sdkconfig.defaults.gw2`"的说明**已过时**，本次一并改正。
 
 ⚠️ **运行期在菜单里切角色（role 存 NVS）尚未实现**：当前角色**只能**由编译期配置决定。
 已烧进设备的固件是什么角色就是什么角色 —— 换角色必须**重新构建 + 重新烧录**。
-（预编译二进制随 Releases 发布时会标注其角色；目前尚未首次发布。）
+（预编译二进制**会**标注其角色；首发 **v0.1.0** 的三份产物与发布说明已备好在
+[release/v0.1.0/](release/v0.1.0/)，**尚未**打 tag / 建 Release。）
 
 ### 3.3 七种竞赛模式
 
@@ -272,7 +282,8 @@ idf.py -p COM3 -B build-slave -D SDKCONFIG="$abs\sdkconfig.slave" flash monitor
 > 「2019 版（对照）」列仅供溯源，引用时必须标注「2019 版」。🔴 **两版条文号体系不同，不可混用**（同号不同义）。
 >
 > 下表「频率 / 功率 / 时序 / 识别码」列为**本工程设计基线值**（= 实现现状）；与规则原文逐条核对的符合性结果
-> （含 11 项已知偏差 D-01～D-11 及其在 2024 下的效力）在私有固件仓，**不随本仓发布**。
+> （**11 条 ❌ 判定 = 9 个独立缺陷**，D-01～D-11；其中 D-03 一个根因命中全部 6 种模式）在私有固件仓，
+> **不随本仓发布**，口径见 [快速上手 §7](QUICKSTART-BEFORE-FLASHING.md)。
 
 | 模式 | 固件标识 | 状态 | **2024 版条文（基线）** | 2019 版（对照） | 频率 | 功率 | 时序 | 识别码 |
 |------|---------|------|------------------------|----------------|------|------|------|--------|
@@ -391,6 +402,7 @@ ESP32-C3 标称 22 个 GPIO，本板实际**可用 12 个**：
 | 🆕 第一次了解本项目 | [docs/01-project-overview.md](docs/01-project-overview.md) → [docs/00-project-upgrade-plan.md](docs/00-project-upgrade-plan.md) |
 | 💻 要写固件 | [docs/03-software-architecture.md](docs/03-software-architecture.md) → [docs/06-build-and-dev-environment.md](docs/06-build-and-dev-environment.md)（固件源码为**私有仓**，本仓不提供；固件二进制见 GitHub Releases） |
 | 🔌 要画板子 | [docs/04-hardware-architecture.md](docs/04-hardware-architecture.md) → [hardware/README.md](hardware/README.md) |
+| 🔥 **要烧录 / 烧完发现"不发报"** | [快速上手 · 烧录前必读](QUICKSTART-BEFORE-FLASHING.md)（三档位命令 + 排查表） |
 | 🔗 关心软硬件怎么对接 | [docs/05-hw-sw-interface-contract.md](docs/05-hw-sw-interface-contract.md) |
 | 🧪 要做实测验证 | [validation/README.md](validation/README.md) |
 | 📐 想知道某个文件该放哪 | [docs/02-repository-layout.md](docs/02-repository-layout.md) |
@@ -418,10 +430,10 @@ ESP32-C3 标称 22 个 GPIO，本板实际**可用 12 个**：
 | 仓库软硬件双分区结构 | ✅ 已建立 |
 | `docs/` 架构文档体系与 ADR | ✅ 已建立 |
 | 需求基线迁入 `docs/00-project-upgrade-plan.md` | ✅ 已完成（唯一副本，根目录 `plan.md` 已删除） |
-| 许可结构 `LICENSING.md` + `LICENSES/` | ✅ 已建立（四份许可全文待放入） |
+| 许可结构 `LICENSING.md` + `LICENSES/` | ✅ 已建立（**四份许可全文已入库**：Apache-2.0 / CC-BY-4.0 / CERN-OHL-S-2.0 / LicenseRef-ARDF-NC-1.0） |
 | `hardware/` 模块目录与文档骨架 | ✅ 已建立 |
 | 固件源码（私有仓） | ✅ 已迁出本仓 |
-| 固件二进制发布（Releases） | ⬜ 待首次构建 |
+| 固件二进制发布（Releases） | 🔶 **v0.1.0 三档产物已构建并备好**（[release/v0.1.0/](release/v0.1.0/) + `SHA256SUMS` + 发布说明）；⬜ **待 Lead 打 tag / 建 GitHub Release** |
 | ESP-IDF 工程构建文件（`CMakeLists.txt` / `sdkconfig.defaults` / `partitions.csv`） | ✅ 已建立（在私有固件仓内） |
 | 固件各组件实现代码 | ✅ 开发中（在私有固件仓内，**本仓不发布**） |
 | 中控 PC 软件 | ✅ **6 个界面已实现**（源码在私有固件仓内，**本仓不发布**） |
