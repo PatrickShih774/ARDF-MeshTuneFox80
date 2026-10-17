@@ -50,6 +50,14 @@
 | `ATU_L3_LO` | antenna, atu-module | L3.2, K3.NC, K4.COM, K5.COM, K6.COM, J_ANT.CENTER, R_esd.1 | global |
 | `ATU_L_IN` | atu-module | J_ATU_IN.CENTER, L1.1, K1.COM | local |
 | `BUZZER_DRV` | mcu-ui | LS1.+ | local |
+
+> 🔴 **2026-10-11 本版豁免声明（本节表格是生成脚本输出，故就地加注而不改行）**：
+> **蜂鸣器 ❌ 本版不做（2026-10）** ⇒ 网络 `BUZZER_DRV`、元件 `LS1`、符号 `ARDF:BUZZER`
+> **均不进本版原理图 / BOM**（未投板 ⇒ 本版直接移除，**来源与历史记录保留**）。
+> 因此本文中 `BUZZER_DRV` / `LS1` / `ARDF:BUZZER` 的各项**均为上一版生成结果**，
+> 重跑 `scripts/build-kicad-schematic.py` 后应消失。
+> 🔴 同时注意：**OC7/OC8 从此保持空闲、不预接**（不得再被当作"备用位"使用）。
+> 另：`EC11_A` 在本表中仍写 `U4.GPIO2` ⇒ **本版应为 `U4.GPIO20`**（同上，重跑脚本后生效）。
 | `DET_FWD` | atu-module | T1.SEC+, R_sense_F.1, D1.A, D3.A | local |
 | `DET_REV` | atu-module | T2.SEC+, R_sense_R.1, D2.A, D4.A | local |
 | `EC11_A` | mcu-ui | U4.GPIO2, U6.A | local |
@@ -111,7 +119,7 @@
 | `ARDF:BATTERY` | 2 | FUNCTIONAL | Battery |
 | `ARDF:BOOST_12V` | 4 | FUNCTIONAL | docs/05 3.3 - off-the-shelf boost module, pinout not frozen |
 | `ARDF:BS170` | 3 | PHYSICAL | BS170 TO-92 1=D 2=G 3=S |
-| `ARDF:BUZZER` | 2 | FUNCTIONAL | Buzzer |
+| `ARDF:BUZZER` | 2 | FUNCTIONAL | Buzzer ← ❌ **本版不做（2026-10）**，本符号不进本版原理图（历史条目保留） |
 | `ARDF:C` | 2 | FUNCTIONAL | datasheet (2-terminal) |
 | `ARDF:CONN_01x04` | 4 | FUNCTIONAL | Conn_01x04 |
 | `ARDF:CRYSTAL` | 2 | FUNCTIONAL | Crystal |
@@ -174,7 +182,7 @@ Rows below are the reason a symbol carries a functional name instead of a physic
 | 103 | `PA_RF_OUT` | `Q1.D (并联)` | `J_PA_OUT.中心` | PARTIAL | Q1.D stays on PA_DRAIN (row 87) |
 | 141 | `GND` | `GND_DIG.-` | `GND_RF.-` | NOTE |  |
 | 142 | `GND` | `GND_PWR.-` | `GND_DIG.-` | NOTE |  |
-| 179 | `BUZZER_DRV` | `U1.IOEXP_SPARE` | `LS1.+` | PARTIAL | row pin token 'IOEXP_SPARE' is not a pin of U1 (TCA9535) - see netlist.csv row |
+| 179 | `BUZZER_DRV` | `U1.IOEXP_SPARE` | `LS1.+` | PARTIAL | row pin token 'IOEXP_SPARE' is not a pin of U1 (TCA9535) - see netlist.csv row ← ❌ **本版整行作废（2026-10：蜂鸣器不做、TCA9535 已由 CA-DV8008N 取代）**，历史记录保留 |
 | 180 | `GPIO12_FB_PD` | `R12.1` | `PA_PWR_PWM.-` | PARTIAL | netlist.csv declares net GPIO12_FB_PD but the other end is net name PA_PWR_PWM, so the pin was placed on PA_PWR_PWM |
 
 ## 7. Net label aliases applied
@@ -248,7 +256,7 @@ Rows below are the reason a symbol carries a functional name instead of a physic
 | `L4` | `TBD-T106-6` | script override |
 | `L5` | `TBD-T106-6` | script override |
 | `L6` | `TBD-T106-6` | script override |
-| `LS1` | `BUZZER-3V3` | script override |
+| `LS1` | `BUZZER-3V3` | script override ← ❌ **本版不做（2026-10）**：`LS1` 不进本版原理图 / BOM |
 | `Q1` | `BS170` | script override |
 | `Q2` | `BS170` | script override |
 | `Q3` | `BS170` | script override |

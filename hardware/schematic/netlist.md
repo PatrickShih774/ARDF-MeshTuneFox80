@@ -18,30 +18,29 @@
 
 | 项 | 数量 |
 |---|---|
-| 连接行数 | 181 |
-| 去重网络数 | 85 |
+| 连接行数 | 155 |
+| 去重网络数 | 68 |
 
-### 1.1 网络名清单（85 个）
+### 1.1 网络名清单（68 个）
 
-`ADC_FWD`, `ADC_REV`, `ADC_VBAT`, `EC11_A`, `EC11_B`, `EC11_SW`, `KEY_USER`, `I2C_SDA`, `I2C_SCL`, `PA_PWR_PWM`, `VDD_SPI_NC`, `USB_DM`, `USB_DP`, `UART0_TX`, `UART0_RX`, `GND`, `TCA9535_INT`, `IOEXP_RELAY_K1`, `IOEXP_RELAY_K2`, `IOEXP_RELAY_K3`, `IOEXP_RELAY_K4`, `IOEXP_RELAY_K5`, `IOEXP_RELAY_K6`, `IOEXP_LCD_BL`, `IOEXP_SPARE_P1_0`, `IOEXP_SPARE_P0_6`, `IOEXP_SPARE_P0_7`, `IOEXP_SPARE_P1_2`, `IOEXP_SPARE_P1_3`, `IOEXP_SPARE_P1_4`, `IOEXP_SPARE_P1_5`, `IOEXP_SPARE_P1_6`, `IOEXP_SPARE_P1_7`, `+12V_RELAY`, `RELAY_K1_COIL`, `RELAY_K2_COIL`, `RELAY_K3_COIL`, `RELAY_K4_COIL`, `RELAY_K5_COIL`, `RELAY_K6_COIL`, `LCD_SCK`, `LCD_MOSI`, `LCD_DC`, `LCD_RST`, `LCD_BL_CTRL`, `LCD_BL_GATE_PD`, `LCD_BL_K`, `+3V3_DIG`, `LCD_V0`, `CW_KEY_SRC`, `RF_SRC_CLK`, `RF_SRC_PD`, `PA_GATE`, `PA_GATE_PD`, `PA_BIAS`, `+5V`, `PA_DRAIN`, `PA_BYPASS`, `DEC244`, `PA_RF_OUT`, `ATU_L_IN`, `XFWD_SEC`, `DET_FWD`, `XREV_SEC`, `DET_REV`, `LM358_IN`, `VBAT`, `VBAT_DIV`, `ANT_ESD`, `+12V`, `+3V3_RF`, `ATU_L1_LO`, `ATU_L2_LO`, `ATU_L3_LO`, `ATU_C3`, `ATU_C4`, `ATU_C5`, `ATU_K1_NO_NC`, `ATU_K2_NO_NC`, `ATU_K3_NO_NC`, `ATU_K4_NC_NC`, `ATU_K5_NC_NC`, `ATU_K6_NC_NC`, `BUZZER_DRV`, `FB_PULLDOWN`
+`ADC_FWD`, `ADC_REV`, `ADC_VBAT`, `EC11_A`, `EC11_B`, `EC11_SW`, `KEY_USER`, `I2C_SDA`, `I2C_SCL`, `GPIO12_TBD`, `VDD_SPI_NC`, `USB_DM`, `USB_DP`, `UART0_TX`, `UART0_RX`, `GND`, `RELAY_K1_COIL`, `+5V_RELAY`, `RELAY_K2_COIL`, `RELAY_K3_COIL`, `RELAY_K4_COIL`, `RELAY_K5_COIL`, `RELAY_K6_COIL`, `+3V3_DIG`, `LCD_BL_DRV`, `LCD_SCK`, `LCD_MOSI`, `LCD_DC`, `LCD_RST`, `LCD_BL_CTRL`, `LCD_BL_GATE_PD`, `LCD_BL_K`, `LCD_V0`, `CW_KEY_SRC`, `RF_SRC_CLK`, `RF_SRC_PD`, `PA_GATE`, `PA_GATE_PD`, `PA_BIAS`, `+5V`, `PA_DRAIN`, `PA_BYPASS`, `DEC244`, `PA_RF_OUT`, `ATU_L_IN`, `XFWD_SEC`, `DET_FWD`, `XREV_SEC`, `DET_REV`, `LM358_IN`, `VBAT`, `VBAT_DIV`, `ANT_ESD`, `VCC`, `+3V3_RF`, `ATU_L1_LO`, `ATU_L2_LO`, `ATU_L3_LO`, `ATU_C3`, `ATU_C4`, `ATU_C5`, `ATU_K1_NO_NC`, `ATU_K2_NO_NC`, `ATU_K3_NO_NC`, `ATU_K4_NC_NC`, `ATU_K5_NC_NC`, `ATU_K6_NC_NC`, `BUZZER_DRV`
 
 ## 2. 子系统覆盖
 
 | 子系统 | 覆盖内容 | 依据 |
 |---|---|---|
 | ESP32-C3 12 个 GPIO 全部去向 | GPIO0/1/3 ADC · GPIO2/8 EC11 · GPIO4/5 I2C · GPIO6/7 SPI2 · GPIO10 LCD_DC · GPIO12 PA_PWR_PWM · GPIO13 EC11_SW（另 GPIO9=BOOT、11=NC、18/19=USB、20/21=UART0） | docs/05-hw-sw-interface-contract.md §2.2/§2.8 |
-| TCA9535 16 位（用 7 + 预留 9） | P0.0-P0.5=K1-K6 · P1.1=LCD 背光 · 预留 P1.0 + P0.6/P0.7 + P1.2-P1.7 = 9 位 | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| ULN2003A 7 路（6 继电器 + COM 接 +12V） | IN1-IN6 <- P0.0-P0.5；OUT1-OUT6 -> K1-K6 线圈；COM -> +12V（内部续流二极管） | docs/05-hw-sw-interface-contract.md §2.4 |
+| CA-DV8008 八通道低边驱动（用 6 + 备用 2） | OC1-OC6 -> K1-K6 线圈（HK4100F-DC5V-SHG, 40mA/只）· COM -> +5V（续流钳位共阴）· A0/A1/A2 -> GND（7 位地址 0x28）· VCC -> +3V3_DIG（必须 3.3V）· OC7/OC8 备用 | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
 | SPI（SCK/MOSI/DC） | GPIO6->SCK · GPIO7->MOSI · GPIO10->A0/DC · CS 接 GND · RST 与板复位共用 | docs/05-hw-sw-interface-contract.md §2.2; ADR-0008 §3.1 |
-| I2C（SDA/SCL + 上拉） | GPIO4/GPIO5 + 4.7kohm 上拉；挂 Si5351(0x60) 与 TCA9535(0x20) | docs/05-hw-sw-interface-contract.md §2.2/§2.3 |
-| ADC 三路（分压网络含 R1/R2/R3） | GPIO0/GPIO1 检波 · GPIO3 电池 22kohm/9.1kohm/1kohm + 0.1uF | docs/05-hw-sw-interface-contract.md §2.7/§3.2 |
-| 电源域（+12V / +5V / +3V3_RF / +3V3_DIG / VDD_SPI） | 升压->+12V · MP2315->+5V · MD7673->+3V3_RF · pi 滤波->+3V3_DIG · GPIO11(VDD_SPI) 标 NC 不解锁 | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
+| I2C（SDA/SCL + 上拉） | GPIO4/GPIO5 + 4.7kohm 上拉（3.3V）；挂 Si5351(0x60) 与 CA-DV8008(0x28)；🔴 不得再有 TCA9535(0x20) | docs/05-hw-sw-interface-contract.md §2.2/§2.3 |
+| ADC 三路（分压网络含 R1/R2/R3） | GPIO0/GPIO1 检波 · GPIO3 电池 30kohm/9.1kohm/1kohm + 0.1uF（比值 0.2327，满量程 14.18 V ⇒ 2S 与 12 V 都不饱和） | docs/05-hw-sw-interface-contract.md §2.7/§3.2 |
+| 电源域（VCC / +5V / +3V3_RF / +3V3_DIG / VDD_SPI） | 输入级 VCC：**2S 锂电直供 6.0-8.4V（标称 7.4V）**；🔴 12V 兼容已取消（2026-10-11）；无升压 ⇒ PA 直吃原压，E 类按 **7.4V 标称定点**（R_opt≈12.6Ω/C1≈0.65nF/L≈2.8µH）；满电 8.4V 输出≈3.2W —— ✅ **甲方案：接受、不降驱动**（固件仅如实上报）· MP2315(分立)->+5V（含 240mA 继电器线圈）· MD7673->+3V3_RF · pi 滤波->+3V3_DIG · GPIO11(VDD_SPI) 标 NC 不解锁 | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.2.0/§3.6 |
 | Si5351 输出与 PA 键控链（CW 走 CLKx_DIS 而非 GPIO） | CW = I2C 写 CLKx_DIS · CLK0->244 输入(10kohm 下拉)->244 输出->BS170 栅极(10kohm 下拉) | docs/05-hw-sw-interface-contract.md §2.5; ADR-0008 §3.2 |
 | 天线静电泄放 | 天线座中心 -> 1kV 100kohm 高压电阻 到地（或 GDT） | docs/04-hardware-architecture.md §3.4 |
 | 地平面/星形地 | 射频地与数字地单点汇接于底板一点；四层板地平面完整 | docs/04-hardware-architecture.md §3.1; hardware/core-board/README.md §6 |
 | Tandem Match 耦合器与检波 | T1/T2 FT37-43 · R_sense 1kohm · 1N5711 与 HSMS-2850 并行对照 | docs/05-hw-sw-interface-contract.md §3.2; hardware/atu-module/README.md §3 |
 | EC11 与按键 | GPIO2/8 直连(10kohm 上拉) · GPIO13 SW 直连(10kohm 上拉) · GPIO9 BOOT/KEY_USER | docs/05-hw-sw-interface-contract.md §2.2/§2.6; ADR-0008 §8.3 |
-| ATU L 型匹配网络（继电器触点与 L/C 逐脚） | N0=ATU_L_IN · N1=ATU_L1_LO · N2=ATU_L2_LO · N3=ATU_L3_LO(=天线节点) · K1-K3 用 COM-NC 旁路 L1/L2/L3 · K4-K6 用 COM-NO 接入 C3/C4/C5 · 未使用触点悬空 · ULN 输入 6x10kohm 下拉 | hardware/atu-module/relay-wiring.md §2.1/§2.4/§4.2 |
+| ATU L 型匹配网络（继电器触点与 L/C 逐脚） | N0=ATU_L_IN · N1=ATU_L1_LO · N2=ATU_L2_LO · N3=ATU_L3_LO(=天线节点) · K1-K3 用 COM-NC 旁路 L1/L2/L3 · K4-K6 用 COM-NO 接入 C3/C4/C5 · 未使用触点悬空 · 驱动走 CA-DV8008 OC1-OC6（无输入下拉） | hardware/atu-module/relay-wiring.md §2.1/§2.4 + CHANGELOG 2026-10-11 |
 
 ## 3. 全部连接明细
 
@@ -49,14 +48,14 @@
 |---|---|---|---|---|
 | `ADC_FWD` | `U4.GPIO0` | `T1.1 (次级)` | ADC1_CH0 前向检波输入; 满量程由耦合器与 R_sense 决定; 2W 下读数应落量程 20%-80% | docs/05-hw-sw-interface-contract.md §2.2/§2.8; §3.2 |
 | `ADC_REV` | `U4.GPIO1` | `T2.1 (次级)` | ADC1_CH1 反向检波输入; SWR=2.0@2W 时读数应 >=量程 5% | docs/05-hw-sw-interface-contract.md §2.2/§2.8; §3.2 |
-| `ADC_VBAT` | `U4.GPIO3` | `R_VBAT3.2` | ADC1_CH3 电池电压(经 22k/9.1k/1k 分压 + 0.1uF); 6.0V->1.76V, 8.4V->2.46V | docs/05-hw-sw-interface-contract.md §2.2/§2.8; §2.7 |
+| `ADC_VBAT` | `U4.GPIO3` | `R_VBAT3.2` | ADC1_CH3 电池电压(经 30k/9.1k/1k 分压 + 0.1uF); 比值0.2327 满量程14.18V => 6.0V->1.40V, 8.4V->1.95V, 12V->2.79V | docs/05-hw-sw-interface-contract.md §2.2/§2.8; §2.7 |
 | `EC11_A` | `U4.GPIO2` | `U6.A` | strapping 脚: 必须有 10kohm 上拉(R3), 静止为高; 上电时勿转动旋钮 | docs/05-hw-sw-interface-contract.md §2.2/§2.8; §2.6 |
 | `EC11_B` | `U4.GPIO8` | `U6.B` | strapping 脚: 必须有 10kohm 上拉(R4), 静止为高 | docs/05-hw-sw-interface-contract.md §2.2/§2.8; §2.6 |
 | `EC11_SW` | `U4.GPIO13` | `U6.SW` | 按下接 GND + 10kohm 上拉(R5), 中断驱动; GPIO13 = SPIWP, 固件须先 gpio_reset_pin 撤销 MSPI 保留 | docs/05-hw-sw-interface-contract.md §2.2/§2.8; docs/17-gpio-allocation-audit.md §12.6.3 |
 | `KEY_USER` | `U4.GPIO9` | `SW2.1` | BOOT 按键(strapping): 上电前不可下拉; 启动后可作 KEY_USER | docs/05-hw-sw-interface-contract.md §2.2/§2.8; §2.6 |
-| `I2C_SDA` | `U4.GPIO4` | `R6.1` | I2C0 SDA, 开漏; 4.7kohm 上拉到 3.3V; 共享总线 Si5351 + TCA9535 | docs/05-hw-sw-interface-contract.md §2.2/§2.8 |
+| `I2C_SDA` | `U4.GPIO4` | `R6.1` | I2C0 SDA, 开漏; 4.7kohm 上拉到 3.3V; 共享总线 Si5351(0x60) + CA-DV8008(0x28) | docs/05-hw-sw-interface-contract.md §2.2/§2.8 |
 | `I2C_SCL` | `U4.GPIO5` | `R7.1` | I2C0 SCL, 开漏; 4.7kohm 上拉到 3.3V | docs/05-hw-sw-interface-contract.md §2.2/§2.8 |
-| `PA_PWR_PWM` | `U4.GPIO12` | `U11.FB` | LEDC PWM -> 升压模块 FB 网络; 低=最低功率; 高阻/高=有推向满功率风险 | docs/05-hw-sw-interface-contract.md §2.2/§2.8; §2.10.2 |
+| `GPIO12_TBD` | `U4.GPIO12` | `-.TBD` | ⚠ 2026-10-11: 升压模块已删 ⇒ 原「LEDC PWM -> 升压 FB」作废; 该脚去向待定(① 功放驱动降额使能 ② 留给未来 VCC->降压->PA 轨调功 ③ 回收), 🔴 未定前硬件不接 | docs/05-hw-sw-interface-contract.md §2.2/§2.8; docs/05 §7 #7a |
 | `VDD_SPI_NC` | `U4.GPIO11` | `-.NC` | 🔴 不可用: VDD_SPI, 已决定不解锁 eFuse; 原理图上标注 NC/保留, 不得接任何网络 | docs/05-hw-sw-interface-contract.md §2.2/§2.8 §2.1 |
 | `USB_DM` | `U4.GPIO18` | `J_USB.D-` | 原生 USB Serial/JTAG: 日志/中控/下载 | docs/05-hw-sw-interface-contract.md §2.2/§2.8 §2.2 |
 | `USB_DP` | `U4.GPIO19` | `J_USB.D+` | 同上 | docs/05-hw-sw-interface-contract.md §2.2/§2.8 §2.2 |
@@ -70,46 +69,34 @@
 | `I2C_SCL` | `R7.2` | `+3V3_DIG.-` | I2C SCL 上拉 4.7kohm | docs/05-hw-sw-interface-contract.md §2.2/§2.8 |
 | `I2C_SDA` | `U7.SDA` | `U4.GPIO4` | Si5351 I2C 数据(地址 0x60) | docs/05-hw-sw-interface-contract.md §2.3/§2.5; docs/04-hardware-architecture.md §3.5 |
 | `I2C_SCL` | `U7.SCL` | `U4.GPIO5` | Si5351 I2C 时钟 | docs/05-hw-sw-interface-contract.md §2.3/§2.5 |
-| `I2C_SDA` | `U1.SDA` | `U4.GPIO4` | TCA9535 I2C 数据(地址 0x20; A2/A1/A0 接法待确认) | docs/05-hw-sw-interface-contract.md §2.3, §7 #2 |
-| `I2C_SCL` | `U1.SCL` | `U4.GPIO5` | TCA9535 I2C 时钟 | docs/05-hw-sw-interface-contract.md §2.3 |
-| `TCA9535_INT` | `U1.INT` | `-.NC` | 本方案 A 不使用 INT; 若日后走 C/C-prime 方案需 10kohm 上拉到 3.3V | docs/17-gpio-allocation-audit.md §3.5, §7 R6 |
-| `IOEXP_RELAY_K1` | `U1.P0.0` | `U2.IN1` | TCA9535 P0.0 -> ULN2003A IN1(3.3V 并行, 6 根) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_RELAY_K2` | `U1.P0.1` | `U2.IN2` | TCA9535 P0.1 -> ULN2003A IN2(3.3V 并行, 6 根) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_RELAY_K3` | `U1.P0.2` | `U2.IN3` | TCA9535 P0.2 -> ULN2003A IN3(3.3V 并行, 6 根) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_RELAY_K4` | `U1.P0.3` | `U2.IN4` | TCA9535 P0.3 -> ULN2003A IN4(3.3V 并行, 6 根) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_RELAY_K5` | `U1.P0.4` | `U2.IN5` | TCA9535 P0.4 -> ULN2003A IN5(3.3V 并行, 6 根) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_RELAY_K6` | `U1.P0.5` | `U2.IN6` | TCA9535 P0.5 -> ULN2003A IN6(3.3V 并行, 6 根) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_LCD_BL` | `U1.P1.1` | `R_BL.1` | 背光开关: P1.1 -> R 1kohm -> 2N7002 栅极 | docs/05-hw-sw-interface-contract.md §2.3 |
-| `IOEXP_SPARE_P1_0` | `U1.P1.0` | `-.NC` | 预留(原 EC11 按键, 已释放) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_SPARE_P0_6` | `U1.P0.6` | `-.NC` | 预留 9 位之一(蜂鸣器/状态灯/散热风扇/天线泄放等) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_SPARE_P0_7` | `U1.P0.7` | `-.NC` | 预留 9 位之一(蜂鸣器/状态灯/散热风扇/天线泄放等) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_SPARE_P1_2` | `U1.P1.2` | `-.NC` | 预留 9 位之一(蜂鸣器/状态灯/散热风扇/天线泄放等) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_SPARE_P1_3` | `U1.P1.3` | `-.NC` | 预留 9 位之一(蜂鸣器/状态灯/散热风扇/天线泄放等) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_SPARE_P1_4` | `U1.P1.4` | `-.NC` | 预留 9 位之一(蜂鸣器/状态灯/散热风扇/天线泄放等) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_SPARE_P1_5` | `U1.P1.5` | `-.NC` | 预留 9 位之一(蜂鸣器/状态灯/散热风扇/天线泄放等) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_SPARE_P1_6` | `U1.P1.6` | `-.NC` | 预留 9 位之一(蜂鸣器/状态灯/散热风扇/天线泄放等) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `IOEXP_SPARE_P1_7` | `U1.P1.7` | `-.NC` | 预留 9 位之一(蜂鸣器/状态灯/散热风扇/天线泄放等) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
-| `+12V_RELAY` | `U2.COM` | `+12V.-` | 🔴 COM 必须接 +12V: 内部续流二极管靠它生效(不接则继电器反峰无抑制) | docs/05-hw-sw-interface-contract.md §2.4 |
-| `RELAY_K1_COIL` | `U2.OUT1` | `K1.线圈+` | ULN2003A OUT1 低边吸合 K1 线圈; 16.7mA/只, 6 只同吸 <110mA | docs/05-hw-sw-interface-contract.md §2.4 |
-| `+12V_RELAY` | `K1.线圈-` | `+12V.-` | K1 线圈另一端接 +12V 功放轨; 线圈得电压 12-0.9=11.1V=92% (>75% 吸合阈值) | docs/05-hw-sw-interface-contract.md §2.4 |
-| `RELAY_K2_COIL` | `U2.OUT2` | `K2.线圈+` | ULN2003A OUT2 低边吸合 K2 线圈; 16.7mA/只, 6 只同吸 <110mA | docs/05-hw-sw-interface-contract.md §2.4 |
-| `+12V_RELAY` | `K2.线圈-` | `+12V.-` | K2 线圈另一端接 +12V 功放轨; 线圈得电压 12-0.9=11.1V=92% (>75% 吸合阈值) | docs/05-hw-sw-interface-contract.md §2.4 |
-| `RELAY_K3_COIL` | `U2.OUT3` | `K3.线圈+` | ULN2003A OUT3 低边吸合 K3 线圈; 16.7mA/只, 6 只同吸 <110mA | docs/05-hw-sw-interface-contract.md §2.4 |
-| `+12V_RELAY` | `K3.线圈-` | `+12V.-` | K3 线圈另一端接 +12V 功放轨; 线圈得电压 12-0.9=11.1V=92% (>75% 吸合阈值) | docs/05-hw-sw-interface-contract.md §2.4 |
-| `RELAY_K4_COIL` | `U2.OUT4` | `K4.线圈+` | ULN2003A OUT4 低边吸合 K4 线圈; 16.7mA/只, 6 只同吸 <110mA | docs/05-hw-sw-interface-contract.md §2.4 |
-| `+12V_RELAY` | `K4.线圈-` | `+12V.-` | K4 线圈另一端接 +12V 功放轨; 线圈得电压 12-0.9=11.1V=92% (>75% 吸合阈值) | docs/05-hw-sw-interface-contract.md §2.4 |
-| `RELAY_K5_COIL` | `U2.OUT5` | `K5.线圈+` | ULN2003A OUT5 低边吸合 K5 线圈; 16.7mA/只, 6 只同吸 <110mA | docs/05-hw-sw-interface-contract.md §2.4 |
-| `+12V_RELAY` | `K5.线圈-` | `+12V.-` | K5 线圈另一端接 +12V 功放轨; 线圈得电压 12-0.9=11.1V=92% (>75% 吸合阈值) | docs/05-hw-sw-interface-contract.md §2.4 |
-| `RELAY_K6_COIL` | `U2.OUT6` | `K6.线圈+` | ULN2003A OUT6 低边吸合 K6 线圈; 16.7mA/只, 6 只同吸 <110mA | docs/05-hw-sw-interface-contract.md §2.4 |
-| `+12V_RELAY` | `K6.线圈-` | `+12V.-` | K6 线圈另一端接 +12V 功放轨; 线圈得电压 12-0.9=11.1V=92% (>75% 吸合阈值) | docs/05-hw-sw-interface-contract.md §2.4 |
-| `GND` | `U2.GND` | `GND.-` | ULN2003A 地(e 脚) | docs/05-hw-sw-interface-contract.md §2.4 |
+| `I2C_SDA` | `U1.SDA` | `U4.GPIO4` | CA-DV8008 I2C 数据(7 位地址 0x28; A0/A1/A2 全接 GND) | docs/05-hw-sw-interface-contract.md §2.3, §7 #2 |
+| `I2C_SCL` | `U1.SCL` | `U4.GPIO5` | CA-DV8008 I2C 时钟(<=400kHz) | docs/05-hw-sw-interface-contract.md §2.3 |
+| `RELAY_K1_COIL` | `U1.OC1` | `K1.线圈+` | CA-DV8008 OC1 低边吸合 K1 线圈(HK4100F-DC5V-SHG); 40mA/只, 6 只同吸 240mA | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `+5V_RELAY` | `K1.线圈-` | `+5V.-` | K1 线圈另一端接 +5V(MP2315 降压轨); 线圈得 ≈4.9V = 98% 额定(>75% 吸合阈值, <=130% 上限) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `RELAY_K2_COIL` | `U1.OC2` | `K2.线圈+` | CA-DV8008 OC2 低边吸合 K2 线圈(HK4100F-DC5V-SHG); 40mA/只, 6 只同吸 240mA | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `+5V_RELAY` | `K2.线圈-` | `+5V.-` | K2 线圈另一端接 +5V(MP2315 降压轨); 线圈得 ≈4.9V = 98% 额定(>75% 吸合阈值, <=130% 上限) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `RELAY_K3_COIL` | `U1.OC3` | `K3.线圈+` | CA-DV8008 OC3 低边吸合 K3 线圈(HK4100F-DC5V-SHG); 40mA/只, 6 只同吸 240mA | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `+5V_RELAY` | `K3.线圈-` | `+5V.-` | K3 线圈另一端接 +5V(MP2315 降压轨); 线圈得 ≈4.9V = 98% 额定(>75% 吸合阈值, <=130% 上限) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `RELAY_K4_COIL` | `U1.OC4` | `K4.线圈+` | CA-DV8008 OC4 低边吸合 K4 线圈(HK4100F-DC5V-SHG); 40mA/只, 6 只同吸 240mA | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `+5V_RELAY` | `K4.线圈-` | `+5V.-` | K4 线圈另一端接 +5V(MP2315 降压轨); 线圈得 ≈4.9V = 98% 额定(>75% 吸合阈值, <=130% 上限) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `RELAY_K5_COIL` | `U1.OC5` | `K5.线圈+` | CA-DV8008 OC5 低边吸合 K5 线圈(HK4100F-DC5V-SHG); 40mA/只, 6 只同吸 240mA | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `+5V_RELAY` | `K5.线圈-` | `+5V.-` | K5 线圈另一端接 +5V(MP2315 降压轨); 线圈得 ≈4.9V = 98% 额定(>75% 吸合阈值, <=130% 上限) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `RELAY_K6_COIL` | `U1.OC6` | `K6.线圈+` | CA-DV8008 OC6 低边吸合 K6 线圈(HK4100F-DC5V-SHG); 40mA/只, 6 只同吸 240mA | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `+5V_RELAY` | `K6.线圈-` | `+5V.-` | K6 线圈另一端接 +5V(MP2315 降压轨); 线圈得 ≈4.9V = 98% 额定(>75% 吸合阈值, <=130% 上限) | docs/05-hw-sw-interface-contract.md §2.3; docs/17-gpio-allocation-audit.md §2.1 |
+| `+5V_RELAY` | `U1.COM` | `+5V.-` | 🔴 COM 必须接 +5V: 内部续流钳位二极管共阴(不接则继电器反峰无抑制); 严禁接 VCC(6.0-8.4V 会超规发热) | docs/05-hw-sw-interface-contract.md §2.3/§2.4 |
+| `GND` | `U1.GND` | `GND.-` | CA-DV8008 地(脚 4) | docs/05-hw-sw-interface-contract.md §2.3 |
+| `GND` | `U1.A0` | `GND.-` | 地址位 A0 接 GND(芯片内部仅弱下拉, 须显式接) => 0x28 | docs/05-hw-sw-interface-contract.md §2.3 |
+| `GND` | `U1.A1` | `GND.-` | 地址位 A1 接 GND | docs/05-hw-sw-interface-contract.md §2.3 |
+| `GND` | `U1.A2` | `GND.-` | 地址位 A2 接 GND | docs/05-hw-sw-interface-contract.md §2.3 |
+| `+3V3_DIG` | `U1.VCC` | `+3V3_DIG.-` | 🔴 逻辑电源必须 3.3V: V_IH=0.7xVCC, 若接 5V 则门限 3.5V > I2C 总线高电平 3.3V => 读不到高电平 | docs/05-hw-sw-interface-contract.md §2.3 |
+| `LCD_BL_DRV` | `-.TBD` | `R_BL.1` | 🟠 背光驱动位待定(原 TCA9535 P1.1 已随扩展器移除; 候选: 主板另加 CA-DV8008 @0x29) | docs/05-hw-sw-interface-contract.md §7 #2a |
 | `LCD_SCK` | `U4.GPIO6` | `U5.SCK/CLK` | SPI2 SCK -> ST7567 | docs/05-hw-sw-interface-contract.md §2.2; ADR-0008 §3.1 |
 | `LCD_MOSI` | `U4.GPIO7` | `U5.MOSI/SI` | SPI2 MOSI -> ST7567 | docs/05-hw-sw-interface-contract.md §2.2; ADR-0008 §3.1 |
 | `LCD_DC` | `U4.GPIO10` | `U5.A0/DC` | 命令/数据选择, 必须直连(每字节翻转, 不可挂 I2C 扩展器) | docs/05-hw-sw-interface-contract.md §2.2; ADR-0008 §3.1; §3.1 |
 | `GND` | `U5.CS` | `GND.-` | 🔴 CS 接 GND: ST7567 是 SPI2 上唯一从机 -> 省 1 个 GPIO | docs/05-hw-sw-interface-contract.md §2.2; ADR-0008 §3.1 |
 | `LCD_RST` | `U5.RST` | `RESET_BOARD.-` | 🔴 RST 与板复位共用: 上电复位即可 -> 省 1 脚与 RC 电路 | docs/05-hw-sw-interface-contract.md §2.2; ADR-0008 §3.1 |
 | `LCD_BL_CTRL` | `R_BL.2` | `Q5.G` | P1.1 经 1kohm 到 2N7002 栅极 | docs/05-hw-sw-interface-contract.md §2.3 |
-| `LCD_BL_GATE_PD` | `R_BL2.1` | `Q5.G` | 🔴 栅极 10kohm 下拉到 GND: TCA9535 上电为输入高阻, 否则背光状态不定 | docs/05-hw-sw-interface-contract.md §2.3 |
+| `LCD_BL_GATE_PD` | `R_BL2.1` | `Q5.G` | 🔴 栅极必须 100 kΩ 下拉到 GND(docs/05 §2.3 定案, 原写 10kohm): 驱动器上电为高阻时无下拉则背光状态不定(可能上电即常亮); 100 kΩ 保证复位默认态可靠截止 => 上电默认低 = 背光关 | docs/05-hw-sw-interface-contract.md §2.3, §7 #2a |
 | `GND` | `R_BL2.2` | `GND.-` | 背光 MOS 栅极下拉另一端 | docs/05-hw-sw-interface-contract.md §2.3 |
 | `LCD_BL_K` | `Q5.D` | `U5.LED-` | 2N7002 漏极接背光 LED 阴极串 | docs/05-hw-sw-interface-contract.md §2.3 |
 | `GND` | `Q5.S` | `GND.-` | 2N7002 源极 | docs/05-hw-sw-interface-contract.md §2.3 |
@@ -133,17 +120,17 @@
 | `GND` | `R2.2` | `GND.-` | 偏置分压下臂直接接地(NTC 已取消) | docs/17-gpio-allocation-audit.md §12.5 |
 | `PA_BIAS` | `R1.2` | `Q1.G` | 固定栅极偏置到各管栅极 | docs/04-hardware-architecture.md §3.2 |
 | `GND` | `D5_prot.A` | `Q1.G` | BZX84-C10 10V 稳压管栅极保护(每管1只) | docs/04-hardware-architecture.md §3.2 |
-| `PA_DRAIN` | `+12V.-` | `Q1.D` | BS170 漏极 12-13.8V(升压可调); 3 管并联 | docs/05-hw-sw-interface-contract.md §3.1 |
+| `PA_DRAIN` | `VCC.-` | `Q1.D` | BS170 漏极 = VCC 2S 电池原压 6.0-8.4V（无升压；E 类按 **7.4V 标称定点**：R_opt≈12.6Ω / C1≈0.65nF / L≈2.8µH / 峰值 Vds≈26.3V）; 满电 8.4V 时输出≈3.2W(耗散 1.73W 仍在 3×TO-92 的 2.5W 内) ⇒ ✅ **甲方案（2026-10-11 用户裁定）：接受 ≈3.2W、不降驱动** —— class-E 全程保持理想 ZVS，效率与杂散最优；固件只用 ADC_FWD **如实上报实测功率**，不做降额; 🔴 12V 兼容已取消; 3 管并联 | docs/04-hardware-architecture.md §3.2/§3.2.0/§3.2.1 |
 | `GND` | `Q1.S` | `GND.-` | BS170 源极 | docs/04-hardware-architecture.md §3.2 |
 | `PA_BYPASS` | `C6.1` | `Q1.D` | 100nF 旁路电容(每管1只) | docs/04-hardware-architecture.md §3.2 |
 | `PA_BIAS` | `R1.2` | `Q2.G` | 固定栅极偏置到各管栅极 | docs/04-hardware-architecture.md §3.2 |
 | `GND` | `D5_prot.A` | `Q2.G` | BZX84-C10 10V 稳压管栅极保护(每管1只) | docs/04-hardware-architecture.md §3.2 |
-| `PA_DRAIN` | `+12V.-` | `Q2.D` | BS170 漏极 12-13.8V(升压可调); 3 管并联 | docs/05-hw-sw-interface-contract.md §3.1 |
+| `PA_DRAIN` | `VCC.-` | `Q2.D` | BS170 漏极 = VCC 2S 电池原压 6.0-8.4V（无升压；E 类按 **7.4V 标称定点**：R_opt≈12.6Ω / C1≈0.65nF / L≈2.8µH / 峰值 Vds≈26.3V）; 满电 8.4V 时输出≈3.2W(耗散 1.73W 仍在 3×TO-92 的 2.5W 内) ⇒ ✅ **甲方案（2026-10-11 用户裁定）：接受 ≈3.2W、不降驱动** —— class-E 全程保持理想 ZVS，效率与杂散最优；固件只用 ADC_FWD **如实上报实测功率**，不做降额; 🔴 12V 兼容已取消; 3 管并联 | docs/04-hardware-architecture.md §3.2/§3.2.0/§3.2.1 |
 | `GND` | `Q2.S` | `GND.-` | BS170 源极 | docs/04-hardware-architecture.md §3.2 |
 | `PA_BYPASS` | `C6.1` | `Q2.D` | 100nF 旁路电容(每管1只) | docs/04-hardware-architecture.md §3.2 |
 | `PA_BIAS` | `R1.2` | `Q3.G` | 固定栅极偏置到各管栅极 | docs/04-hardware-architecture.md §3.2 |
 | `GND` | `D5_prot.A` | `Q3.G` | BZX84-C10 10V 稳压管栅极保护(每管1只) | docs/04-hardware-architecture.md §3.2 |
-| `PA_DRAIN` | `+12V.-` | `Q3.D` | BS170 漏极 12-13.8V(升压可调); 3 管并联 | docs/05-hw-sw-interface-contract.md §3.1 |
+| `PA_DRAIN` | `VCC.-` | `Q3.D` | BS170 漏极 = VCC 2S 电池原压 6.0-8.4V（无升压；E 类按 **7.4V 标称定点**：R_opt≈12.6Ω / C1≈0.65nF / L≈2.8µH / 峰值 Vds≈26.3V）; 满电 8.4V 时输出≈3.2W(耗散 1.73W 仍在 3×TO-92 的 2.5W 内) ⇒ ✅ **甲方案（2026-10-11 用户裁定）：接受 ≈3.2W、不降驱动** —— class-E 全程保持理想 ZVS，效率与杂散最优；固件只用 ADC_FWD **如实上报实测功率**，不做降额; 🔴 12V 兼容已取消; 3 管并联 | docs/04-hardware-architecture.md §3.2/§3.2.0/§3.2.1 |
 | `GND` | `Q3.S` | `GND.-` | BS170 源极 | docs/04-hardware-architecture.md §3.2 |
 | `PA_BYPASS` | `C6.1` | `Q3.D` | 100nF 旁路电容(每管1只) | docs/04-hardware-architecture.md §3.2 |
 | `+5V` | `U8.VCC` | `+5V.-` | 🔴 244 必须 5V 供电(ACT 系列 4.5-5.5V, TTL 输入阈值) | docs/05-hw-sw-interface-contract.md §2.5; ADR-0008 §3.2 |
@@ -165,27 +152,27 @@
 | `ADC_REV` | `D4.K` | `U4.GPIO1` | 同上(并行对照) | docs/05-hw-sw-interface-contract.md §3.2; hardware/atu-module/README.md §3 |
 | `LM358_IN` | `D1.K` | `U3.IN+` | 可选 LM358 放大级; 是否装配待 stage-4 实测(docs/05 §7 #6) | docs/05-hw-sw-interface-contract.md §7 #6 |
 | `+5V` | `U3.V+` | `+5V.-` | LM358 供电(可选级) | docs/05-hw-sw-interface-contract.md §7 #6 |
-| `VBAT` | `BT1.+` | `R_VBAT1.1` | 2S 电池 6.0-8.4V | docs/05-hw-sw-interface-contract.md §2.7 |
-| `VBAT_DIV` | `R_VBAT1.2` | `R_VBAT2.1` | 分压中点: 22k 上臂 / 9.1k 下臂 | docs/05-hw-sw-interface-contract.md §2.7 |
-| `GND` | `R_VBAT2.2` | `GND.-` | 分压下臂接地; 静态电流 270uA | docs/05-hw-sw-interface-contract.md §2.7 |
+| `VBAT` | `BT1.+` | `R_VBAT1.1` | 2S 电池 6.0-8.4V（唯一输入；12V 兼容已取消）；分压 30k/9.1k/1k（满量程 14.18V，留余量/可兼容未来 3S 铁锂 10.95V） | docs/05-hw-sw-interface-contract.md §2.7 |
+| `VBAT_DIV` | `R_VBAT1.2` | `R_VBAT2.1` | 分压中点: 30k 上臂 / 9.1k 下臂 -> 比值 R2/(R1+R2)=0.2327(原 22k => 0.2926 在 12V 时饱和 3.51V > 3.3V) | docs/05-hw-sw-interface-contract.md §2.7 |
+| `GND` | `R_VBAT2.2` | `GND.-` | 分压下臂接地; 静态电流 215uA @8.4V(原 22k 为 270uA) | docs/05-hw-sw-interface-contract.md §2.7 |
 | `VBAT_DIV` | `R_VBAT1.2` | `R_VBAT3.1` | 分压中点经 1kohm 隔离到 ADC | docs/05-hw-sw-interface-contract.md §2.7 |
-| `ADC_VBAT` | `R_VBAT3.2` | `U4.GPIO3` | 源阻抗 R3+(22k//9.1k)=7.4kohm < 10kohm 满足 ESP32-C3 ADC 要求 | docs/05-hw-sw-interface-contract.md §2.7 |
+| `ADC_VBAT` | `R_VBAT3.2` | `U4.GPIO3` | 源阻抗 R3+(30k//9.1k)=7.98kohm < 10kohm 满足 ESP32-C3 ADC 要求; 满量程 14.18V => 12V 读数 2.79V 不饱和 | docs/05-hw-sw-interface-contract.md §2.7 |
 | `ADC_VBAT` | `R_VBAT3.2` | `C_VBAT.1` | 0.1uF 滤波, fc 约 245Hz | docs/05-hw-sw-interface-contract.md §2.7 |
 | `GND` | `C_VBAT.2` | `GND.-` | 滤波电容地 | docs/05-hw-sw-interface-contract.md §2.7 |
 | `ANT_ESD` | `J_ANT.中心` | `R_esd.1` | 天线静电泄放: 1kV 高压电阻 100kohm 到地(或射频专用 GDT) | docs/04-hardware-architecture.md §3.4; hardware/atu-module/README.md §3 |
 | `GND` | `R_esd.2` | `GND.-` | 泄放电阻接地 | docs/04-hardware-architecture.md §3.4 |
-| `+12V` | `U11.OUT` | `+12V.-` | 3.7V->12V 升压模块输出 12-13.8V; 最大 0.5A(发射); 纹波峰峰 <0.5V @2.5W | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
-| `+12V` | `U11.OUT` | `U2.COM` | 12V 供 ULN2003A COM(继电器续流) | docs/05-hw-sw-interface-contract.md §2.4 |
-| `+12V` | `U11.OUT` | `J1.12V` | 12V 经排针到 PA 漏极与 ATU 继电器线圈 | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
+| `VCC` | `BT1.+` | `VCC.-` | VCC = 输入级: **2S 锂电直供 6.0-8.4V(标称 7.4V)**；🔴 12V 兼容已取消(2026-10-11)；本项目不设升压 | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
+| `VCC` | `BT1.+` | `J1.VCC` | VCC 经排针到 PA 漏极(E 类按 7.4V 标称定点)与 ATU 继电器驱动(仅逻辑, 线圈走 +5V) | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
+| `+5V` | `U9.OUT` | `U1.COM` | 5V 供 CA-DV8008 COM(继电器续流共阴); 线圈另一端亦接 +5V | docs/05-hw-sw-interface-contract.md §2.3/§2.4 |
+| `+5V` | `U9.OUT` | `J17.1` | 5V 经 J17 pin1 到 ATU 继电器线圈(6x40mA=240mA); 🔴 J17 不引 VCC(防 5V 线圈误接 6.0-8.4V 超规) | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
 | `+5V` | `U9.OUT` | `J1.5V` | MP2315 同步降压 5V 主轨; 最大 0.3A | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
 | `+5V` | `U9.OUT` | `U8.VCC` | 5V 供 244 | docs/05-hw-sw-interface-contract.md §2.5 |
 | `+5V` | `U9.OUT` | `R1.1` | 5V 供栅极偏置分压 | docs/04-hardware-architecture.md §3.2 |
 | `+3V3_RF` | `U10.OUT` | `U7.VDD` | MD7673 LDO 3.3V 射频轨(低噪声); 最大 50mA; 专供 Si5351 | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
 | `+3V3_DIG` | `FB1.OUT` | `U4.3V3` | 3.3V 数字轨(独立 pi 型 RC 滤波); 最大 200mA | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
 | `+3V3_DIG` | `FB1.OUT` | `U5.VDD` | 3.3V 数字轨 -> LCD | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
-| `+3V3_DIG` | `FB1.OUT` | `U1.VCC` | 3.3V 数字轨 -> TCA9535 | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
-| `VBAT` | `BT1.+` | `U9.VIN` | 2S 电池 6.0-8.4V -> MP2315 输入 | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
-| `VBAT` | `BT1.+` | `U11.VIN` | 2S 电池 -> 升压模块输入(⚠ 模块标称 3.7V 输入, 需核对) | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6; docs/05 §7 #7 |
+| `+3V3_DIG` | `FB1.OUT` | `U1.VCC` | 3.3V 数字轨 -> CA-DV8008 逻辑侧（V_IH=0.7xVCC，必须 3.3V：接 5V 则门限 3.5V > 总线高电平 3.3V） | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
+| `VBAT` | `BT1.+` | `U9.VIN` | 2S 电池 6.0-8.4V -> MP2315 输入（4.5-24V 范围，余量充足） | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
 | `GND` | `BT1.-` | `GND.-` | 电池负极 | docs/05-hw-sw-interface-contract.md §3.3; docs/04-hardware-architecture.md §3.6 |
 | `GND` | `GND_DIG.-` | `GND_RF.-` | 🔴 射频地与数字地在底板单点汇接(star ground), 避免功放回流污染 Si5351 与 ADC 参考地 | docs/04-hardware-architecture.md §3.1; hardware/core-board/README.md §6 |
 | `GND` | `GND_PWR.-` | `GND_DIG.-` | 大电流功放地/电源回路单独回流, 与射频地单点汇集于底板一点 | docs/04-hardware-architecture.md §3.1 |
@@ -213,18 +200,4 @@
 | `ATU_K4_NC_NC` | `K4.NC` | `-.NC` | K4 未使用触点(NC)悬空：不得接任何网络 | hardware/atu-module/relay-wiring.md §2.4 |
 | `ATU_K5_NC_NC` | `K5.NC` | `-.NC` | K5 未使用触点(NC)悬空：不得接任何网络 | hardware/atu-module/relay-wiring.md §2.4 |
 | `ATU_K6_NC_NC` | `K6.NC` | `-.NC` | K6 未使用触点(NC)悬空：不得接任何网络 | hardware/atu-module/relay-wiring.md §2.4 |
-| `IOEXP_RELAY_K1` | `R_RLY1.1` | `U2.IN1` | 🔴 ULN2003A 输入端 10kohm 下拉：TCA9535 上电为输入且带约 100uA 弱上拉电流源，无下拉时 IN 可能被抬到导通阈值附近 → 继电器误吸合 | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `GND` | `R_RLY1.2` | `GND.-` | R_RLY1 下拉另一端接地（100uA x 10kohm = 1.0V << V_I(on) 2.4V） | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `IOEXP_RELAY_K2` | `R_RLY2.1` | `U2.IN2` | 🔴 ULN2003A 输入端 10kohm 下拉：TCA9535 上电为输入且带约 100uA 弱上拉电流源，无下拉时 IN 可能被抬到导通阈值附近 → 继电器误吸合 | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `GND` | `R_RLY2.2` | `GND.-` | R_RLY2 下拉另一端接地（100uA x 10kohm = 1.0V << V_I(on) 2.4V） | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `IOEXP_RELAY_K3` | `R_RLY3.1` | `U2.IN3` | 🔴 ULN2003A 输入端 10kohm 下拉：TCA9535 上电为输入且带约 100uA 弱上拉电流源，无下拉时 IN 可能被抬到导通阈值附近 → 继电器误吸合 | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `GND` | `R_RLY3.2` | `GND.-` | R_RLY3 下拉另一端接地（100uA x 10kohm = 1.0V << V_I(on) 2.4V） | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `IOEXP_RELAY_K4` | `R_RLY4.1` | `U2.IN4` | 🔴 ULN2003A 输入端 10kohm 下拉：TCA9535 上电为输入且带约 100uA 弱上拉电流源，无下拉时 IN 可能被抬到导通阈值附近 → 继电器误吸合 | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `GND` | `R_RLY4.2` | `GND.-` | R_RLY4 下拉另一端接地（100uA x 10kohm = 1.0V << V_I(on) 2.4V） | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `IOEXP_RELAY_K5` | `R_RLY5.1` | `U2.IN5` | 🔴 ULN2003A 输入端 10kohm 下拉：TCA9535 上电为输入且带约 100uA 弱上拉电流源，无下拉时 IN 可能被抬到导通阈值附近 → 继电器误吸合 | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `GND` | `R_RLY5.2` | `GND.-` | R_RLY5 下拉另一端接地（100uA x 10kohm = 1.0V << V_I(on) 2.4V） | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `IOEXP_RELAY_K6` | `R_RLY6.1` | `U2.IN6` | 🔴 ULN2003A 输入端 10kohm 下拉：TCA9535 上电为输入且带约 100uA 弱上拉电流源，无下拉时 IN 可能被抬到导通阈值附近 → 继电器误吸合 | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `GND` | `R_RLY6.2` | `GND.-` | R_RLY6 下拉另一端接地（100uA x 10kohm = 1.0V << V_I(on) 2.4V） | hardware/atu-module/relay-wiring.md §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h |
-| `BUZZER_DRV` | `U1.IOEXP_SPARE` | `LS1.+` | 🟠 蜂鸣器未分配: 挂 TCA9535 空闲位(9 位中选一), 具体位号待定 | docs/05-hw-sw-interface-contract.md §2.3; hardware/mcu-ui-module/README.md §4 |
-| `FB_PULLDOWN` | `R12.1` | `PA_PWR_PWM.-` | 📌 建议未采纳判定: GPIO12 -> 升压 FB 的 10kohm 下拉(docs/05 §7 #7a) | docs/05-hw-sw-interface-contract.md §2.10.3, §7 #7a; docs/17-gpio-allocation-audit.md §12.6.5 |
-| `GND` | `R12.2` | `GND.-` | 同上(采纳后接 GND) | docs/05-hw-sw-interface-contract.md §2.10.3 |
+| `BUZZER_DRV` | `-.NC` | `LS1.+` | ❌ 蜂鸣器本版不做(2026-10 定案): LS1 不装、不驱动、不占通道; OC7/OC8 保持空闲、不得为蜂鸣器预留 | docs/05-hw-sw-interface-contract.md §2.3/§2.4/§7 #11; hardware/mcu-ui-module/README.md §4 |

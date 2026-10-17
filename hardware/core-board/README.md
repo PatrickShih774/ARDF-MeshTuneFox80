@@ -29,7 +29,7 @@
 - 对 `pa-module`：射频输入、12V 轨、栅极偏置供电、键控 GPIO、PWM 调压
 - 对 `lpf-module`：射频输入/输出 SMA
 - 对 `atu-module`：射频输入/输出 SMA、12V 继电器轨、6 路继电器驱动 GPIO、SWR 前向/反射检波 ADC 通道
-- 对 `mcu-ui-module`：I²C（Si5351）、SPI（LCD）、GPIO（编码器/按键/蜂鸣器）、3.3V 数字轨
+- 对 `mcu-ui-module`：I²C（Si5351 + CA-DV8008N）、SPI（LCD）、GPIO（编码器/按键、**背光 GPIO21**、**示波器打点 GPIO12**）、3.3V 数字轨（~~蜂鸣器~~ ❌ 本版不做）
 - 对 `power-module`：电池输入、4 路电压轨输出
 - 引脚分配以 `docs/05-hw-sw-interface-contract.md` 为唯一权威来源
 

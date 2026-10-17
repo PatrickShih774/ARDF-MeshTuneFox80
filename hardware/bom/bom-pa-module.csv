@@ -5,4 +5,4 @@ D5 (或 ZD1),10V 稳压二极管,SOT-23,3,BZX84-C10,待查,"10V 双向稳压, �
 R1,10 kohm,0805,1,电阻 10kohm 1%,待查,栅极固定偏置分压上臂(自5V LDO取得约2.1V),pa-module,"纯固定偏置, 无温度补偿",1,hardware/pa-module/README.md §3; docs/04 §3
 R2,2.2 kohm,0805,1,电阻 2.2kohm 1%,待查,"栅极固定偏置分压下臂, 下端直接接地",pa-module,"NTC 已取消(2026-09-26, docs/17 §12.5)",1,hardware/pa-module/README.md §3; docs/04 §3
 C6,100 nF,0805,3,X7R 100nF 50V,待查,"旁路电容, 每管1只",pa-module,数量按3管计,3,hardware/pa-module/README.md §3; docs/04 §3
-C7,升压输出滤波电容,电解/钽,1,待定,待查,12V 轨纹波峰峰值 <0.5V @2.5W 发射,pa-module,型号与容值待 12V 升压模块 P7 定型后确定,1,docs/05 §3.3; docs/05 §7 #7
+C7,(作废) 升压输出滤波电容,—,0,—,待查,❌ 2026-10-11 作废：本项目不设升压（原 U11 已删）⇒ 该电容不存在；功放轨 = VCC 电池直供，无开关纹波源,pa-module,若日后采纳「VCC 降压到 PA 轨」（docs/05 §7 #7c 方案①），再补该级的输入/输出电容,0,docs/05 §7 #7/#7c; docs/04 §3.7

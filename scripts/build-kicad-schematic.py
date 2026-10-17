@@ -487,6 +487,9 @@ SYM_FROM_SUGGESTION = {
     "Display:ST7567_128x64": "ST7567_MODULE",
     "Device:Rotary_Encoder_Switch": "EC11",
     "Amplifier_Operational:LM358": "LM358",
+    "Relay:HK4100F-DC5V-SHG": "RELAY_SPDT",
+    # 旧键留作别名：输入表 hardware/schematic/kicad-symbol-map.csv 属设计源，
+    # 本批未改写；若只保留新键，脚本会在 build_symbol_map() 直接 SystemExit。
     "Relay:HK4100F-DC-12V": "RELAY_SPDT",
     "Device:Transformer_1P_SS": "XFMR",
     "Device:L": "L",
@@ -614,12 +617,12 @@ PSEUDO_REFS = ("-", "GND", "+12V", "+5V", "+3V3_DIG", "+3V3_RF", "VBAT",
 
 # values that cannot be derived from the BOM without ending up with garbage
 VALUE_FIX = {
-    "K1": "HK4100F-DC-12V", "Q1": "BS170", "Q2": "BS170", "Q3": "BS170",
-    "Q4": "IRF510-DNP", "D5": "BZX84-C10", "U1": "TCA9535",
+    "K1": "HK4100F-DC5V-SHG", "Q1": "BS170", "Q2": "BS170", "Q3": "BS170",
+    "Q4": "IRF510-DNP", "D5": "BZX84-C10", "U1": "CA-DV8008N",
     "U5": "ST7567-12864", "U6": "EC11", "U7": "Si5351A", "U9": "MP2315",
-    "U10": "MD7673", "U11": "BOOST-12V-MODULE", "BT1": "2S-500mAh-7.4V",
+    "U10": "MD7673", "BT1": "2S-500mAh-7.4V",
     "FB1": "PI-RC-FILTER", "X1": "32.768kHz-DNP", "C11": "CAP-KIT",
-    "T1": "FT37-43-10T", "R_sense_F": "1kohm", "U2": "ULN2003A",
+    "T1": "FT37-43-10T", "R_sense_F": "1kohm",
 }
 for _r in ("C3", "C4", "C5", "C6", "C244", "C_VBAT", "C8", "C9", "C10",
            "C11", "C12", "C13", "C_3V3RF", "C14", "C15", "C16", "C17", "C18",

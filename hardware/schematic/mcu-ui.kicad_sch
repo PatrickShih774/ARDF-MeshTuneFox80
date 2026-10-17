@@ -9,6 +9,9 @@
     (comment 1
       "Auto-generated skeleton - see hardware/schematic/IMPORT-TO-LCEDA.md"
     )
+    (comment 2
+      "2026-10-11: EC11_A=GPIO20 LCD_BL=GPIO21 SCOPE_TP=GPIO12 ADC1_CH2=GPIO2; OC7/OC8 idle; BUZZER LS1 NOT IN THIS VERSION"
+    )
   )
   (lib_symbols
     (symbol "ARDF:ESP32C3_MODULE" (pin_names (offset 1.016))
@@ -1738,6 +1741,11 @@
     (at 15.24 147.32 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 55654cc7-a2ad-4196-81aa-4df6276f2fbd)
+  )
+  (text "2026-10-11 REV: EC11_A GPIO2->GPIO20 | LCD_BL=GPIO21 (0/1, gate 100k pulldown) | GPIO12=SCOPE_TP (PA_PWR_PWM void) | GPIO2=ADC1_CH2 | OC7/OC8 idle, do not prewire | BUZZER LS1 REMOVED (not in this version)"
+    (at 15.24 162.56 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 17e75845-dccc-44e9-b223-6cb9a3cd9bb0)
   )
   (text "Source: docs/05 2.2/2.3/2.7; ADR-0008 3.1; docs/04 3.5"
     (at 15.24 152.4 0)

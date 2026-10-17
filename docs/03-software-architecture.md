@@ -126,7 +126,7 @@
 | `drv_si5351` | Si5351 本振驱动（I2C）：3.5–3.6 MHz、100 Hz 步进、频率校准与微调 | `bsp_board`、`utils_common` |
 | `drv_lcd12864` | 12864 液晶（ST7567，**I2C 为主 / SPI 为备选**）：字库、绘图、局部刷新 | `bsp_board`、`bsp_io_expander` |
 | `drv_ec11` | EC11 旋转编码器：方向识别、加速度、按键（经 TCA9535 或中断） | `bsp_io_expander` |
-| `drv_keys` | 双按键消抖与长按识别、有源蜂鸣器提示音 | `bsp_io_expander` |
+| `drv_keys` | 双按键消抖与长按识别、~~有源蜂鸣器提示音~~ → ❌ **本版不做（2026-10）** | `bsp_io_expander` |
 | `drv_relay` | 6 路继电器组抽象（K1–K6）：组合写入、最小切换间隔、机械寿命计数 | `bsp_io_expander` |
 | `drv_pa` | 功放控制：PA_EN 使能 + LEDC 调压（0.02–2.5 W），功率档位映射 | `bsp_board`、`bsp_io_expander` |
 | `drv_analog` | ADC 采样与滤波：电池电压、电源电流、前向/反向检波（NTC 功放温度已取消，见 [docs/17 §12.5](17-gpio-allocation-audit.md)） | `bsp_board` |

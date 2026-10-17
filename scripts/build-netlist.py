@@ -52,14 +52,14 @@ def build():
     S = D05 + " §2.2/§2.8"
     A(N("ADC_FWD", "ADC_FWD", "U4", "GPIO0", "T1", "1 (次级)", "ADC1_CH0 前向检波输入; 满量程由耦合器与 R_sense 决定; 2W 下读数应落量程 20%-80%", S + "; §3.2"))
     A(N("ADC_REV", "ADC_REV", "U4", "GPIO1", "T2", "1 (次级)", "ADC1_CH1 反向检波输入; SWR=2.0@2W 时读数应 >=量程 5%", S + "; §3.2"))
-    A(N("ADC_VBAT", "ADC_VBAT", "U4", "GPIO3", "R_VBAT3", "2", "ADC1_CH3 电池电压(经 22k/9.1k/1k 分压 + 0.1uF); 6.0V->1.76V, 8.4V->2.46V", S + "; §2.7"))
+    A(N("ADC_VBAT", "ADC_VBAT", "U4", "GPIO3", "R_VBAT3", "2", "ADC1_CH3 电池电压(经 30k/9.1k/1k 分压 + 0.1uF); 比值0.2327 满量程14.18V => 6.0V->1.40V, 8.4V->1.95V, 12V->2.79V", S + "; §2.7"))
     A(N("EC11_A", "EC11_A", "U4", "GPIO2", "U6", "A", "strapping 脚: 必须有 10kohm 上拉(R3), 静止为高; 上电时勿转动旋钮", S + "; §2.6"))
     A(N("EC11_B", "EC11_B", "U4", "GPIO8", "U6", "B", "strapping 脚: 必须有 10kohm 上拉(R4), 静止为高", S + "; §2.6"))
     A(N("EC11_SW", "EC11_SW", "U4", "GPIO13", "U6", "SW", "按下接 GND + 10kohm 上拉(R5), 中断驱动; GPIO13 = SPIWP, 固件须先 gpio_reset_pin 撤销 MSPI 保留", S + "; " + D17 + " §12.6.3"))
     A(N("KEY_USER", "KEY_USER", "U4", "GPIO9", "SW2", "1", "BOOT 按键(strapping): 上电前不可下拉; 启动后可作 KEY_USER", S + "; §2.6"))
-    A(N("I2C_SDA", "I2C_SDA", "U4", "GPIO4", "R6", "1", "I2C0 SDA, 开漏; 4.7kohm 上拉到 3.3V; 共享总线 Si5351 + TCA9535", S))
+    A(N("I2C_SDA", "I2C_SDA", "U4", "GPIO4", "R6", "1", "I2C0 SDA, 开漏; 4.7kohm 上拉到 3.3V; 共享总线 Si5351(0x60) + CA-DV8008(0x28)", S))
     A(N("I2C_SCL", "I2C_SCL", "U4", "GPIO5", "R7", "1", "I2C0 SCL, 开漏; 4.7kohm 上拉到 3.3V", S))
-    A(N("PA_PWR_PWM", "PA_PWR_PWM", "U4", "GPIO12", "U11", "FB", "LEDC PWM -> 升压模块 FB 网络; 低=最低功率; 高阻/高=有推向满功率风险", S + "; §2.10.2"))
+    A(N("GPIO12_TBD", "GPIO12_TBD", "U4", "GPIO12", "-", "TBD", "⚠ 2026-10-11: 升压模块已删 ⇒ 原「LEDC PWM -> 升压 FB」作废; 该脚去向待定(① 功放驱动降额使能 ② 留给未来 VCC->降压->PA 轨调功 ③ 回收), 🔴 未定前硬件不接", S + "; docs/05 §7 #7a"))
     A(N("VDD_SPI_NC", "VDD_SPI_NC", "U4", "GPIO11", "-", "NC", "🔴 不可用: VDD_SPI, 已决定不解锁 eFuse; 原理图上标注 NC/保留, 不得接任何网络", S + " §2.1"))
     A(N("USB_DM", "USB_DM", "U4", "GPIO18", "J_USB", "D-", "原生 USB Serial/JTAG: 日志/中控/下载", S + " §2.2"))
     A(N("USB_DP", "USB_DP", "U4", "GPIO19", "J_USB", "D+", "同上", S + " §2.2"))
@@ -74,33 +74,30 @@ def build():
     A(N("I2C_SDA", "I2C_SDA", "R6", "2", "+3V3_DIG", "-", "I2C SDA 上拉 4.7kohm", S))
     A(N("I2C_SCL", "I2C_SCL", "R7", "2", "+3V3_DIG", "-", "I2C SCL 上拉 4.7kohm", S))
 
-    # ---------------- 2. I2C devices: Si5351 + TCA9535 ----------------
+    # ---------------- 2. I2C devices: Si5351 + CA-DV8008 ----------------
     A(N("I2C_SDA", "I2C_SDA", "U7", "SDA", "U4", "GPIO4", "Si5351 I2C 数据(地址 0x60)", D05 + " §2.3/§2.5; " + D04 + " §3.5"))
     A(N("I2C_SCL", "I2C_SCL", "U7", "SCL", "U4", "GPIO5", "Si5351 I2C 时钟", D05 + " §2.3/§2.5"))
-    A(N("I2C_SDA", "I2C_SDA", "U1", "SDA", "U4", "GPIO4", "TCA9535 I2C 数据(地址 0x20; A2/A1/A0 接法待确认)", D05 + " §2.3, §7 #2"))
-    A(N("I2C_SCL", "I2C_SCL", "U1", "SCL", "U4", "GPIO5", "TCA9535 I2C 时钟", D05 + " §2.3"))
-    A(N("TCA9535_INT", "TCA9535_INT", "U1", "INT", "-", "NC", "本方案 A 不使用 INT; 若日后走 C/C-prime 方案需 10kohm 上拉到 3.3V", D17 + " §3.5, §7 R6"))
+    A(N("I2C_SDA", "I2C_SDA", "U1", "SDA", "U4", "GPIO4", "CA-DV8008 I2C 数据(7 位地址 0x28; A0/A1/A2 全接 GND)", D05 + " §2.3, §7 #2"))
+    A(N("I2C_SCL", "I2C_SCL", "U1", "SCL", "U4", "GPIO5", "CA-DV8008 I2C 时钟(<=400kHz)", D05 + " §2.3"))
 
-    # ---------------- 3. TCA9535 16-bit expander (docs/05 §2.3) ----------------
+    # ---------------- 3. CA-DV8008 八通道低边驱动 (docs/05 §2.3) ----------------
+    # 2026-10-11: 取代原 TCA9535(0x20) + ULN2003A; 单 8 位寄存器, 写 1=导通下拉/写 0=高阻, 支持单字节读回
     S3 = D05 + " §2.3; " + D17 + " §2.1"
     for i, k in enumerate(["K1", "K2", "K3", "K4", "K5", "K6"]):
-        A(N("IOEXP_RELAY_%s" % k, "IOEXP_RELAY_%s" % k, "U1", "P0.%d" % i, "U2", "IN%d" % (i + 1),
-          "TCA9535 P0.%d -> ULN2003A IN%d(3.3V 并行, 6 根)" % (i, i + 1), S3))
-    A(N("IOEXP_LCD_BL", "IOEXP_LCD_BL", "U1", "P1.1", "R_BL", "1", "背光开关: P1.1 -> R 1kohm -> 2N7002 栅极", D05 + " §2.3"))
-    A(N("IOEXP_SPARE_P1_0", "IOEXP_SPARE_P1_0", "U1", "P1.0", "-", "NC", "预留(原 EC11 按键, 已释放)", S3))
-    for p in ["P0.6", "P0.7", "P1.2", "P1.3", "P1.4", "P1.5", "P1.6", "P1.7"]:
-        A(N("IOEXP_SPARE_" + p.replace(".", "_"), "IOEXP_SPARE_" + p.replace(".", "_"), "U1", p, "-", "NC",
-          "预留 9 位之一(蜂鸣器/状态灯/散热风扇/天线泄放等)", S3))
-
-    # ---------------- 4. ULN2003A relay driver chain ----------------
-    A(N("+12V_RELAY", "+12V", "U2", "COM", "+12V", "-",
-      "🔴 COM 必须接 +12V: 内部续流二极管靠它生效(不接则继电器反峰无抑制)", D05 + " §2.4"))
-    for i, k in enumerate(["K1", "K2", "K3", "K4", "K5", "K6"]):
-        A(N("RELAY_%s_COIL" % k, "RELAY_%s_COIL" % k, "U2", "OUT%d" % (i + 1), k, "线圈+",
-          "ULN2003A OUT%d 低边吸合 %s 线圈; 16.7mA/只, 6 只同吸 <110mA" % (i + 1, k), D05 + " §2.4"))
-        A(N("+12V_RELAY", "+12V", k, "线圈-", "+12V", "-",
-          "%s 线圈另一端接 +12V 功放轨; 线圈得电压 12-0.9=11.1V=92%% (>75%% 吸合阈值)" % k, D05 + " §2.4"))
-    A(N("GND", "GND", "U2", "GND", "GND", "-", "ULN2003A 地(e 脚)", D05 + " §2.4"))
+        A(N("RELAY_%s_COIL" % k, "RELAY_%s_COIL" % k, "U1", "OC%d" % (i + 1), k, "线圈+",
+          "CA-DV8008 OC%d 低边吸合 %s 线圈(HK4100F-DC5V-SHG); 40mA/只, 6 只同吸 240mA" % (i + 1, k), S3))
+        A(N("+5V_RELAY", "+5V", k, "线圈-", "+5V", "-",
+          "%s 线圈另一端接 +5V(MP2315 降压轨); 线圈得 ≈4.9V = 98%% 额定(>75%% 吸合阈值, <=130%% 上限)" % k, S3))
+    A(N("+5V_RELAY", "+5V", "U1", "COM", "+5V", "-",
+      "🔴 COM 必须接 +5V: 内部续流钳位二极管共阴(不接则继电器反峰无抑制); 严禁接 VCC(6.0-8.4V 会超规发热)", D05 + " §2.3/§2.4"))
+    A(N("GND", "GND", "U1", "GND", "GND", "-", "CA-DV8008 地(脚 4)", D05 + " §2.3"))
+    A(N("GND", "GND", "U1", "A0", "GND", "-", "地址位 A0 接 GND(芯片内部仅弱下拉, 须显式接) => 0x28", D05 + " §2.3"))
+    A(N("GND", "GND", "U1", "A1", "GND", "-", "地址位 A1 接 GND", D05 + " §2.3"))
+    A(N("GND", "GND", "U1", "A2", "GND", "-", "地址位 A2 接 GND", D05 + " §2.3"))
+    A(N("+3V3_DIG", "+3V3_DIG", "U1", "VCC", "+3V3_DIG", "-",
+      "🔴 逻辑电源必须 3.3V: V_IH=0.7xVCC, 若接 5V 则门限 3.5V > I2C 总线高电平 3.3V => 读不到高电平", D05 + " §2.3"))
+    A(N("LCD_BL_DRV", "LCD_BL_DRV", "-", "TBD", "R_BL", "1",
+      "🟠 背光驱动位待定(原 TCA9535 P1.1 已随扩展器移除; 候选: 主板另加 CA-DV8008 @0x29)", D05 + " §7 #2a"))
 
     # ---------------- 5. SPI2 -> ST7567 (docs/05 §2.2; ADR-0008 §3.1) ----------------
     S5 = D05 + " §2.2; ADR-0008 §3.1"
@@ -110,7 +107,7 @@ def build():
     A(N("GND", "GND", "U5", "CS", "GND", "-", "🔴 CS 接 GND: ST7567 是 SPI2 上唯一从机 -> 省 1 个 GPIO", S5))
     A(N("LCD_RST", "LCD_RST", "U5", "RST", "RESET_BOARD", "-", "🔴 RST 与板复位共用: 上电复位即可 -> 省 1 脚与 RC 电路", S5))
     A(N("LCD_BL_CTRL", "LCD_BL_CTRL", "R_BL", "2", "Q5", "G", "P1.1 经 1kohm 到 2N7002 栅极", D05 + " §2.3"))
-    A(N("LCD_BL_GATE_PD", "LCD_BL_GATE_PD", "R_BL2", "1", "Q5", "G", "🔴 栅极 10kohm 下拉到 GND: TCA9535 上电为输入高阻, 否则背光状态不定", D05 + " §2.3"))
+    A(N("LCD_BL_GATE_PD", "LCD_BL_GATE_PD", "R_BL2", "1", "Q5", "G", "🔴 栅极必须 100 kΩ 下拉到 GND(docs/05 §2.3 定案, 原写 10kohm): 驱动器上电为高阻时无下拉则背光状态不定(可能上电即常亮); 100 kΩ 保证复位默认态可靠截止 => 上电默认低 = 背光关", D05 + " §2.3, §7 #2a"))
     A(N("GND", "GND", "R_BL2", "2", "GND", "-", "背光 MOS 栅极下拉另一端", D05 + " §2.3"))
     A(N("LCD_BL_K", "LCD_BL_K", "Q5", "D", "U5", "LED-", "2N7002 漏极接背光 LED 阴极串", D05 + " §2.3"))
     A(N("GND", "GND", "Q5", "S", "GND", "-", "2N7002 源极", D05 + " §2.3"))
@@ -139,7 +136,7 @@ def build():
     for q in ["Q1", "Q2", "Q3"]:
         A(N("PA_BIAS", "PA_BIAS", "R1", "2", q, "G", "固定栅极偏置到各管栅极", D04 + " §3.2"))
         A(N("GND", "GND", "D5_prot", "A", q, "G", "BZX84-C10 10V 稳压管栅极保护(每管1只)", D04 + " §3.2"))
-        A(N("PA_DRAIN", "PA_DRAIN", "+12V", "-", q, "D", "BS170 漏极 12-13.8V(升压可调); 3 管并联", D05 + " §3.1"))
+        A(N("PA_DRAIN", "PA_DRAIN", "VCC", "-", q, "D", "BS170 漏极 = VCC 2S 电池原压 6.0-8.4V（无升压；E 类按 **7.4V 标称定点**：R_opt≈12.6Ω / C1≈0.65nF / L≈2.8µH / 峰值 Vds≈26.3V）; 满电 8.4V 时输出≈3.2W(耗散 1.73W 仍在 3×TO-92 的 2.5W 内) ⇒ ✅ **甲方案（2026-10-11 用户裁定）：接受 ≈3.2W、不降驱动** —— class-E 全程保持理想 ZVS，效率与杂散最优；固件只用 ADC_FWD **如实上报实测功率**，不做降额; 🔴 12V 兼容已取消; 3 管并联", D04 + " §3.2/§3.2.0/§3.2.1"))
         A(N("GND", "GND", q, "S", "GND", "-", "BS170 源极", D04 + " §3.2"))
         A(N("PA_BYPASS", "PA_BYPASS", "C6", "1", q, "D", "100nF 旁路电容(每管1只)", D04 + " §3.2"))
     A(N("+5V", "+5V", "U8", "VCC", "+5V", "-", "🔴 244 必须 5V 供电(ACT 系列 4.5-5.5V, TTL 输入阈值)", S6))
@@ -172,11 +169,11 @@ def build():
 
     # ---------------- 8. Battery divider ----------------
     S8 = D05 + " §2.7"
-    A(N("VBAT", "VBAT", "BT1", "+", "R_VBAT1", "1", "2S 电池 6.0-8.4V", S8))
-    A(N("VBAT_DIV", "VBAT_DIV", "R_VBAT1", "2", "R_VBAT2", "1", "分压中点: 22k 上臂 / 9.1k 下臂", S8))
-    A(N("GND", "GND", "R_VBAT2", "2", "GND", "-", "分压下臂接地; 静态电流 270uA", S8))
+    A(N("VBAT", "VBAT", "BT1", "+", "R_VBAT1", "1", "2S 电池 6.0-8.4V（唯一输入；12V 兼容已取消）；分压 30k/9.1k/1k（满量程 14.18V，留余量/可兼容未来 3S 铁锂 10.95V）", S8))
+    A(N("VBAT_DIV", "VBAT_DIV", "R_VBAT1", "2", "R_VBAT2", "1", "分压中点: 30k 上臂 / 9.1k 下臂 -> 比值 R2/(R1+R2)=0.2327(原 22k => 0.2926 在 12V 时饱和 3.51V > 3.3V)", S8))
+    A(N("GND", "GND", "R_VBAT2", "2", "GND", "-", "分压下臂接地; 静态电流 215uA @8.4V(原 22k 为 270uA)", S8))
     A(N("VBAT_DIV", "VBAT_DIV", "R_VBAT1", "2", "R_VBAT3", "1", "分压中点经 1kohm 隔离到 ADC", S8))
-    A(N("ADC_VBAT", "ADC_VBAT", "R_VBAT3", "2", "U4", "GPIO3", "源阻抗 R3+(22k//9.1k)=7.4kohm < 10kohm 满足 ESP32-C3 ADC 要求", S8))
+    A(N("ADC_VBAT", "ADC_VBAT", "R_VBAT3", "2", "U4", "GPIO3", "源阻抗 R3+(30k//9.1k)=7.98kohm < 10kohm 满足 ESP32-C3 ADC 要求; 满量程 14.18V => 12V 读数 2.79V 不饱和", S8))
     A(N("ADC_VBAT", "ADC_VBAT", "R_VBAT3", "2", "C_VBAT", "1", "0.1uF 滤波, fc 约 245Hz", S8))
     A(N("GND", "GND", "C_VBAT", "2", "GND", "-", "滤波电容地", S8))
 
@@ -186,18 +183,18 @@ def build():
 
     # ---------------- 10. Power domains (docs/05 §3.3; docs/04 §3.6) ----------------
     S10 = D05 + " §3.3; " + D04 + " §3.6"
-    A(N("+12V", "+12V", "U11", "OUT", "+12V", "-", "3.7V->12V 升压模块输出 12-13.8V; 最大 0.5A(发射); 纹波峰峰 <0.5V @2.5W", S10))
-    A(N("+12V", "+12V", "U11", "OUT", "U2", "COM", "12V 供 ULN2003A COM(继电器续流)", D05 + " §2.4"))
-    A(N("+12V", "+12V", "U11", "OUT", "J1", "12V", "12V 经排针到 PA 漏极与 ATU 继电器线圈", S10))
+    A(N("VCC", "VCC", "BT1", "+", "VCC", "-", "VCC = 输入级: **2S 锂电直供 6.0-8.4V(标称 7.4V)**；🔴 12V 兼容已取消(2026-10-11)；本项目不设升压", S10))
+    A(N("VCC", "VCC", "BT1", "+", "J1", "VCC", "VCC 经排针到 PA 漏极(E 类按 7.4V 标称定点)与 ATU 继电器驱动(仅逻辑, 线圈走 +5V)", S10))
+    A(N("+5V", "+5V", "U9", "OUT", "U1", "COM", "5V 供 CA-DV8008 COM(继电器续流共阴); 线圈另一端亦接 +5V", D05 + " §2.3/§2.4"))
+    A(N("+5V", "+5V", "U9", "OUT", "J17", "1", "5V 经 J17 pin1 到 ATU 继电器线圈(6x40mA=240mA); 🔴 J17 不引 VCC(防 5V 线圈误接 6.0-8.4V 超规)", S10))
     A(N("+5V", "+5V", "U9", "OUT", "J1", "5V", "MP2315 同步降压 5V 主轨; 最大 0.3A", S10))
     A(N("+5V", "+5V", "U9", "OUT", "U8", "VCC", "5V 供 244", D05 + " §2.5"))
     A(N("+5V", "+5V", "U9", "OUT", "R1", "1", "5V 供栅极偏置分压", D04 + " §3.2"))
     A(N("+3V3_RF", "+3V3_RF", "U10", "OUT", "U7", "VDD", "MD7673 LDO 3.3V 射频轨(低噪声); 最大 50mA; 专供 Si5351", S10))
     A(N("+3V3_DIG", "+3V3_DIG", "FB1", "OUT", "U4", "3V3", "3.3V 数字轨(独立 pi 型 RC 滤波); 最大 200mA", S10))
     A(N("+3V3_DIG", "+3V3_DIG", "FB1", "OUT", "U5", "VDD", "3.3V 数字轨 -> LCD", S10))
-    A(N("+3V3_DIG", "+3V3_DIG", "FB1", "OUT", "U1", "VCC", "3.3V 数字轨 -> TCA9535", S10))
-    A(N("VBAT", "VBAT", "BT1", "+", "U9", "VIN", "2S 电池 6.0-8.4V -> MP2315 输入", S10))
-    A(N("VBAT", "VBAT", "BT1", "+", "U11", "VIN", "2S 电池 -> 升压模块输入(⚠ 模块标称 3.7V 输入, 需核对)", S10 + "; docs/05 §7 #7"))
+    A(N("+3V3_DIG", "+3V3_DIG", "FB1", "OUT", "U1", "VCC", "3.3V 数字轨 -> CA-DV8008 逻辑侧（V_IH=0.7xVCC，必须 3.3V：接 5V 则门限 3.5V > 总线高电平 3.3V）", S10))
+    A(N("VBAT", "VBAT", "BT1", "+", "U9", "VIN", "2S 电池 6.0-8.4V -> MP2315 输入（4.5-24V 范围，余量充足）", S10))
     A(N("GND", "GND", "BT1", "-", "GND", "-", "电池负极", S10))
 
     # ---------------- 11. Grounding strategy ----------------
@@ -248,19 +245,14 @@ def build():
     for _k in ["K4", "K5", "K6"]:
         A(N("ATU_%s_NC_NC" % _k, "ATU_%s_NC_NC" % _k, _k, "NC", "-", "NC",
           "%s 未使用触点(NC)悬空：不得接任何网络" % _k, SRW + " §2.4"))
-    # ULN2003A 输入下拉（2026-09-26 新增；见 relay-wiring.md §4.2/§4.4）
-    SRLY = SRW + " §4.2/§4.4; 私有固件仓 components/drv_relay/include/drv_relay.h"
-    for i, _k in enumerate(["K1", "K2", "K3", "K4", "K5", "K6"]):
-        A(N("IOEXP_RELAY_%s" % _k, "IOEXP_RELAY_%s" % _k, "R_RLY%d" % (i + 1), "1", "U2", "IN%d" % (i + 1),
-          "🔴 ULN2003A 输入端 10kohm 下拉：TCA9535 上电为输入且带约 100uA 弱上拉电流源，无下拉时 IN 可能被抬到导通阈值附近 → 继电器误吸合",
-          SRLY))
-        A(N("GND", "GND", "R_RLY%d" % (i + 1), "2", "GND", "-",
-          "R_RLY%d 下拉另一端接地（100uA x 10kohm = 1.0V << V_I(on) 2.4V）" % (i + 1), SRLY))
+    # R_RLY1-6 输入下拉：❌ 2026-10-11 删除 —— CA-DV8008 上电寄存器 = 0 ⇒ 8 路高阻 ⇒ 线圈无电流，
+    # 不再依赖逻辑侧下拉（原 TCA9535 弱上拉 + ULN2003A 悬空输入的问题随器件一并消失）
 
     # ---------------- 13. Unfrozen / to-be-designed ----------------
-    A(N("BUZZER_DRV", "BUZZER_DRV", "U1", "IOEXP_SPARE", "LS1", "+", "🟠 蜂鸣器未分配: 挂 TCA9535 空闲位(9 位中选一), 具体位号待定", D05 + " §2.3; hardware/mcu-ui-module/README.md §4"))
-    A(N("FB_PULLDOWN", "GPIO12_FB_PD", "R12", "1", "PA_PWR_PWM", "-", "📌 建议未采纳判定: GPIO12 -> 升压 FB 的 10kohm 下拉(docs/05 §7 #7a)", D05 + " §2.10.3, §7 #7a; " + D17 + " §12.6.5"))
-    A(N("GND", "GND", "R12", "2", "GND", "-", "同上(采纳后接 GND)", D05 + " §2.10.3"))
+    # ❌ 2026-10 定案：蜂鸣器本版不做（docs/05 §2.3 L179-181 / §2.4 L207 / §7 #11）。
+    # 保留该行仅作历史追溯：LS1 不装、不驱动；OC7/OC8 保持空闲，不得为蜂鸣器预留。
+    A(N("BUZZER_DRV", "BUZZER_DRV", "-", "NC", "LS1", "+", "❌ 蜂鸣器本版不做(2026-10 定案): LS1 不装、不驱动、不占通道; OC7/OC8 保持空闲、不得为蜂鸣器预留", D05 + " §2.3/§2.4/§7 #11; hardware/mcu-ui-module/README.md §4"))
+    # GPIO12 的去向已在上文 GPIO12_TBD 行登记（避免重复行）
 
     return R
 
@@ -327,18 +319,17 @@ def main():
     md.append("## 2. 子系统覆盖\n")
     cover = [
         ("ESP32-C3 12 个 GPIO 全部去向", "GPIO0/1/3 ADC · GPIO2/8 EC11 · GPIO4/5 I2C · GPIO6/7 SPI2 · GPIO10 LCD_DC · GPIO12 PA_PWR_PWM · GPIO13 EC11_SW（另 GPIO9=BOOT、11=NC、18/19=USB、20/21=UART0）", D05 + " §2.2/§2.8"),
-        ("TCA9535 16 位（用 7 + 预留 9）", "P0.0-P0.5=K1-K6 · P1.1=LCD 背光 · 预留 P1.0 + P0.6/P0.7 + P1.2-P1.7 = 9 位", D05 + " §2.3; " + D17 + " §2.1"),
-        ("ULN2003A 7 路（6 继电器 + COM 接 +12V）", "IN1-IN6 <- P0.0-P0.5；OUT1-OUT6 -> K1-K6 线圈；COM -> +12V（内部续流二极管）", D05 + " §2.4"),
+        ("CA-DV8008 八通道低边驱动（用 6 + 备用 2）", "OC1-OC6 -> K1-K6 线圈（HK4100F-DC5V-SHG, 40mA/只）· COM -> +5V（续流钳位共阴）· A0/A1/A2 -> GND（7 位地址 0x28）· VCC -> +3V3_DIG（必须 3.3V）· OC7/OC8 备用", D05 + " §2.3; " + D17 + " §2.1"),
         ("SPI（SCK/MOSI/DC）", "GPIO6->SCK · GPIO7->MOSI · GPIO10->A0/DC · CS 接 GND · RST 与板复位共用", D05 + " §2.2; ADR-0008 §3.1"),
-        ("I2C（SDA/SCL + 上拉）", "GPIO4/GPIO5 + 4.7kohm 上拉；挂 Si5351(0x60) 与 TCA9535(0x20)", D05 + " §2.2/§2.3"),
-        ("ADC 三路（分压网络含 R1/R2/R3）", "GPIO0/GPIO1 检波 · GPIO3 电池 22kohm/9.1kohm/1kohm + 0.1uF", D05 + " §2.7/§3.2"),
-        ("电源域（+12V / +5V / +3V3_RF / +3V3_DIG / VDD_SPI）", "升压->+12V · MP2315->+5V · MD7673->+3V3_RF · pi 滤波->+3V3_DIG · GPIO11(VDD_SPI) 标 NC 不解锁", D05 + " §3.3; " + D04 + " §3.6"),
+        ("I2C（SDA/SCL + 上拉）", "GPIO4/GPIO5 + 4.7kohm 上拉（3.3V）；挂 Si5351(0x60) 与 CA-DV8008(0x28)；🔴 不得再有 TCA9535(0x20)", D05 + " §2.2/§2.3"),
+        ("ADC 三路（分压网络含 R1/R2/R3）", "GPIO0/GPIO1 检波 · GPIO3 电池 30kohm/9.1kohm/1kohm + 0.1uF（比值 0.2327，满量程 14.18 V ⇒ 2S 与 12 V 都不饱和）", D05 + " §2.7/§3.2"),
+        ("电源域（VCC / +5V / +3V3_RF / +3V3_DIG / VDD_SPI）", "输入级 VCC：**2S 锂电直供 6.0-8.4V（标称 7.4V）**；🔴 12V 兼容已取消（2026-10-11）；无升压 ⇒ PA 直吃原压，E 类按 **7.4V 标称定点**（R_opt≈12.6Ω/C1≈0.65nF/L≈2.8µH）；满电 8.4V 输出≈3.2W —— ✅ **甲方案：接受、不降驱动**（固件仅如实上报）· MP2315(分立)->+5V（含 240mA 继电器线圈）· MD7673->+3V3_RF · pi 滤波->+3V3_DIG · GPIO11(VDD_SPI) 标 NC 不解锁", D05 + " §3.3; " + D04 + " §3.2.0/§3.6"),
         ("Si5351 输出与 PA 键控链（CW 走 CLKx_DIS 而非 GPIO）", "CW = I2C 写 CLKx_DIS · CLK0->244 输入(10kohm 下拉)->244 输出->BS170 栅极(10kohm 下拉)", D05 + " §2.5; ADR-0008 §3.2"),
         ("天线静电泄放", "天线座中心 -> 1kV 100kohm 高压电阻 到地（或 GDT）", D04 + " §3.4"),
         ("地平面/星形地", "射频地与数字地单点汇接于底板一点；四层板地平面完整", D04 + " §3.1; hardware/core-board/README.md §6"),
         ("Tandem Match 耦合器与检波", "T1/T2 FT37-43 · R_sense 1kohm · 1N5711 与 HSMS-2850 并行对照", D05 + " §3.2; hardware/atu-module/README.md §3"),
         ("EC11 与按键", "GPIO2/8 直连(10kohm 上拉) · GPIO13 SW 直连(10kohm 上拉) · GPIO9 BOOT/KEY_USER", D05 + " §2.2/§2.6; ADR-0008 §8.3"),
-        ("ATU L 型匹配网络（继电器触点与 L/C 逐脚）", "N0=ATU_L_IN · N1=ATU_L1_LO · N2=ATU_L2_LO · N3=ATU_L3_LO(=天线节点) · K1-K3 用 COM-NC 旁路 L1/L2/L3 · K4-K6 用 COM-NO 接入 C3/C4/C5 · 未使用触点悬空 · ULN 输入 6x10kohm 下拉", "hardware/atu-module/relay-wiring.md §2.1/§2.4/§4.2"),
+        ("ATU L 型匹配网络（继电器触点与 L/C 逐脚）", "N0=ATU_L_IN · N1=ATU_L1_LO · N2=ATU_L2_LO · N3=ATU_L3_LO(=天线节点) · K1-K3 用 COM-NC 旁路 L1/L2/L3 · K4-K6 用 COM-NO 接入 C3/C4/C5 · 未使用触点悬空 · 驱动走 CA-DV8008 OC1-OC6（无输入下拉）", "hardware/atu-module/relay-wiring.md §2.1/§2.4 + CHANGELOG 2026-10-11"),
     ]
     md.append("| 子系统 | 覆盖内容 | 依据 |")
     md.append("|---|---|---|")

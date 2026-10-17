@@ -34,7 +34,7 @@
 | [`stage-3-coupler-detector`](stage-3-coupler-detector/README.md) | 第 7–9 天 | FT37-43 绕制的 T1/T2 定向耦合器与检波 | 耦合度 **20±3dB @2W**、方向性 **>25dB**、非 50Ω 下 SWR 读数误差 **<0.2**、带内 3.50/3.55/3.60MHz 平坦度 **<1.0dB**；1N5711 与 HSMS-2850 并行对照；2W 下前向 ADC 落在量程 **20%–80%**；SWR=2.0 时反射 ADC ≥量程 **5%**；SWR 1.2/1.5/2.0 差值 **>3σ**；重复 10 次标准差 **<0.15** |
 | [`stage-4-opamp`](stage-4-opamp/README.md) | 第 10–11 天 | 检波后级：直接进 ADC vs LM358 缓冲 | 若「检波直接进 ADC」达标则**优先采用**该方案（省件、省失调） |
 | [`stage-5-tuning-algorithm`](stage-5-tuning-algorithm/README.md) | 第 12–14 天 | ATU 调谐算法（粗调 + 细调 + 全遍历兜底） | 首次调谐 **<5s**、NVS 微调 **<0.5s**、成功率 **>95%**；统计 NVS 命中率 |
-| [`stage-6-antenna-emc`](stage-6-antenna-emc/README.md) | 第 15–18 天 | 实架天线 + 电磁兼容 | 实架 5m 导线 + 5m 地线在 2W 下调谐 SWR **<2.0**；SDR 测杂散，2 次谐波 7.1MHz 衰减 **≥55dB**；12V 升压轨动态负载纹波峰峰值 **<0.5V** |
+| [`stage-6-antenna-emc`](stage-6-antenna-emc/README.md) | 第 15–18 天 | 实架天线 + 电磁兼容 | 实架 5m 导线 + 5m 地线在 2W 下调谐 SWR **<2.0**；SDR 测杂散，2 次谐波 7.1MHz 衰减 **≥55dB**；~~12V 升压轨纹波 <0.5V~~ → **2026-10-11 改判据：+5V 主轨与 +3.3V 数字轨纹波峰峰值 <50mVpp（含继电器吸合跌落）** |
 | [`stage-7-mesh`](stage-7-mesh/README.md) | 第 19–20 天 | Mesh 组网（软件侧，`net_espnow`/`mesh_router`） | 3 台从机 + 1 台主控，遮挡主控与其中 1 台，回传成功率 **>80%** |
 | [`stage-8-cw`](stage-8-cw/README.md) | 第 21–22 天 | CW 键控（软件侧，`rf_keyer`） | 码速 10–12WPM 误差 **<2%**；识别码正确；1KHz 长音仅标准距离模式且位于发信结束前 2 秒；软起软降 **2–5ms**；5 分钟周期误差 **<0.1s**；SWR>3.0 禁止发射；功率 0.02–2.5W 可调 |
 | [`stage-9-competition-modes`](stage-9-competition-modes/README.md) | 第 23–24 天 | 七种赛事模式（软件侧，`ardf_mode`/`ardf_schedule`；⚠️ **本阶段尚未执行**，第 7 种专项判据待补） | 标准距离时序误差 **<0.1s**；短距离 11 个频点间隔 **10kHz**；快速测向 1 分钟/12 秒误差 **<0.1s**；定向猎狐功率误差 **<10%**；阳光测向功率 **<0.1W**；短距离定向猎狐识别码正确 |

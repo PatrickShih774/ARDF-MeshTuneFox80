@@ -16,7 +16,7 @@
 
 | 模块 | 器件行数 | 分模块 CSV |
 |---|---|---|
-| `atu-module` | 16 | [bom-atu-module.csv](bom-atu-module.csv) |
+| `atu-module` | 14 | [bom-atu-module.csv](bom-atu-module.csv) |
 | `pa-module` | 7 | [bom-pa-module.csv](bom-pa-module.csv) |
 | `lpf-module` | 3 | [bom-lpf-module.csv](bom-lpf-module.csv) |
 | `mcu-ui-module` | 24 | [bom-mcu-ui-module.csv](bom-mcu-ui-module.csv) |
@@ -25,17 +25,16 @@
 | `interconnect` | 7 | [bom-interconnect.csv](bom-interconnect.csv) |
 | `enclosure` | 5 | [bom-enclosure.csv](bom-enclosure.csv) |
 | `antenna` | 6 | [bom-antenna.csv](bom-antenna.csv) |
-| **合计** | **83** | [bom-summary.csv](bom-summary.csv) |
+| **合计** | **81** | [bom-summary.csv](bom-summary.csv) |
 
 ## 2. 逐模块明细
 
-### 2.1 atu-module（16 行）
+### 2.1 atu-module（14 行）
 
 | 位号 | 参数 | 封装 | 数量 | 建议型号 | LCSC 编号 | 关键规格 | 模块 | 备注 |
 |---|---|---|---|---|---|---|---|---|
-| K1-K6 | 12 V 继电器 | DIP 14.5x10.5mm | 6 | HK4100F-DC-12V | 待查 | 触点 SPDT(1C) 3A@250VAC/30VDC; 线圈 12VDC/720ohm/16.7mA; 动作6ms/释放4ms; 接触电阻100mohm; 寿命电气10万次/机械1000万次 | atu-module | 6只同时吸合约100mA; K1-K3电感位, K4-K6电容位 |
-| U1 | 16位 I2C I/O 扩展器 | TSSOP-24(建议) | 1 | TCA9535 | 待查 | I2C 地址 0x20; 3.3V; 16位准双向; 用7位(P0.0-P0.5+P1.1)余9位; INT 未使用(本方案A) | atu-module | P0.0-P0.5 驱动 ULN2003A; P1.1=LCD背光; 封装需按实际来料确认 |
-| U2 | 7路达林顿阵列 | SOIC-16/DIP-16 | 1 | ULN2003A | 待查 | 500mA/路; V_CE(sat)约0.9V; COM 必须接 +12V 才能启用内部续流二极管 | atu-module | 6路实际16.7mA/路 -> 余量30倍; 线圈得11.1V=92% > 75%吸合阈值 |
+| K1-K6 | 5 V 继电器 | DIP 14.5x10.5mm | 6 | HK4100F-DC5V-SHG | C12072 | 触点 SPDT(1C) 3A@250VAC/30VDC; 线圈 5VDC/125ohm/40mA; 吸合<=75%额定(3.75V); 上限130%额定(6.5V); 动作6ms/释放4ms; 寿命电气10万次/机械1000万次 | atu-module | 🔴 线圈只许接 +5V(MP2315 降压轨), 严禁接 VCC: 6 只同吸 240mA; DC12V 型在 2S(<=8.4V) 下吸合不足(需>=9.0V), 而 5V 型误接 VCC(7.4-8.4V)=148%-168% 额定 -> 超规发热; K1-K3电感位, K4-K6电容位 |
+| U1 | I2C 八通道低边驱动 | SOIC-16N 或 TSSOP-16 | 1 | CA-DV8008N | C54557228 | I2C 7位地址 0x28(A0-A2=GND; 8位写=0x50/读=0x51); 单8位寄存器: 写1=导通下拉 / 写0=高阻, 支持单字节读回; 500mA/路(八路同开250mA); 输出耐压50V; 内置续流钳位; VCC(逻辑)3-5.5V | atu-module | 🔴 COM 接 +5V(线圈电源, 钳位共阴); OC1-OC6 -> K1-K6 线圈低边; OC7/OC8 备用; VCC=+3V3_DIG(必须3.3V: V_IH=0.7xVCC); 上电默认高阻 => 全释放 = 0uH/0pF 直通(与固件 mask=0 一致) |
 | L1 | 12 uH 电感 | 磁环 T37-6 + 漆包线 | 1 | T37-6 磁环 | 待查 | AL=3.0nH/N^2; 约63圈; 绕组推荐0.5mm漆包线(3.5MHz趋肤深度约35um) | atu-module | 自绕元件; 需实测电感量与SRF |
 | L2 | 33 uH 电感 | 磁环 T106-6 + 漆包线 | 1 | T106-6 磁环 | 待查 | AL=11.6nH/N^2; 约53圈; T106-6 SRF约6.0MHz(需实测) | atu-module | 自绕元件; 覆盖挂树天线30-34uH需求 |
 | L3 | 47 uH 电感 | 磁环 T106-6 + 漆包线 | 1 | T106-6 磁环 | 待查 | AL=11.6nH/N^2; 约64圈; T106-6 SRF约6.0MHz(需实测) | atu-module | 自绕元件; 覆盖实验室天线35-50uH需求 |
@@ -48,7 +47,6 @@
 | D3,D4 | 零偏置肖特基检波二极管 | SOT-23(双管)/SOD-323 | 2 | HSMS-2850 | 待查 | 零偏置检波; 与 1N5711 并行对照 | atu-module | 选型待 stage-3 实测对照 |
 | U3 | 检波放大器(可选) | SOIC-8/DIP-8 | 0-1 | LM358 | 待查 | 是否需要运放级待 stage-4 实测决定(docs/05 §7 #6); 本行数量标 0-1 表示未定 | atu-module | DO NOT populate until stage-4 verdict |
 | R_esd | 100 kohm 高压电阻 | 轴向高压电阻 | 1 | 1kV 高压电阻 100kohm | 待查 | 天线静电泄放到地; 耐压 1kV; 可用射频专用 GDT 替代 | atu-module | 二选一: 高压电阻 或 GDT |
-| R_RLY1-R_RLY6 | 10 kohm | 0805 | 6 | 电阻 10kohm 1% | 待查 | 🔴 ULN2003A IN1-IN6 各一只下拉到 GND; 100uA x 10kohm = 1.0V << V_I(on) 2.4V | atu-module | 🔴 强制要求(2026-09-26 新增): TCA9535 上电为输入且带约100uA弱上拉, 无下拉则 ULN 输入可能被抬到导通阈值附近 -> 6 只继电器上电误吸合; 布局尽量靠近 U2 的 IN 脚 |
 
 ### 2.2 pa-module（7 行）
 
@@ -60,7 +58,7 @@
 | R1 | 10 kohm | 0805 | 1 | 电阻 10kohm 1% | 待查 | 栅极固定偏置分压上臂(自5V LDO取得约2.1V) | pa-module | 纯固定偏置, 无温度补偿 |
 | R2 | 2.2 kohm | 0805 | 1 | 电阻 2.2kohm 1% | 待查 | 栅极固定偏置分压下臂, 下端直接接地 | pa-module | NTC 已取消(2026-09-26, docs/17 §12.5) |
 | C6 | 100 nF | 0805 | 3 | X7R 100nF 50V | 待查 | 旁路电容, 每管1只 | pa-module | 数量按3管计 |
-| C7 | 升压输出滤波电容 | 电解/钽 | 1 | 待定 | 待查 | 12V 轨纹波峰峰值 <0.5V @2.5W 发射 | pa-module | 型号与容值待 12V 升压模块 P7 定型后确定 |
+| C7 | (作废) 升压输出滤波电容 | — | 0 | — | 待查 | ❌ 2026-10-11 作废：本项目不设升压（原 U11 已删）⇒ 该电容不存在；功放轨 = VCC 电池直供，无开关纹波源 | pa-module | 若日后采纳「VCC 降压到 PA 轨」（docs/05 §7 #7c 方案①），再补该级的输入/输出电容 |
 
 ### 2.3 lpf-module（3 行）
 
@@ -78,23 +76,23 @@
 | U5 | 160 段点阵 LCD 控制器模组 | 12864 模组(单排/双排待定) | 1 | ST7567 12864 液晶模组 | 待查 | 128x64; 仅 SPI; CS 接 GND(总线唯一从机); RST 与板复位共用; DC(A0)=GPIO10; 132列驱动/128列可见 | mcu-ui-module | 面板 180 度安装(W0=0, 方向位0xA0+0xC8); 排线针脚定义待硬件确认 |
 | U6 | 旋转编码器 | EC11 带按压开关 | 1 | EC11 (带SW) | 待查 | A/B 相接 GPIO2/GPIO8 (strapping, 须各加 10kohm 上拉, 静止为高); SW 接 GPIO13+GND, 10kohm 上拉, 中断驱动 | mcu-ui-module | 上电时勿转动旋钮(启动画面提示) |
 | SW1,SW2 | 轻触开关 | 6x6mm 直插/贴片 | 2 | 轻触按键 | 待查 | 功能键/返回键; 其中之一复用板载 BOOT(GPIO9, strapping, 上电前不可下拉) | mcu-ui-module | GPIO9 已作 KEY_USER; 另一只为独立轻触键 |
-| LS1 | 有源蜂鸣器 | 12mm 直插 | 1 | 有源蜂鸣器 3.3V/5V | 待查 | 有源(自带振荡); 挂 TCA9535 空闲位驱动(未分配, 见 docs/05 §2.3) | mcu-ui-module | GPIO 已用满, 不得直连 MCU; 驱动位待定(IOEXP_SPARE) |
+| LS1 | (本版移除) 有源蜂鸣器 | — | 0 | (本版移除) | 待查 | ❌ 本版不做（2026-10 用户明确『不需要』）：原「有源蜂鸣器提示音」整条功能移除；TCA9535 已随扩展器移除，OC7/OC8 保持空闲、🔴 不得为蜂鸣器预留 | mcu-ui-module | 🔴 不装、不驱动、不占 GPIO 与扩展器通道；本行仅保留历史来源 |
 | U7 | I2C 可编程时钟发生器 | MSOP-10 模块/芯片 | 1 | Si5351A (模块或芯片) | 待查 | I2C 地址 0x60; 3.3V 射频轨(MD7673, 低噪声); 3.5-3.6MHz, 100Hz 步进 | mcu-ui-module | CW 键控走 CLKx_DIS 使能命令, 不占 GPIO |
 | U8 | 八路缓冲器/线路驱动器 | TSSOP-20 (PWR) | 1 | SN74ACT244PWR | 待查 | 5V 供电(ACT 4.5-5.5V); TTL 输入阈值, 3.3V 可直驱; +/-24mA, 输出 0-5V 方波驱动 MOS 栅极 | mcu-ui-module | 输入侧必须加 10kohm 下拉到 GND, 否则 Si5351 停振时输入悬空 -> 244 振荡 -> PA 自激发射; 每个 Vcc 加 100nF |
-| Q5 | N 沟道 MOSFET | SOT-23 | 1 | 2N7002 | 待查 | LCD 背光低边开关; 栅极经 R 1kohm 接 TCA9535 P1.1; Vdss=60V | mcu-ui-module | 栅极必须加 10kohm 下拉到 GND: TCA9535 上电为输入高阻, 否则背光状态不定 |
-| R_BL | 1 kohm | 0805 | 1 | 电阻 1kohm | 待查 | TCA9535 P1.1 到 2N7002 栅极串联电阻 | mcu-ui-module |  |
-| R_BL2 | 10 kohm | 0805 | 1 | 电阻 10kohm | 待查 | 2N7002 栅极下拉到 GND(上电安全) | mcu-ui-module |  |
+| Q5 | N 沟道 MOSFET | SOT-23 | 1 | 2N7002 | 待查 | LCD 背光低边开关; 🟠 栅极驱动源待定(原 TCA9535 P1.1 已随扩展器移除, 见 docs/05 §7 #2a); Vdss=60V | mcu-ui-module | 栅极必须加 100 kΩ 下拉到 GND(R_BL2): 驱动源上电为高阻时无下拉则背光状态不定 |
+| R_BL | 1 kohm | 0805 | 1 | 电阻 1kohm | 待查 | TBD(原 TCA9535 P1.1) 到 2N7002 栅极串联电阻; 🟠 驱动位待定(见 docs/05 §7 #2a) | mcu-ui-module |  |
+| R_BL2 | 100 kohm | 0805 | 1 | 电阻 100kohm 1% | 待查 | 2N7002 栅极下拉到 GND(上电安全); 🔴 失效安全: MOS 在 GPIO21 高阻(复位默认态/固件未初始化)时可靠截止 => 上电默认低 = 背光关 | mcu-ui-module | 100 kΩ 而非 10 kΩ（docs/05 §2.3） |
 | R_BLLED | 背光限流电阻 | 0805 | 1 | 待定 | 待查 | 背光 LED 串限流; 阻值待模组背光电流确定 | mcu-ui-module | 待查模组规格 |
 | R3,R4 | 10 kohm | 0805 | 2 | 电阻 10kohm | 待查 | EC11 A/B 上拉(strapping 强制要求, 静止为高) | mcu-ui-module | 缓解2/3: 启动提示 + 看门狗重试 |
 | R5 | 10 kohm | 0805 | 1 | 电阻 10kohm | 待查 | EC11_SW 上拉到 3.3V, 按下为低(接 GND) | mcu-ui-module |  |
-| R6,R7 | 4.7 kohm | 0805 | 2 | 电阻 4.7kohm | 待查 | I2C0 SDA/SCL 上拉到 3.3V(共享总线: Si5351 + TCA9535) | mcu-ui-module |  |
+| R6,R7 | 4.7 kohm | 0805 | 2 | 电阻 4.7kohm | 待查 | I2C0 SDA/SCL 上拉到 3.3V(共享总线: Si5351 0x60 + CA-DV8008 0x28) | mcu-ui-module |  |
 | R8,R9 | 10 kohm | 0805 | 2 | 电阻 10kohm | 待查 | SN74ACT244 输入侧下拉到 GND(每路1只, 防悬空振荡) | mcu-ui-module | 🔴 强制要求, 见 docs/05 §2.5 |
 | R10 | MOS 栅极下拉电阻 | 0805 | 3 | 电阻 10kohm | 待查 | 保证 OE/停振时 MOS 可靠截止(docs/05 §2.5 要求2) | mcu-ui-module | 数量按 3 只 BS170 计 |
-| R_VBAT1 | 22 kohm | 0805 | 1 | 电阻 22kohm 1% | 待查 | VBAT 分压上臂; 备选 24kohm(比值0.294) | mcu-ui-module | 8.4V->2.46V; 6.0V->1.76V |
-| R_VBAT2 | 9.1 kohm | 0805 | 1 | 电阻 9.1kohm 1% | 待查 | VBAT 分压下臂; 备选 10kohm | mcu-ui-module | 源阻抗 R3+(22k//9.1k)=7.4kohm < 10kohm 满足 ADC 要求 |
-| R_VBAT3 | 1 kohm | 0805 | 1 | 电阻 1kohm | 待查 | ADC 串联限流/隔离电阻(GPIO3) | mcu-ui-module | 静态电流 270uA |
+| R_VBAT1 | 30 kohm | 0805 | 1 | 电阻 30kohm 1% | 待查 | VBAT 分压上臂; ✅ 2026-10-11 **定稿：保留 30k**（比值 0.2327 / 满量程 14.18V）——理由：留余量、可兼容未来 3S 铁锂 10.95V（12V 兼容取消后 22k 亦够用，但不再改动） | mcu-ui-module | 比值 R2/(R1+R2)=0.2327; 6.0V->1.40V; 8.4V->1.95V; 10.95V(3S铁锂)->2.55V |
+| R_VBAT2 | 9.1 kohm | 0805 | 1 | 电阻 9.1kohm 1% | 待查 | VBAT 分压下臂(不变) | mcu-ui-module | 源阻抗 R3+(30k//9.1k)=7.98kohm < 10kohm 满足 ADC 要求 |
+| R_VBAT3 | 1 kohm | 0805 | 1 | 电阻 1kohm | 待查 | ADC 串联限流/隔离电阻(GPIO3) | mcu-ui-module | 静态电流 215uA @8.4V(原 22k 时为 270uA) |
 | C_VBAT | 0.1 uF | 0805 | 1 | X7R 100nF 50V | 待查 | VBAT 分压滤波, fc 约 245Hz | mcu-ui-module |  |
-| R12 | 10 kohm | 0805 | 1 | 电阻 10kohm | 待查 | GPIO12 -> 升压模块 FB 下拉(上电安全硬件兜底) | mcu-ui-module | 📌 建议采纳未定(docs/05 §7 #7a); 采纳才计入 BOM(E-03) |
+| R12 | (作废) GPIO12 下拉 | 0805 | 0 | — | 待查 | ❌ 2026-10-11 作废：原用途是「GPIO12 → 升压模块 FB 的 10kΩ 下拉」；升压已删 ⇒ 该下拉无对象 | mcu-ui-module | 🔴 GPIO12 的去向待定（docs/05 §7 #7a：驱动降额使能 / 留给未来降压调功 / 回收）⇒ 未定前该脚不接 |
 | X1 | 32.768 kHz 晶振 | DNP 焊盘 | 0-1 | 32.768kHz 晶振 | 待查 | Mesh 时钟可选升级 DNP; 当前依靠 ESP-NOW 每5分钟重同步 | mcu-ui-module | DNP 不贴 |
 | R_ADC | 检波负载/分压电阻 | 0805 | 待定 | 待定 | 待查 | 前向/反向检波 ADC 满量程由耦合器与 R_sense 决定; ADC 读数应落量程 20%-80% | mcu-ui-module | P4 R_sense 微调后再定值 |
 | TP1-TP8 | 测试点 | 焊盘 | 8 | 测试点焊盘 | 待查 | 建议: 3.3V/5V/12V/ADC_FWD/ADC_REV/GND/I2C_SDA/I2C_SCL | mcu-ui-module | 便于打样后调试 |
@@ -103,11 +101,11 @@
 
 | 位号 | 参数 | 封装 | 数量 | 建议型号 | LCSC 编号 | 关键规格 | 模块 | 备注 |
 |---|---|---|---|---|---|---|---|---|
-| U9 | 同步降压 DC-DC | SOT-23-8/SOIC-8 | 1 | MP2315 | 待查 | 5V 主轨; 峰值效率高; 替代原 7805 LDO(原效率约68%, 发热严重) | power-module | 满载30分钟温升需实测 |
-| U10 | LDO 线性稳压器 | SOT-23-5/89 | 1 | MD7673E50VC1 | 待查 | 3.3V 射频轨(低噪声, 供 Si5351); 需与数字轨分轨 + pi 型滤波 | power-module | 型号写法以模块README为准(MD7673) |
-| U11 | 升压 DC-DC 模块 | 成品模块 | 1 | 3.7V->12V 升压模块 (PWM 可调) | 待查 | 12V 功放轨; PWM 可调输出; 输出 12-13.8V; 纹波峰峰值 <0.5V @2.5W | power-module | 🔴 型号与 FB 网络参数未定(docs/05 §7 #7 待冻结); 电池为2S(7.4V)而模块标称3.7V输入需核对(E-02) |
-| U12 | 自恢复保险丝/保护 | 贴片 | 1 | 待定 | 待查 | 电池保护/充电接口; 具体方案未定 | power-module | P8 相关: 电池保护与充电接口方案待设计 |
-| BT1 | 2S 锂聚合物电池 | 2S 500mAh | 1 | 2S 500mAh 7.4V 锂电 | 待查 | 续航: 连续发射@2.5W 约38分钟; 竞赛静默释放继电器约100分钟; 待机约150分钟 | power-module | 需配套电池座 + 保护/充电接口 |
+| U9 | 同步降压 DC-DC | SOT-23-8/SOIC-8 | 1 | MP2315 | 待查 | 5V 主轨(ATU 继电器线圈等); 输入 4.5-24V ⇒ 覆盖 2S 6.0-8.4V 且有余量; 峰值效率高 | power-module | ✅ 2026-10-11 裁定：**沿用 MP2315 分立设计**（不采用成品模块）；负载含 6 只 5V 继电器线圈 = 6x40mA = 240mA |
+| U10 | LDO 线性稳压器 | SOT-23-5/89 | 1 | MD7673E50VC1 | 待查 | 3.3V 射频轨(低噪声, 供 Si5351); 需与数字轨分轨 + pi 型滤波 | power-module | 型号写法以模块README为准(MD7673); ✅ 由 +5V 供电（与输入级电压无关） |
+| U13 | 电池反接/PTC 保护 | 贴片或模块 | 1 | P-MOS 反接保护 + 自恢复保险丝(PTC) | 待查 | 2S 电池输入的基本保护：反接保护 + 过流 PTC（12V 兼容已取消 ⇒ **不再需要 OR-ing/理想二极管/12V 过压防护**） | power-module | ✅ 2026-10-11 简化：原『输入级保护与电源路径（OR-ing/TVS/12V 过压）』随 12V 兼容取消而降级为本行 |
+| U12 | 成品 2S 锂电充电模块 | 成品模块 | 1 | 2S 8.4V CC/CV 充电模块（如 TP5100 模块） | 待查 | 输入 5-18V；输出 8.4V 恒压 + 限流（2S）；模块自带充电指示与温度保护 | power-module | ✅ 2026-10-11 裁定：**采用成品 2S 充电模块**；电池侧仍需 **2S BMS 保护板**（过充/过放/过流），二者分工：BMS 管电池、充电模块管充电曲线 |
+| BT1 | 2S 锂聚合物电池 | 2S 500mAh | 1 | 2S 500mAh 7.4V 锂电 | 待查 | VCC = 输入级：**2S 锂电直供 6.0-8.4V（标称 7.4V）**，🔴 **12V 兼容已取消**（2026-10-11）；**无升压**：PA 直吃原压，E 类按 **7.4V 标称定点**（R_opt≈12.6Ω/C1≈0.65nF/L≈2.8µH）；✅ **甲方案**：满电 8.4V 时输出≈3.2W 被**接受**、不降驱动（固件仅如实上报）；续航: 连续发射@2.5W 约38分钟; 继电器(走+5V轨)静默约100分钟; 待机约150分钟 | power-module | 需配套电池座 + 2S 保护/充电接口 |
 | BH1 | 电池座 | 2S 电池座 | 1 | 2S 电池座 | 待查 | 适配所选2S 500mAh电池 | power-module |  |
 | C11-C13 | 输入/输出电容套件 | 电解 + 钽 + 陶瓷 | 1 套 | 电解+钽+陶瓷 套件 | 待查 | DC-DC 输入/输出电容; 含 100nF X7R 用于 pi 型 RC 滤波(3.3V 数字轨与本振独立滤波) | power-module | 容值与耐压待 DC-DC 选型确定 |
 | FB1 | π 型 RC 滤波元件组 | 0805/磁珠 | 1 套 | pi 型 RC 滤波 (待定) | 待查 | 3.3V 数字轨独立 pi 型 RC 滤波; 含 100nF X7R | power-module | 🟠 模块README 写 RC, README 目录树/总表亦写 π 型 RC —— RC 通常靠电阻压降, 需确认是否有意为之(E-04) |
@@ -143,7 +141,7 @@
 | - | 外壳(3D 打印件) | 3D 打印 上下壳+模块支架+LCD压框+电池仓 | 1 套 | 3D 打印件 (STL/STEP/3MF) | 待查 | 内部容纳 130x95mm 底板 + 55x65mm ATU + 2S 500mAh 电池; 成本目标约 5 元/套 | enclosure | 模型文件尚未建模(3d-print/ 目录为空) |
 | - | 通用塑料盒(备选) | 成品盒改制 | 0-1 | 通用塑料盒 | 待查 | 按底板尺寸选型并手工开孔; 与 3D 打印件二选一 | enclosure | 替代方案 |
 | - | M3 铜柱与螺钉 | M3 | 1 套 | M3 铜柱 + 螺钉套件 | 待查 | 模块与底板固定; 含自攻螺钉 | enclosure | 长度待结构设计确定 |
-| - | 面板件 | 亚克力或 PCB 材质 | 1 | 亚克力/PCB 面板 | 待查 | 开孔: LCD 12864 视窗, EC11 旋钮孔, 按键孔, SMA 座孔, 天线座孔, 蜂鸣器出声孔 | enclosure | 面板开孔图纸(DXF/PDF)待出(panel/ 目录为空) |
+| - | 面板件 | 亚克力或 PCB 材质 | 1 | 亚克力/PCB 面板 | 待查 | 开孔: LCD 12864 视窗, EC11 旋钮孔, 按键孔, SMA 座孔, 天线座孔（❌ 蜂鸣器出声孔已随蜂鸣器本版不做而取消, 见 hardware/enclosure/README.md §3） | enclosure | 面板开孔图纸(DXF/PDF)待出(panel/ 目录为空) |
 | - | 散热片/通风栅格(可选) | 成品/打印件 | 0-1 | TO-92 散热片 + 通风栅格 | 待查 | BS170 区域通风; 功放 2.5W 连续30分钟不超温; 壳温判据 <85C | enclosure | 散热片为 PA 模块必需(见 pa-module BOM), 此行指壳体风道 |
 
 ### 2.9 antenna（6 行）
