@@ -128,7 +128,7 @@
 | `drv_ec11` | EC11 旋转编码器：方向识别、加速度、按键（经 TCA9535 或中断） | `bsp_io_expander` |
 | `drv_keys` | 双按键消抖与长按识别、~~有源蜂鸣器提示音~~ → ❌ **本版不做（2026-10）** | `bsp_io_expander` |
 | `drv_relay` | 6 路继电器组抽象（K1–K6）：组合写入、最小切换间隔、机械寿命计数 | `bsp_io_expander` |
-| `drv_pa` | 功放控制：PA_EN 使能 + LEDC 调压（0.02–2.5 W），功率档位映射 | `bsp_board`、`bsp_io_expander` |
+| `drv_pa` | 功放控制：🔴 ~~PA_EN 使能 + LEDC 调压~~ **均不存在** —— 键控 = **Si5351 输出使能**（I²C 寄存器 `0x03` bit0），功率档位 = **Si5351 驱动强度**（[docs/05 §2.5/§4.2](05-hw-sw-interface-contract.md)、§7 #7a/#7b） | `bsp_board`、`drv_si5351` |
 | `drv_analog` | ADC 采样与滤波：电池电压、电源电流、前向/反向检波（NTC 功放温度已取消，见 [docs/17 §12.5](17-gpio-allocation-audit.md)） | `bsp_board` |
 
 ### L2 射频层（3）

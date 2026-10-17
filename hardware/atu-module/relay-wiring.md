@@ -47,7 +47,7 @@
 | **6 只继电器统一朝向** | 线圈都在驱动侧、触点在各自 L/C 位置 | 避免"线圈与触点混排"导致读图绕路 |
 | 🔴 **关掉/删掉引脚号标签** | 图上的 `1`/`2`/`12` 等**引脚号文字不是网络标签**，但会被自动网表工具当成网络名 ⇒ 造成误判 | 实测：自动提取时出现过 `T1.pin1 → "IN"`、`D1.pin1 → "1"` 这类**假网络** ✗ |
 
-**3. 与本项目现有实现的对应** —— 触点接法见 §2（方案 A）· 驱动链见 §4 · 线圈/COM 电源 = `+5V`（CHANGELOG）· KiCad 侧骨架生成脚本已用通用符号 `RELAY_SPDT`（`scripts/build-kicad-schematic.py`）✓ 与本节规范一致。
+**3. 与本项目现有实现的对应** —— 触点接法见 §2（方案 A）· 驱动链见 §4 · 线圈/COM 电源 = `+5V`（CHANGELOG）· ~~KiCad 侧骨架生成脚本已用通用符号 `RELAY_SPDT`（`scripts/build-kicad-schematic.py`）~~ → 🔴 **2026-10-17：KiCad 骨架与生成器已整套删除**（用户裁定），本节规范改为在**立创EDA 专业版**里落实，见 [`hardware/schematic/IMPORT-TO-LCEDA.md`](../schematic/IMPORT-TO-LCEDA.md)。
 
 ---
 

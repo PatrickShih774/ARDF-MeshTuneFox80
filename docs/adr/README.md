@@ -66,9 +66,10 @@ ADR 只记录**架构级**决策（影响多个模块、难以回退、涉及许
 | --- | --- | --- |
 | [ADR-0001](ADR-0001-adopt-esp-idf-over-arduino.md) | 采用 ESP-IDF 而非 Arduino | 已接受 |
 | [ADR-0002](ADR-0002-hardware-software-split-monorepo.md) | 软硬件分区的单仓结构 | 已接受 |
-| [ADR-0003](ADR-0003-atu-6-relay-l-network.md) | ATU 采用 6 继电器 L 型匹配网络 | 已接受 |
+| [ADR-0003](ADR-0003-atu-6-relay-l-network.md) | ATU 采用 6 继电器 L 型匹配网络 | ⚠️ **已被 ADR-0009 取代** |
 | [ADR-0004](ADR-0004-lcd12864-on-shared-i2c.md) | 12864 液晶走 I2C 共享总线 | ⚠️ 已被取代 |
 | [**ADR-0008**](ADR-0008-st7567-spi-and-pa-keying.md) | **液晶改 ST7567(SPI)、功放驱动与键控、继电器驱动链** | **已接受** |
+| [**ADR-0009**](ADR-0009-atu-4c2l-series-c-shunt-l.md) | **ATU 匹配网络定稿为「③ 串 C 并 L」+ 单磁环双抽头（4C+2L / 48 组合）** | **已接受**（🔴 2026-10-17 用户裁定**按 4C+2L 执行**；PCB 待重新打样，固件/BOM 待随后跟进） |
 | [ADR-0005](ADR-0005-console-tech-stack-tbd.md) | 中控 PC 软件技术栈待定 | **提议（待定）** |
 | [ADR-0006](ADR-0006-layered-licensing-gpl-isolation.md) | 分层授权与 GPL 隔离方案 | **已被取代**（见 ADR-0007） |
 | [ADR-0007](ADR-0007-firmware-closed-source-two-repo.md) | 固件闭源与双仓结构 | 已接受 |

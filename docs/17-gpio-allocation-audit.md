@@ -1364,7 +1364,7 @@ W0' = (132 − 128) − W0 = 4 − W0
 | H-4 | [`hardware/bom/README.md`](../hardware/bom/README.md) | B-06（L199） | 「GPIO12 → 升压 FB 的 10 kΩ 下拉是否采纳未定」→ **换板路径下必须采纳**，且改用 GPIO20 |
 | H-5 | [`hardware/pre-fab-checklist.md`](../hardware/pre-fab-checklist.md) | A-7a（L30）、B-06（L50）、B-07（L56）、B-11（L65）、B-14（L68）、B-16（L70）、D-08（L109）、**E-06（L135）** | 脚号同步；**B-11（QIO 风险）在新板上降级**；**E-06 的选型结论按 §13.11 更新**（天线理由已证伪） |
 | H-6 | [`hardware/schematic/netlist.md`](../hardware/schematic/netlist.md) | L26（网络清单）、L32、L43、L55、L59、L67、L68、L229 | `U4.GPIO13`→`U4.GPIO21`、`U4.GPIO12`→`U4.GPIO20`；`GPIO12_FB_PD` 的说明改 GPIO20 |
-| H-7 | [`hardware/schematic/kicad-build-report.md`](../hardware/schematic/kicad-build-report.md) | L57、L88、L164、L178 | 同上（这些是**生成物**，应由 KiCad 重新导出，**不要手改**） |
+| H-7 | ~~`hardware/schematic/kicad-build-report.md`~~ | — | 🔴 **本条作废（2026-10-17）**：KiCad 骨架及其全部派生物（含 `kicad-build-report.md`）已随流程废弃**整套删除**（用户裁定，不再修）⇒ 无需再"按新脚号重新导出"。见 [`hardware/schematic/IMPORT-TO-LCEDA.md`](../hardware/schematic/IMPORT-TO-LCEDA.md) |
 | H-8 | [`hardware/schematic/IMPORT-TO-LCEDA.md`](../hardware/schematic/IMPORT-TO-LCEDA.md) | L183、L184 | 脚号同步 |
 | H-9 | [`hardware/mcu-ui-module/README.md`](../hardware/mcu-ui-module/README.md) | L36、L37、L43 | 脚号 + "已拆除 D4/D5" → SuperMini 的处置 |
 | H-10 | [`docs/adr/ADR-0008-st7567-spi-and-pa-keying.md`](adr/ADR-0008-st7567-spi-and-pa-keying.md) | §8.3（L179–202）、L111–112、L157–159、L211–218 | ADR **不改原文**，**追加**一条"被 §13.12 取代/换板后如何"的标注 |

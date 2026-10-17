@@ -1,6 +1,10 @@
 # ADR-0009：ATU 匹配网络定稿为「③ 串 C 并 L」+ 单磁环双抽头（4C+2L）
 
 - **状态**：✅ Accepted（2026-10-11）
+- **实施进度（2026-10-17，用户裁定）**：**按 4C+2L 执行**；**PCB 待重新打样**；**固件 / BOM / 网表待随后跟进**
+  （固件侧要动 `relay_mask` 位定义重排 + 组合数 **64 → 48**，见「后果」#3）。本批**只补正索引与状态**：
+  [`docs/adr/README.md`](README.md) §5 已登记本 ADR、ADR-0003 已标「已被 ADR-0009 取代」；
+  `docs/04`/`docs/05`/`relay-wiring.md`/BOM/网表/固件仍是旧的 3L+3C 口径（**尚未落地**，等 PCB 定稿一并改）。
 - **取代**：ADR-0003（6 继电器 L 型网络：**串联 L 旁路 + 并联 C**，64 组合）— 该方案基于"设计估算"，**未用实测数据验证** ✗
 - **相关**：[`hardware/antenna/test/2026-10-field-measurements.md`](../../hardware/antenna/test/2026-10-field-measurements.md)（11 点实测）· `docs/04` §3 · `docs/05` §2.4/§3.2
 

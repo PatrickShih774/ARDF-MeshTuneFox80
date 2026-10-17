@@ -256,7 +256,7 @@ ARDF-MeshTuneFox80/
 
 | 示例 | 说明 |
 |------|------|
-| `atu-module-V1.0.kicad_sch` | ATU 模块原理图 V1.0 |
+| `atu-module-V1.0.epro` | ATU 模块原理图/工程 V1.0（**立创EDA 专业版**；KiCad 流程已于 2026-10-17 废弃） |
 | `atu-module-V1.0.kicad_pcb` | ATU 模块 PCB V1.0 |
 | `pa-module-V1.1-gerber.zip` | 功放模块 V1.1 的 Gerber 包 |
 | `core-board-V1.0-bom.xlsx` | 核心底板 V1.0 BOM |

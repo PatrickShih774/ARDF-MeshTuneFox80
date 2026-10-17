@@ -15,7 +15,7 @@
 | 烧录/调试 | `esptool`、`openocd-esp32`、`riscv32-esp-elf-gdb` | 随 ESP-IDF 安装 |
 | Python | **3.12 或 3.13**（🔴 ESP-IDF **只设下限、无上限**：v6.1 ≥ 3.10） | 由 `install.ps1` 管理虚拟环境 |
 | 中控软件 | Python（拟定，**规划中，待创建**）见 [ADR-0005](adr/ADR-0005-console-tech-stack-tbd.md) | 3.11+ |
-| 硬件 EDA | KiCad / 立创 EDA（择一，待定） | — |
+| 硬件 EDA | **立创EDA 专业版**（🔴 **2026-10-17 定案**：KiCad 流程废弃 —— 8 份 `.kicad_sch` 骨架 + 生成器 + 自检器已整套删除；流程见 [`hardware/schematic/IMPORT-TO-LCEDA.md`](../hardware/schematic/IMPORT-TO-LCEDA.md)） | 在线版 / 离机客户端；工程归档 `epro`（V1/V2） |
 | 测试框架 | Unity（ESP-IDF 自带）+ `pytest-embedded` | — |
 
 > **重要**：本项目**不使用 Arduino IDE / PlatformIO-Arduino 框架**。理由见 [ADR-0001](adr/ADR-0001-adopt-esp-idf-over-arduino.md)。
