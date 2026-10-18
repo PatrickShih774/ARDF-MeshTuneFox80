@@ -73,7 +73,7 @@
 | 位号 | 参数 | 封装 | 数量 | 建议型号 | LCSC 编号 | 关键规格 | 模块 | 备注 |
 |---|---|---|---|---|---|---|---|---|
 | U4 (模组) | ESP32-C3 主控模组 | 2.54mm 排针模组 | 1 | 合宙 LuatOS ESP32C3-CORE (新款, 原生 USB) | 待查 | 12个可用GPIO: GPIO0-8,10,12,13; GPIO11 不解锁 eFuse; GPIO18/19 原生USB; GPIO20/21 UART0; flash 必须 DIO 模式 | mcu-ui-module | 型号待用户确认: 模块README写 ESP32-C3 SuperMini, docs/05/docs/04 写合宙 LuatOS ESP32C3-CORE 新款 -> 需统一(E-01) |
-| U5 | 160 段点阵 LCD 控制器模组 | 12864 模组(单排/双排待定) | 1 | ST7567 12864 液晶模组 | 待查 | 128x64; 仅 SPI; CS 接 GND(总线唯一从机); 🔴 **RST → GPIO12（`LCD_RST`，MCU 发三段脉冲；2026-10-18 定案，原"与板复位共用"已作废）**; DC(A0)=GPIO10; 132列驱动/128列可见 | mcu-ui-module | 面板 180 度安装(W0=0, 方向位0xA0+0xC8); 排线针脚定义待硬件确认; 下一版按 NEXT-PCB-RULES 改 CS 走 GPIO |
+| U5 | 160 段点阵 LCD 控制器模组 | 12864 模组(单排/双排待定) | 1 | ST7567 12864 液晶模组 | 待查 | 128x64; 仅 SPI; CS 接 GND(总线唯一从机); 🔴 **RST → GPIO12（`LCD_RST`，MCU 发三段脉冲；2026-10-18 定案，原"与板复位共用"已作废）**; DC(A0)=GPIO10; 132列驱动/128列可见 | mcu-ui-module | 面板 180 度安装(W0=0, 方向位0xA0+0xC8); 排线针脚定义待硬件确认; 下一版（已拍板）**CS 保持接 GND、RST 走 GPIO12** |
 | U6 | 旋转编码器 | EC11 带按压开关 | 1 | EC11 (带SW) | 待查 | A/B 相接 GPIO2/GPIO8 (strapping, 须各加 10kohm 上拉, 静止为高); SW 接 GPIO13+GND, 10kohm 上拉, 中断驱动 | mcu-ui-module | 上电时勿转动旋钮(启动画面提示) |
 | SW1,SW2 | 轻触开关 | 6x6mm 直插/贴片 | 2 | 轻触按键 | 待查 | 功能键/返回键; 其中之一复用板载 BOOT(GPIO9, strapping, 上电前不可下拉) | mcu-ui-module | GPIO9 已作 KEY_USER; 另一只为独立轻触键 |
 | LS1 | (本版移除) 有源蜂鸣器 | — | 0 | (本版移除) | 待查 | ❌ 本版不做（2026-10 用户明确『不需要』）：原「有源蜂鸣器提示音」整条功能移除；TCA9535 已随扩展器移除，OC7/OC8 保持空闲、🔴 不得为蜂鸣器预留 | mcu-ui-module | 🔴 不装、不驱动、不占 GPIO 与扩展器通道；本行仅保留历史来源 |
