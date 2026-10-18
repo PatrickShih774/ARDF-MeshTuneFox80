@@ -118,7 +118,7 @@ idf.py -B build-gw2 -p <COM口> -D SDKCONFIG="$abs\sdkconfig.gw2" flash
 | 1 | **串口是独占资源**：烧之前先停掉占用该口的程序（含中控实例），或换一个口 | 否则报 `PermissionError(13)`；排查"串口没数据"时**先确认不是别的进程占着**（私有仓 `docs/console/PORT-AND-IO-DISCIPLINE.md` **D-2**） |
 | 2 | **只按【进程名 / 精确路径】杀进程**，绝不用会匹配到**自己命令行**的模式 | 用 `CommandLine -match 'ardf-console'` 过滤会**杀掉包裹自己的 PowerShell**；正确写法 `Get-Process 'ardf-console'`（同上 **D-2.1**） |
 | 3 | ⚠️ **打开原生 USB-Serial-JTAG 口这个动作本身 = 一次复位脉冲** | 任何"只读一次日志/清单"的动作都会顺手重启设备 ⇒ 重启后对端表为空；需要稳定读数时**连读两次取第二次**（私有仓 `docs/console/10-pitfalls.md` **P-07**） |
-| 4 | 🔴 **Flash 模式必须是 `DIO`**（`--flash_mode dio`） | 本板把 `GPIO12/13` 当普通 GPIO 用（功放调压 / EC11 按键），它们仅在 **QIO** 下被 flash 占用 ⇒ 改 QIO 会让这两个脚失效、板上电无法启动。**构建期已硬断言**，esptool 手烧时也要显式给 `dio` |
+| 4 | 🔴 **Flash 模式必须是 `DIO`**（`--flash_mode dio`） | 本板把 `GPIO12/13` 当普通 GPIO 用（**GPIO12 = LCD RST（2026-10-18 起；原功放调压/打点均已废）** / GPIO13 = EC11 按键），它们仅在 **QIO** 下被 flash 占用 ⇒ 改 QIO 会让这两个脚失效、板上电无法启动。**构建期已硬断言**，esptool 手烧时也要显式给 `dio` |
 | 5 | 🔴 **只烧【赛事方授权】的串口** | 授权端口清单**以私有仓为准、本页不复述**（同上 **D-3**） |
 
 ---

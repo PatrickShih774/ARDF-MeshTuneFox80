@@ -193,10 +193,10 @@
 |---|---|---|---|
 | B-01 | ~~**L 型匹配网络的继电器触点接法未定**~~ → ✅ **已解决（2026-09-26）** | 逐脚接法、真值表与掩码契约见 [`hardware/atu-module/relay-wiring.md`](../atu-module/relay-wiring.md)；同时**新增 6 只 10 kΩ 输入下拉**到本 BOM（`R_RLY1-R_RLY6`） | `hardware/atu-module/relay-wiring.md` §2.4/§4.2 |
 | B-02 | **LPF 磁环型号与圈数未给** | `lpf-module` BOM 只能写"待定" | `hardware/lpf-module/README.md` §3 |
-| B-03 | **TCA9535 / ULN2003A / MD7673 封装未定** | 影响 PCB 封装与 BOM | 各模块 README 未给封装 |
-| B-04 | **12 V 升压模块型号与 FB 网络参数未定** | 影响 +12V 轨、PA 功率与控制 | `docs/05` §7 #7 |
-| B-05 | **电池 2S(7.4 V) vs 升压模块标称 3.7 V 输入** | 需核对模块输入范围 | `hardware/power-module/README.md` §2/§3 |
-| B-06 | **GPIO12 → 升压 FB 的 10 kΩ 下拉是否采纳未定** | 决定该电阻是否进 BOM | `docs/05` §7 #7a；`docs/17` §12.6.5 |
+| B-03 | **CA-DV8008N / MD7673 封装未定**（TCA9535/ULN2003A 已移除，见下注） | 影响 PCB 封装与 BOM | 各模块 README 未给封装 |
+| B-04 | ~~**12 V 升压模块型号与 FB 网络参数未定**~~ → ✅ **作废（2026-10-11，无升压）** | 影响 +12V 轨、PA 功率与控制 —— 该项已随"不设升压"整体消失 | `docs/05` §7 #7 |
+| B-05 | ~~**电池 2S(7.4 V) vs 升压模块标称 3.7 V 输入**~~ → ✅ **作废（无升压）** | 无需核对模块输入范围 | `hardware/power-module/README.md` §2/§3 |
+| B-06 | ~~**GPIO12 → 升压 FB 的 10 kΩ 下拉是否采纳未定**~~ → ✅ **作废**：GPIO12 现为 **LCD RST**（2026-10-18） | 决定该电阻是否进 BOM —— 不再需要 | `docs/05` §2.2；`docs/NEXT-PCB-RULES-2026-10-18.md` |
 | B-07 | **π 型 RC vs RC 滤波** | 若真是 RC 会有电阻压降，需确认是否有意为之 | `hardware/power-module/README.md` §3 |
 | B-08 | **主控模组名称不一致** | `mcu-ui-module/README.md` 写"ESP32-C3 SuperMini"，`docs/05`/`docs/04` 写"合宙 LuatOS ESP32C3-CORE 新款" | 需统一 |
 | B-09 | **TCA9535 的 A2/A1/A0 接法** | 决定 I²C 地址是否真为 0x20 | `docs/05` §7 #2 |
@@ -206,10 +206,11 @@
 | B-13 | **HK4100F 触点脚的物理命名未核实**（2026-09-26 新发现） | 封装级原理图画不出来；脚位接反即不工作 | [`hardware/atu-module/relay-wiring.md`](../atu-module/relay-wiring.md) §2.5；`datasheets/INDEX.md` 未建立 |
 | B-14 | **电容支路开路触点耐压余量未核实**（2026-09-26 新发现） | 谐振高压 816 Vrms vs 250 VAC 额定切换 | [`hardware/atu-module/relay-wiring.md`](../atu-module/relay-wiring.md) §5 R-03 |
 
-> ⚠️ 另：`hardware/README.md` §3 的模块清单**仍写"atu-module 驱动为 6× 2N7002"**，
-> 与 `docs/05` §2.4 与 ADR-0008 的现行方案（TCA9535 + ULN2003A）**冲突**。
-> 本 BOM 按**现行方案**（TCA9535 + ULN2003A）出，**未**照抄 `hardware/README.md` 的过时行。
-> 该处文档需另行修正（见 `docs/17` §4 F-10 的同类问题）。
+> ⚠️ **2026-10-18 复查更正**：本 BOM（`bom.md` / `bom-*.csv`）的 atu-module 行已是
+> **单颗 `CA-DV8008N`（`0x28`）+ 5 V 线圈 `HK4100F-DC5V-SHG`** —— 与 2026-10-11 起的现行方案一致；
+> 上文 B-03/B-09 里"TCA9535/ULN2003A"相关缺口**已随器件移除而作废**。
+> `hardware/README.md` §3 那行过时描述也已修（现写 CA-DV8008N）。
+> 但 **`bom-*.csv` 仍无价格列**、`LCSC 编号` 多为"待查" ⇒ **成本与可下单性仍待补齐**。
 
 ## 5. 关联文档
 

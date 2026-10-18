@@ -395,12 +395,12 @@ reset 之后仍可用 `idf.py coredump-info` 解出崩溃任务与栈回溯，�
 
 ### 4.6 显示刷新预算
 
-LCD 走 SPI2 独占（[ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)）：`CS` 接 GND、`RST` 与板复位共用；全屏 1024 字节本体传输约 8 ms（1 MHz），无 I²C 开销。
+LCD 走**位敲 SPI**（2026-10-17 起；[ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md) 原定硬件 SPI2）：`CS` 接 GND、**`RST` = GPIO12 由驱动发三段硬件复位脉冲**（2026-10-18 起，原"与板复位共用"作废）；全屏 1024 字节本体传输约 8 ms（1 MHz 当量），无 I²C 开销。
 因此：
 
 - UI 必须采用**局部刷新**（只重绘变化区域）。
 - I2C 总线需**互斥**（`xSemaphoreTake`），并给 LCD 传输设置低于继电器写入的优先级或直接串行化在同一任务。
-- **现行方案已是 SPI 独占**（ST7567，见 [ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)）；`drv_lcd12864` 的传输层直接实现 SPI2。
+- **现行方案已是串行独占**（ST7567，见 [ADR-0008](adr/ADR-0008-st7567-spi-and-pa-keying.md)）；`drv_lcd12864` 的传输层**现为软件位敲**（`SCK=6/MOSI=7/DC=10`，半周期 200 ns），不再调用 SPI 主机驱动。
 
 ---
 

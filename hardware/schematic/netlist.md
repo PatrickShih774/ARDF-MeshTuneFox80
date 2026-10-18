@@ -2,6 +2,12 @@
 
 > 本文件由 `scripts/build-lceda-import-pack.py` 生成，**请勿手工编辑**。
 > 每一行都带 `依据来源` 列，指到 `docs/05` / `docs/17` / `docs/04` / 模块 README 的具体小节。
+>
+> 🔴 **已知漂移（2026-10-18 文档审计标注，需重跑生成器才能根治）**：本快照生成于 2026-10-17 之前，
+> 与当前设计/固件相比至少三处过期：① `GPIO12` 仍写 `PA_PWR_PWM`，**现为 `LCD_RST`**（示波器打点亦已作废）；
+> ② LCD `RST` 仍写"与板复位共用"，**现由 GPIO12 / MCU 发三段脉冲**；③ SPI 仍写 "SPI2"，**固件已位敲 SPI**。
+> 另：`GPIO12_TBD` 网络名与 `TCA9535`/`ULN2003A` 派生器件模型也早于 2026-10-11 的 CA-DV8008N 变更。
+> ⇒ **画图/下单前以 [docs/05](../05-hw-sw-interface-contract.md) §2.2/§2.3 与 [docs/NEXT-PCB-RULES-2026-10-18.md](../NEXT-PCB-RULES-2026-10-18.md) 为准**；重生成任务登记在 `docs/DOC-AUDIT-2026-10-18.md`（固件仓）。
 
 ## 0. 文件与用法
 

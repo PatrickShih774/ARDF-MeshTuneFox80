@@ -73,14 +73,14 @@
 | 位号 | 参数 | 封装 | 数量 | 建议型号 | LCSC 编号 | 关键规格 | 模块 | 备注 |
 |---|---|---|---|---|---|---|---|---|
 | U4 (模组) | ESP32-C3 主控模组 | 2.54mm 排针模组 | 1 | 合宙 LuatOS ESP32C3-CORE (新款, 原生 USB) | 待查 | 12个可用GPIO: GPIO0-8,10,12,13; GPIO11 不解锁 eFuse; GPIO18/19 原生USB; GPIO20/21 UART0; flash 必须 DIO 模式 | mcu-ui-module | 型号待用户确认: 模块README写 ESP32-C3 SuperMini, docs/05/docs/04 写合宙 LuatOS ESP32C3-CORE 新款 -> 需统一(E-01) |
-| U5 | 160 段点阵 LCD 控制器模组 | 12864 模组(单排/双排待定) | 1 | ST7567 12864 液晶模组 | 待查 | 128x64; 仅 SPI; CS 接 GND(总线唯一从机); RST 与板复位共用; DC(A0)=GPIO10; 132列驱动/128列可见 | mcu-ui-module | 面板 180 度安装(W0=0, 方向位0xA0+0xC8); 排线针脚定义待硬件确认 |
+| U5 | 160 段点阵 LCD 控制器模组 | 12864 模组(单排/双排待定) | 1 | ST7567 12864 液晶模组 | 待查 | 128x64; 仅 SPI; CS 接 GND(总线唯一从机); 🔴 **RST → GPIO12（`LCD_RST`，MCU 发三段脉冲；2026-10-18 定案，原"与板复位共用"已作废）**; DC(A0)=GPIO10; 132列驱动/128列可见 | mcu-ui-module | 面板 180 度安装(W0=0, 方向位0xA0+0xC8); 排线针脚定义待硬件确认; 下一版按 NEXT-PCB-RULES 改 CS 走 GPIO |
 | U6 | 旋转编码器 | EC11 带按压开关 | 1 | EC11 (带SW) | 待查 | A/B 相接 GPIO2/GPIO8 (strapping, 须各加 10kohm 上拉, 静止为高); SW 接 GPIO13+GND, 10kohm 上拉, 中断驱动 | mcu-ui-module | 上电时勿转动旋钮(启动画面提示) |
 | SW1,SW2 | 轻触开关 | 6x6mm 直插/贴片 | 2 | 轻触按键 | 待查 | 功能键/返回键; 其中之一复用板载 BOOT(GPIO9, strapping, 上电前不可下拉) | mcu-ui-module | GPIO9 已作 KEY_USER; 另一只为独立轻触键 |
 | LS1 | (本版移除) 有源蜂鸣器 | — | 0 | (本版移除) | 待查 | ❌ 本版不做（2026-10 用户明确『不需要』）：原「有源蜂鸣器提示音」整条功能移除；TCA9535 已随扩展器移除，OC7/OC8 保持空闲、🔴 不得为蜂鸣器预留 | mcu-ui-module | 🔴 不装、不驱动、不占 GPIO 与扩展器通道；本行仅保留历史来源 |
 | U7 | I2C 可编程时钟发生器 | MSOP-10 模块/芯片 | 1 | Si5351A (模块或芯片) | 待查 | I2C 地址 0x60; 3.3V 射频轨(MD7673, 低噪声); 3.5-3.6MHz, 100Hz 步进 | mcu-ui-module | CW 键控走 CLKx_DIS 使能命令, 不占 GPIO |
 | U8 | 八路缓冲器/线路驱动器 | TSSOP-20 (PWR) | 1 | SN74ACT244PWR | 待查 | 5V 供电(ACT 4.5-5.5V); TTL 输入阈值, 3.3V 可直驱; +/-24mA, 输出 0-5V 方波驱动 MOS 栅极 | mcu-ui-module | 输入侧必须加 10kohm 下拉到 GND, 否则 Si5351 停振时输入悬空 -> 244 振荡 -> PA 自激发射; 每个 Vcc 加 100nF |
-| Q5 | N 沟道 MOSFET | SOT-23 | 1 | 2N7002 | 待查 | LCD 背光低边开关; 🟠 栅极驱动源待定(原 TCA9535 P1.1 已随扩展器移除, 见 docs/05 §7 #2a); Vdss=60V | mcu-ui-module | 栅极必须加 100 kΩ 下拉到 GND(R_BL2): 驱动源上电为高阻时无下拉则背光状态不定 |
-| R_BL | 1 kohm | 0805 | 1 | 电阻 1kohm | 待查 | TBD(原 TCA9535 P1.1) 到 2N7002 栅极串联电阻; 🟠 驱动位待定(见 docs/05 §7 #2a) | mcu-ui-module |  |
+| Q5 | N 沟道 MOSFET | SOT-23 | 1 | 2N7002 | 待查 | LCD 背光低边开关; 🔴 **栅极驱动源已定案 = `GPIO21`**（2026-10-11，0/1 输出；原 TCA9535 P1.1 随扩展器移除而作废，见 docs/05 §2.2/§2.3）; Vdss=60V | mcu-ui-module | 栅极必须加 100 kΩ 下拉到 GND(R_BL2): 驱动源上电为高阻时无下拉则背光状态不定 |
+| R_BL | 1 kohm | 0805 | 1 | 电阻 1kohm | 待查 | **GPIO21 → 2N7002 栅极**串联电阻（2026-10-11 定案；原"待定/TCA9535 P1.1"已作废） | mcu-ui-module |  |
 | R_BL2 | 100 kohm | 0805 | 1 | 电阻 100kohm 1% | 待查 | 2N7002 栅极下拉到 GND(上电安全); 🔴 失效安全: MOS 在 GPIO21 高阻(复位默认态/固件未初始化)时可靠截止 => 上电默认低 = 背光关 | mcu-ui-module | 100 kΩ 而非 10 kΩ（docs/05 §2.3） |
 | R_BLLED | 背光限流电阻 | 0805 | 1 | 待定 | 待查 | 背光 LED 串限流; 阻值待模组背光电流确定 | mcu-ui-module | 待查模组规格 |
 | R3,R4 | 10 kohm | 0805 | 2 | 电阻 10kohm | 待查 | EC11 A/B 上拉(strapping 强制要求, 静止为高) | mcu-ui-module | 缓解2/3: 启动提示 + 看门狗重试 |

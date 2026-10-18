@@ -113,8 +113,8 @@
 | [ ] D-06b | ⛔ **背光驱动源接 `GPIO21`**（`R_BL` 1 kΩ 串到 Q5 栅极） | 🔴 **2026-10-11 定案**（原"待定/候选另加 CA-DV8008 `0x29`"作废） | `docs/05` §2.2/§2.3；§7 #2a **已关闭** | HW |
 | [ ] D-06c | ⛔ **OC7 / OC8 保持空闲、不预接**：原理图上**标 NC**，不得接任何负载 | 🔴 **2026-10-11 用户明确要求"不要动，空着"**；固件侧对应位**不得配置、不得写入** | `docs/05` §2.3/§2.4 | HW + SW |
 | [ ] D-08 | **EC11_SW 接 GND + 10 kΩ 上拉** | 常态高、按下低，无需反相 | `docs/05` §2.2；`ADR-0008` §8.3 | HW |
-| [ ] D-09 | ⛔ **ST7567 `CS` 接 GND** | LCD 是 SPI2 上唯一从机 → 省 1 脚 | `docs/05` §2.2；`ADR-0008` §3.1 | HW |
-| [ ] D-10 | **ST7567 `RST` 与板复位共用** | 上电复位即可 → 省 1 脚与 RC 电路 | `docs/05` §2.2；`ADR-0008` §3.1 | HW |
+| [ ] D-09 | ⛔ **ST7567 `CS` 接 GND**（本版） | LCD 是 SPI 上唯一从机 → 省 1 脚。🔴 **下一版改为独立 GPIO**（硬接 GND 让片选不可观测/不可控），见 [docs/NEXT-PCB-RULES-2026-10-18.md](../docs/NEXT-PCB-RULES-2026-10-18.md) 第①条 | `docs/05` §2.2；`ADR-0008` §3.1 | HW |
+| [ ] D-10 | 🔴 **ST7567 `RST` 必须由 MCU 驱动 = `GPIO12`**（**2026-10-18 更正**） | 原"与板复位共用"**已作废**：该接法下屏从未被 MCU 复位到确定状态 ⇒ **背光亮、屏幕全黑**（只发 `0xE2` 实测 20 次 0/20 亮）。现行：`RST` → GPIO12，固件发 **高 5 ms → 低 5 ms → 高 5 ms** 三段脉冲 | `docs/05` §2.2；[`docs/NEXT-PCB-RULES-2026-10-18.md`](../docs/NEXT-PCB-RULES-2026-10-18.md) 第③条；[`docs/LCD-NO-DISPLAY-ROOTCAUSE-2026-10-18.md`](../docs/LCD-NO-DISPLAY-ROOTCAUSE-2026-10-18.md) | HW |
 | [ ] D-11 | **ST7567 `DC`(A0) 必须直连 GPIO10** | 每字节翻转，不可挂 I²C 扩展器 | `docs/05` §2.2；`ADR-0008` §3.1 | HW |
 | [ ] D-12 | ⛔ **ADC 走线源阻抗 < 10 kΩ** | ESP32-C3 ADC 要求（现设计 7.4 kΩ ✅） | `docs/05` §2.7 | HW |
 | [ ] D-13 | **ATU 电容必须 NP0 + 耐压 ≥630 V** | 谐振高压可达 **816 Vrms** | `hardware/atu-module/README.md` §3 | HW |
@@ -137,8 +137,8 @@
 
 | # | 问题 | 证据位置 | 责任方 |
 |---|---|---|---|
-| [ ] E-01 | ⛔ **`hardware/README.md` §3 仍写"atu-module 驱动 = 6× 2N7002"**，与现行方案（TCA9535 + ULN2003A）冲突 | `hardware/README.md` §3（atu-module 行）；`docs/05` §2.4；`ADR-0008` §3.3 | HW |
-| [ ] E-02 | **`docs/04` §3.5 仍有过时内容**（15 个可用 GPIO / LCD 走 I²C / IO 扩展器含 LCD RST / 2N7002 分立） | `docs/17` §4 **F-10**（明确"未改，超出授权范围"）；`docs/04` §3.5 | HW |
+| [ ] E-01 | ~~⛔ **`hardware/README.md` §3 仍写"atu-module 驱动 = 6× 2N7002"，与现行方案（TCA9535 + ULN2003A）冲突**~~ → ✅ **已修正（2026-10-18）**：`hardware/README.md` §3 现写 **CA-DV8008N**；原"现行方案 = TCA9535 + ULN2003A"这句本身也已过期 | `hardware/README.md` §3（atu-module 行）；`docs/05` §2.3/§2.4 | HW |
+| [ ] E-02 | **`docs/04` §3.5 过时内容已逐条修正**（可用 GPIO 数 / LCD 接口 / IO 扩展器归属 / 驱动方案）：2026-10-18 复查时已改为 **14 个可用 GPIO、LCD 串行独占+RST=GPIO12、扩展器=CA-DV8008N、驱动=CA-DV8008N** | `docs/17` §4 **F-10**；`docs/04` §3.5 | HW |
 | [ ] E-03 | **主控模组名称不一致**：`mcu-ui-module/README.md` 写 "ESP32-C3 SuperMini"，`docs/05`/`docs/04` 写 "合宙 LuatOS ESP32C3-CORE 新款" → **现行板卡已由 `docs/17` §13 逐脚核实为合宙 LuatOS ESP32C3-CORE 新款（15 脚引出）**；`mcu-ui-module/README.md` §2/§3 的 "SuperMini" 字样属**过时**，须改为现行板卡 | `hardware/mcu-ui-module/README.md` §2、§3；`docs/05` §2；`docs/04` §3.5；**`docs/17` §13.2/§13.6(a)** | HW/OWNER |
 | [ ] E-04 | **`docs/17 §4 F-10` 的过时项未闭环**（审计已列出但未修） | `docs/17` §4 F-10、§12.6 | HW |
 | [ ] E-05 | **`docs/05` §1.2 结论仍写"远超可用 GPIO（15）"**，而同文 §1.1 已统一为 12 | `docs/05` §1.2（L52）vs §1.1 | SW/HW |
@@ -154,7 +154,7 @@
 | [ ] F-01 | **A. 组全部 ⛔ 项已闭环**（A-2 / A-4 / A-5 / A-6 / A-7） | 本清单 A 组 |
 | [ ] F-02 | **C. 组 C-01 / C-02 / C-07 / C-15 已闭环**（原理图、PCB、LPF 参数、HK4100F 脚位核实）—— **C-06 已于 2026-09-26 闭环**（[`relay-wiring.md`](atu-module/relay-wiring.md)） | 本清单 C 组 |
 | [ ] F-03 | **D. 组 ⛔ 项在原理图上逐条可见并已复核** | 本清单 D 组 |
-| [ ] F-04 | **E. 组 E-01 已修正**（`hardware/README.md` 的 2N7002 过时行） | `hardware/README.md` §3 |
+| [ ] F-04 | **E. 组 E-01 已修正**（`hardware/README.md` 的驱动方案过时行；此项 2026-10-18 复查已闭环） | `hardware/README.md` §3 |
 | [ ] F-05 | **BOM 的 `LCSC 编号` 列已回填**（当前全部 `待查`） | [`hardware/bom/README.md`](bom/README.md) §3 |
 | [ ] F-06 | **设计规则检查（DRC）通过**：线宽/间距/孔径/铜箔到边距 | 投板前在 EDA 内执行 |
 | [ ] F-07 | **射频链路 50 Ω 阻抗连续性已复核**（PA→LPF→ATU→ANT，SMA 互联） | `docs/05` §4.1 |

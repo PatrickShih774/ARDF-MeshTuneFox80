@@ -1,5 +1,9 @@
 # 硬件仓整体架构审计（ARCHITECTURE-AUDIT-2026-10-17）
 
+> ⚠️ **本文为 2026-10-17 时点快照，部分事实已被后续 ADR/变更取代**（最迟一次：2026-10-18
+> **GPIO12 已由示波器打点改为 `LCD_RST`**、LCD 由硬件 SPI2 改为**位敲 SPI**、`CS` 硬接 GND 的取舍与
+> [NEXT-PCB-RULES-2026-10-18.md](NEXT-PCB-RULES-2026-10-18.md) 三条冲突）。正文保留当时证据与建议，**不改写快照**。
+
 > **审计对象**：`ARDF-MeshTuneFox80-hardware`（公开硬件仓）· **基线**：`main` @ `3770717`（2026-10-17 18:19:29 +0800，59 commits）
 > **审计方式**：**只读**。本次唯一写入的两个文件是本文与 `docs/README.md` 的一行索引；**未改动任何设计源、派生文件、脚本**（`git status` 前后均干净，见附录 A）。
 > **审计范围**：`docs/`（00–08、15、17 + ADR）· `hardware/`（9 个模块目录 + schematic/bom/validation/release）· `scripts/`（5 个 Python + 1 个 PowerShell）
