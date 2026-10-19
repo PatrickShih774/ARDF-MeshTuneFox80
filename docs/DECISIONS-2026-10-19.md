@@ -40,3 +40,28 @@
 - 网表删除后，`hardware/schematic/` 与 `hardware/bom/` 不再提供网表 csv/md；
   原来依赖它们的交叉校验（如审计报告里的网表比对）一并作废。
 - 本项目以 **LCEDA 工程为准**；仓内 KiCad 骨架与派生网表均不再维护。
+
+---
+
+## 附：2026-10-11 方案变更声明（原文留档，从 README 搬入）
+
+ 🔴 2026-10-11 方案变更声明（阅读本文前先看这段）
+>
+> **电源**：输入级由"12 V 供电"改为 **2S 锂电 7.4 V 标称（6.0–8.4 V）**；下游**三级电源 = `VCC`（输入级）/ `+5V`（MP2315 DC-DC，分立设计）/ `+3V3`（MD7673 LDO，射频+数字两支）**；**本项目不设升压**（原 3.7 V→12 V 升压模块已从 BOM 删除）。~~兼容 12 V 外部输入~~ → **该需求已于同日取消**（用户裁定，见 [docs/04 §3.7](docs/04-hardware-architecture.md) 作废声明；`U13` 降级为基本反接/PTC 保护）。功放**直吃 `VCC`**，E 类按 **7.4 V 标称定点**（`R_opt≈12.6Ω`/峰值 `V_ds≈26.3V`/`C1≈0.65nF`/`L≈2.8µH`），满电 8.4 V 时由固件降驱动压回 2.5 W；vbat 分压现按 **30k/9.1k/1k**（满量程 14.18 V，留余量；12 V 取消后 22k 亦够用，待最终确认）。
+>
+> **ATU 继电器驱动**：由 `TCA9535 + ULN2003A` 改为**单颗 `CA-DV8008N`**（I²C `0x28`，`COM → +5V`）；继电器改 **`HK4100F-DC5V-SHG`**（5 V 线圈，走 +5 V，6×40 mA）；**删除 `R_RLY1–R_RLY6`**。
+>
+> **🔴 新 GPIO 分配（2026-10-11 同日定案，板子未投板 ⇒ 本版生效）**：
+> **`EC11_A` 由 GPIO2 迁至 `GPIO20`**（10 kΩ 上拉；**GPIO20 非 strapping** ⇒ "旋转时上电"风险只消除一半，B 仍在 GPIO8）·
+> **LCD 背光 = `GPIO21`（0/1 输出，不用 PWM）**，经低边 MOS + **栅极 100 kΩ 下拉** ⇒ 上电默认低=关 ·
+> **`GPIO12` = LCD 硬件复位**（`LCD_RST`；🔴 **2026-10-18 定案** —— 原 `SCOPE_TP` 示波器打点**作废**）
+> 🔴 **2026-10-18 补遗**：面板"背光亮、屏幕全黑"的根因是 **ST7567 缺真硬件 RST 脉冲**（只发软复位 `0xE2` 实测 20 次 0/20 亮）⇒
+> 本版把 GPIO12 让给 **LCD `RST`**，由固件发 **高 5 ms → 低 5 ms → 高 5 ms** 三段脉冲后初始化；
+> `SCOPE_TP`/`SCOPE_TRIG` 打点**本版取消**。下一版投板要求见 [docs/NEXT-PCB-RULES-2026-10-18.md](docs/NEXT-PCB-RULES-2026-10-18.md)（`CS` 走 GPIO、`RST` 由 MCU 驱动）。
+> **`GPIO2` 释放为 `ADC1_CH2`**（第 4 路模拟输入；EC11 迁走后"不得接分压器"的约束随之消失，但**脚仍是 strapping**）·
+> **OC7/OC8 保持空闲、不预接、固件点不到** · **蜂鸣器 ❌ 本版不做** · EC11 B 仍留 GPIO8、SW 仍留 GPIO13。
+> ⇒ 占用口径：**「12/12（无空闲）」+ 回收 GPIO20/21（无串口版）⇒ 实得 3 个可用数字 IO**。
+> 代价：**放弃 UART0 备用串口**（控制台 / ROM 日志 / esptool 下载全部走原生 USB-Serial/JTAG）。
+>
+> **权威来源**：[docs/05 §2.3/§2.4 与 §7](docs/05-hw-sw-interface-contract.md)、[docs/04 §3](docs/04-hardware-architecture.md)、[hardware/README.md](hardware/README.md)、[atu-module/relay-wiring.md 顶部 CHANGELOG](hardware/atu-module/relay-wiring.md)。
+> ⇒ **本文以下凡出现 `12 V 功放轨` / `升压模块` / `PWM 调升压` / `TCA9535` / `ULN2003A` / `IOEXP_*` / `HK4100F-DC-12V` / `R_RLY` / `蜂鸣器` 的内容均为历史方案**，以权威来源与 BOM 生成产物为准；逐处改写留待后续批次。
