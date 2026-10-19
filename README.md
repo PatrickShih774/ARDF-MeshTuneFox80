@@ -9,6 +9,16 @@
 > 以《无线电测向竞赛规则》【**2024 修订版**】为**合规基线**，
 > 面向该基线中**全部 7 个与信号源发射相关的竞赛项目**提供信号源能力。
 
+> 80 米波段（3.5–3.6 MHz）开源 ARDF 猎狐竞赛系统 —— 信号源设备网络 · 赛事管理网关 · PC 中控台
+> 原名：80 米波无线电测向信号源 `ARDF_80M_3.5MHZ` ｜ 规划版本：**V3.7** ｜ 中文名：**待定**
+
+![Hardware](https://img.shields.io/badge/Hardware-CERN--OHL--S_v2-blue)
+![Firmware](https://img.shields.io/badge/Firmware-ARDF--NC--1.0-orange)
+![Console](https://img.shields.io/badge/Console-Apache_2.0-green)
+![MCU](https://img.shields.io/badge/MCU-ESP32--C3-red)
+![Framework](https://img.shields.io/badge/Framework-ESP--IDF_v6.1-orange)
+
+
 ## 简介
 
 本仓是 **80 m 段 ARDF（无线电测向）狐狸发射机 + ATU 自动天调 + mesh 节点** 的硬件设计资料。
