@@ -6,9 +6,10 @@
 - **软件许可**：分层授权（固件二进制 `LicenseRef-ARDF-NC-1.0`，仅限业余无线电非商业用途、不授予源码 / 中控 PC 基础版 `Apache-2.0` / ATU 调谐算法与 Mesh 路由算法商业授权）
 - **本目录只放硬件设计资料**：原理图、PCB 源文件、Gerber、BOM、结构件、线束、数据手册索引、外部参考摘录。
 
-> 🔴 **2026-10-11 方案变更声明**：ATU 继电器驱动由 **TCA9535 + ULN2003A** 改为 **单颗 CA-DV8008N**（I²C 八通道低边驱动，**7 位地址 `0x28`**，COM → **+5 V**）；继电器改 **HK4100F-DC5V-SHG**（线圈走 **+5 V**，删除 `R_RLY1–R_RLY6` 下拉）；功放**直吃 `VCC` 电池原压（2S 6.0–8.4 V，本项目不设升压）**，E 类按 **7.4 V 标称定点**（🔴 **2026-10-17 用户裁定：设计点统一 7.4 V**，废止 8.4 V 那一套 16.3 Ω/0.51 nF/3.7 µH）。
-> 权威来源：[docs/05](../docs/05-hw-sw-interface-contract.md) §2.3/§2.4 · [docs/04](../docs/04-hardware-architecture.md) §3 · [atu-module/relay-wiring.md](atu-module/relay-wiring.md)（顶部 CHANGELOG）。
-> ⇒ **本文件以下凡出现 `TCA9535` / `ULN2003A` / `IOEXP_*` / `+12 V` 功放轨 / 升压模块 / `R_RLY` 者均为历史方案**，以 BOM 生成产物与上述两节为准。
+## 方案口径
+
+本目录以 [docs/05](../docs/05-hw-sw-interface-contract.md) §2.3/§2.4 与 §7 、[docs/04](../docs/04-hardware-architecture.md) §3 为现行权威。
+历次方案变更（电源拓扑 / 继电器驱动 / GPIO）见 [docs/DECISIONS-2026-10-19.md](../docs/DECISIONS-2026-10-19.md)。
 
 ---
 
