@@ -136,3 +136,17 @@ ADR 索引与模板见 [adr/README.md](adr/README.md)。
 4. `validation/`（硬件在环）与私有固件仓的 `test/`（单元测试）之间那条有价值的边界会被掩盖。
 
 - [DECISIONS-2026-10-19.md](DECISIONS-2026-10-19.md) — 2026-10-19 项目决策记录（审计 10 项待决的逐条拍板）
+
+---
+
+## README 写作规范（2026-10-19 用户定案 · 选项 A）
+
+| 层级 | 文件 | 写法 |
+|---|---|---|
+| **入口类** | 仓库根 `README.md`、`docs/README.md`（总索引）| **尽量简洁（一页速览）+ 链接跳转**；不承载历史基线 / 方案变更声明 / 逐条决策 |
+| **组件类** | `hardware/*/README.md`（如 atu-module）等 | **保持详细**（它们是该组件的**权威契约/接口文档**）；不强制缩减 |
+| **决策类** | `docs/DECISIONS-*.md`、`docs/00-project-upgrade-plan.md` | 方案变更史、作废声明、约束变更全部记在这里 |
+
+① 入口 README 固定结构：一句话定位 → 子项目/结构小表 → 快速开始命令 → 目录速查 → **文档索引（链接）** → 许可。
+② 入口 README **不因方案变更而改动**：改方案只改 `docs/DECISIONS-*.md` 与 `docs/05` 权威章节。
+③ 原长 README 归档：`docs/README-FULL-ARCHIVE-2026-10-19.md`（不删信息）。
